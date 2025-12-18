@@ -29,10 +29,10 @@ export default function ExplorePage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Discover Your Next Challenge
+          Intel Hub
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Explore curated collections and dive deep into new topics.
+          Cricket · Cinema · Public Affairs
         </p>
       </div>
 
