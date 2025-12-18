@@ -66,7 +66,7 @@ export default function InsightsPage() {
             <p className="text-xs text-muted-foreground">
               +
               {userInsightsData.growthTrajectory.slice(-1)[0]['Knowledge Index'] -
-                userInsightsData.growthTrajectory.slice(-2)[0]['Ci KNOW much about the topic of this quiz?']}
+                userInsightsData.growthTrajectory.slice(-2)[0]['Knowledge Index']}
               % from last month
             </p>
           </CardContent>
@@ -95,7 +95,7 @@ export default function InsightsPage() {
             <BookUp className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Technology</div>
+            <div className="text-2xl font-bold">Cricket</div>
             <p className="text-xs text-muted-foreground">
               Highest accuracy category
             </p>

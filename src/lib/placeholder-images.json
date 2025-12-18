@@ -2,51 +2,51 @@
   "placeholderImages": [
     {
       "id": "hero-1",
-      "description": "Abstract golden waves",
-      "imageUrl": "https://images.unsplash.com/photo-1615098269543-5d83ef1092e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhYnN0cmFjdCUyMGdvbGR8ZW58MHx8fHwxNzY2MDAyMTY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "abstract gold"
+      "description": "A cricket stadium under lights",
+      "imageUrl": "https://images.unsplash.com/photo-1599553120389-3972ac8fee09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmlja2V0JTIwc3RhZGl1bXxlbnwwfHx8fDE3NjYwODAwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cricket stadium"
     },
     {
       "id": "hero-2",
-      "description": "Man looking at a futuristic screen",
-      "imageUrl": "https://images.unsplash.com/photo-1674049406107-f5c1e8258d4a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmdXR1cmlzdGljJTIwc2NyZWVufGVufDB8fHx8MTc2NjA3ODI0OHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "futuristic screen"
+      "description": "A classic Bollywood movie poster aesthetic",
+      "imageUrl": "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxib2xseXdvb2QlMjBtb3ZpZXxlbnwwfHx8fDE3NjYwODAwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "bollywood movie"
     },
     {
       "id": "hero-3",
-      "description": "Library with warm lighting",
-      "imageUrl": "https://images.unsplash.com/photo-1696952384865-82dba88ac831?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxsaWJyYXJ5JTIwa25vd2xlZGdlfGVufDB8fHx8MTc2NjA3ODI0OHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "library knowledge"
+      "description": "Indian Parliament building",
+      "imageUrl": "https://images.unsplash.com/photo-1588999422028-56a73a6167a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBwYXJsaWFtZW50fGVufDB8fHx8MTc2NjA4MDAwMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "indian parliament"
     },
     {
       "id": "article-1",
-      "description": "Close up of a circuit board",
-      "imageUrl": "https://images.unsplash.com/photo-1592659762303-90081d34b277?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjaXJjdWl0JTIwYm9hcmR8ZW58MHx8fHwxNzY2MDI5NTU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "circuit board"
+      "description": "Cricket ball hitting the stumps",
+      "imageUrl": "https://images.unsplash.com/photo-1540747913346-19e32a3bf527?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmlja2V0JTIwaXBsJTIwdGVhbXxlbnwwfHx8fDE3NjYwODAwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cricket stumps"
     },
     {
       "id": "article-2",
-      "description": "International flags",
-      "imageUrl": "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxpbnRlcm5hdGlvbmFsJTIwZmxhZ3N8ZW58MHx8fHwxNzY2MDAwMTU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "international flags"
+      "description": "Football on a grass pitch",
+      "imageUrl": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmb290YmFsbCUyMGV1cm9wZWFufGVufDB8fHx8MTc2NjA4MDAwMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "football pitch"
     },
     {
       "id": "article-3",
-      "description": "Stock market graph on a screen",
-      "imageUrl": "https://images.unsplash.com/photo-1645226880663-81561dcab0ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdG9jayUyMG1hcmtldHxlbnwwfHx8fDE3NjYwNzQxMTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "stock market"
+      "description": "A colourful scene from a Bollywood movie",
+      "imageUrl": "https://images.unsplash.com/photo-1626814026310-25d46c926c6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxib2xseXdvb2QlMjBkYW5jZXxlbnwwfHx8fDE3NjYwODAwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "bollywood dance"
     },
     {
       "id": "article-4",
-      "description": "Artist painting on a canvas",
-      "imageUrl": "https://images.unsplash.com/photo-1613574714687-c33b9e90200d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhcnRpc3QlMjBwYWludGluZ3xlbnwwfHx8fDE3NjYwMzg3ODF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "artist painting"
+      "description": "Indian political rally with flags",
+      "imageUrl": "https://images.unsplash.com/photo-1603792015243-98c83d63353e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBwb2xpdGljc3xlbnwwfHx8fDE3NjYwODAwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "indian politics"
     },
     {
       "id": "collection-1",
-      "description": "Old map and compass",
-      "imageUrl": "https://images.unsplash.com/photo-1764042082382-d68eaeaa53f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFwJTIwY29tcGFzc3xlbnwwfHx8fDE3NjYwNzgyNDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "map compass"
+      "description": "Trophies for different sports",
+      "imageUrl": "https://images.unsplash.com/photo-1560089023-a8f33936a953?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzcG9ydHMlMjB0cm9waGllc3xlbnwwfHx8fDE3NjYwODAwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sports trophies"
     }
   ]
 }
