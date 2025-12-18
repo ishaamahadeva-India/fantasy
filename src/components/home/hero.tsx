@@ -46,7 +46,7 @@ export function Hero() {
         </CardContent>
         <CardFooter className="flex-col items-start gap-4">
           <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/quiz/daily-news">
+            <Link href="/quiz/daily-news/start">
               Start Now <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
