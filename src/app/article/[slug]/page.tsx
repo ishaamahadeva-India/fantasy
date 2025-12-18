@@ -44,7 +44,8 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
             </div>
         )}
 
-        <div dangerouslySetInnerHTML={{ __html: article.content }} />
+        <p className="font-body text-xl text-foreground/80">{article.excerpt}</p>
+        <div className="font-body" dangerouslySetInnerHTML={{ __html: article.content }} />
       </article>
     </div>
   );

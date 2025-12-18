@@ -28,7 +28,7 @@ export function DailyBrief() {
           Play Audio Brief
         </Button>
         <Button asChild size="lg">
-          <Link href="/quiz/daily-news">
+          <Link href="/quiz/daily-news/start">
             Take the Daily Quiz
             <ArrowRight className="w-4 h-4 ml-2" />
           </Link>

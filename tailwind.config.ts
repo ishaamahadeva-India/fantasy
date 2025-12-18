@@ -17,10 +17,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ["'Merriweather'", 'serif'],
+        sans: ["'Inter'", 'sans-serif'],
         headline: ["'Poppins'", 'sans-serif'],
         code: ["'JetBrains Mono'", 'monospace'],
-        sans: ["'Inter'", 'sans-serif'],
+        body: ["'Merriweather'", 'serif'],
       },
       typography: (theme: (arg0: string) => any) => ({
         invert: {

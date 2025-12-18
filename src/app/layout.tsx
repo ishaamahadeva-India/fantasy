@@ -39,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased min-h-screen">
+      <body className="font-sans antialiased min-h-screen">
         <AppShell>{children}</AppShell>
         <Toaster />
       </body>
