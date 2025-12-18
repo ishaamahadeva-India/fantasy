@@ -42,7 +42,7 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto w-full">
+    <div className="max-w-2xl mx-auto w-full space-y-8">
       <Card className="mb-8 text-center">
         <CardHeader>
           <CardTitle className="text-3xl font-headline">Quiz Complete!</CardTitle>
@@ -54,7 +54,7 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
           <div>
             <p className="text-muted-foreground">Knowledge Gained</p>
             <div className="text-6xl font-bold font-code text-primary">
-              {percentage}
+              {percentage}%
             </div>
           </div>
           <div>
@@ -91,56 +91,67 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
         </CardFooter>
       </Card>
 
-      <h2 className="mb-4 text-2xl font-bold text-center font-headline">
-        Review Your Answers
-      </h2>
-      <Accordion type="single" collapsible className="w-full">
-        {quiz.map((question, index) => {
-          const userAnswerIndex = userAnswers[index];
-          const isCorrect = userAnswerIndex === question.correctAnswerIndex;
-          return (
-            <AccordionItem value={`item-${index}`} key={index}>
-              <AccordionTrigger className="text-left hover:no-underline">
-                <div className="flex items-start gap-4">
-                  {isCorrect ? (
-                    <CheckCircle2 className="w-6 h-6 text-success shrink-0 mt-1" />
-                  ) : (
-                    <XCircle className="w-6 h-6 text-destructive shrink-0 mt-1" />
-                  )}
-                  <span>{question.question}</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="space-y-4">
-                <div className="pl-10">
-                  <div className="p-4 rounded-lg bg-white/5 space-y-2">
-                    <p className="text-sm">
-                      Your answer:{' '}
-                      <span
-                        className={`font-semibold ${
-                          isCorrect ? 'text-success' : 'text-destructive'
-                        }`}
-                      >
-                        {question.options[userAnswerIndex]}
-                      </span>
-                    </p>
-                    {!isCorrect && (
-                      <p className="text-sm">
-                        Correct answer:{' '}
-                        <span className="font-semibold text-success">
-                          {question.options[question.correctAnswerIndex]}
-                        </span>
-                      </p>
+      <div className="text-center">
+        <h2 className="mb-4 text-2xl font-bold font-headline">
+            Review Your Answers
+        </h2>
+        <Accordion type="single" collapsible className="w-full">
+            {quiz.map((question, index) => {
+            const userAnswerIndex = userAnswers[index];
+            const isCorrect = userAnswerIndex === question.correctAnswerIndex;
+            return (
+                <AccordionItem value={`item-${index}`} key={index}>
+                <AccordionTrigger className="text-left hover:no-underline">
+                    <div className="flex items-start gap-4">
+                    {isCorrect ? (
+                        <CheckCircle2 className="w-6 h-6 text-success shrink-0 mt-1" />
+                    ) : (
+                        <XCircle className="w-6 h-6 text-destructive shrink-0 mt-1" />
                     )}
-                  </div>
-                  <p className="mt-4 font-serif text-base text-muted-foreground">
-                    {question.explanation}
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+                    <span>{question.question}</span>
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4">
+                    <div className="pl-10">
+                    <div className="p-4 rounded-lg bg-white/5 space-y-2">
+                        <p className="text-sm">
+                        Your answer:{' '}
+                        <span
+                            className={`font-semibold ${
+                            isCorrect ? 'text-success' : 'text-destructive'
+                            }`}
+                        >
+                            {question.options[userAnswerIndex]}
+                        </span>
+                        </p>
+                        {!isCorrect && (
+                        <p className="text-sm">
+                            Correct answer:{' '}
+                            <span className="font-semibold text-success">
+                            {question.options[question.correctAnswerIndex]}
+                            </span>
+                        </p>
+                        )}
+                    </div>
+                    <p className="mt-4 font-serif text-base text-muted-foreground">
+                        {question.explanation}
+                    </p>
+                    </div>
+                </AccordionContent>
+                </AccordionItem>
+            );
+            })}
+        </Accordion>
+      </div>
+
+       <div className="py-4 text-center">
+         <Button asChild variant="ghost">
+           <Link href="/">
+             <Home className="w-4 h-4 mr-2" />
+             Back to Home
+           </Link>
+         </Button>
+      </div>
     </div>
   );
 }
