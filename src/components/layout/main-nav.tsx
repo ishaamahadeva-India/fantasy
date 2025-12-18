@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/sidebar';
 import {
   Home,
-  Compass,
+  Newspaper,
   Play,
   BarChart2,
   User,
@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/explore', label: 'Explore', icon: Compass },
+  { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/profile', label: 'Profile', icon: User },
