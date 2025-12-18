@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CheckCircle2, Home, RefreshCw, XCircle } from 'lucide-react';
+import { CheckCircle2, Home, RefreshCw, XCircle, Share2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 type Quiz = DailyNewsQuizOutput['quiz'];
 
@@ -33,38 +34,64 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
     return acc;
   }, 0);
   const totalQuestions = quiz.length;
-  const knowledgeIndex = Math.round((score / totalQuestions) * 100);
+  const percentage = Math.round((score / totalQuestions) * 100);
+
+  const comparisonData = [
+    { name: 'You', score: percentage },
+    { name: 'Average', score: 72 }, // Placeholder data
+  ];
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto w-full">
       <Card className="mb-8 text-center">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Quiz Complete!</CardTitle>
-          <CardDescription>Your Knowledge Index for this quiz is:</CardDescription>
+          <CardTitle className="text-3xl font-headline">Quiz Complete!</CardTitle>
+          <CardDescription>
+            You scored {score} out of {totalQuestions}.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-6xl font-bold font-code text-primary">
-            {knowledgeIndex}
+        <CardContent className="space-y-6">
+          <div>
+            <p className="text-muted-foreground">Knowledge Gained</p>
+            <div className="text-6xl font-bold font-code text-primary">
+              {percentage}
+            </div>
           </div>
-          <p className="mt-2 text-muted-foreground">
-            You answered {score} out of {totalQuestions} questions correctly.
-          </p>
+          <div>
+            <h3 className="text-lg font-semibold font-headline mb-2">
+              Comparison
+            </h3>
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={comparisonData} layout="vertical" margin={{ left: 10 }}>
+                  <XAxis type="number" hide />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    stroke="hsl(var(--foreground))"
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <Bar dataKey="score" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]} barSize={30} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
-        <CardFooter className="justify-center gap-4">
-          <Button variant="outline" asChild>
-            <Link href="/play">
-              <RefreshCw className="w-4 h-4 mr-2" /> Try Another Quiz
-            </Link>
+        <CardFooter className="justify-center gap-2 sm:gap-4 flex-wrap">
+          <Button variant="outline">
+            <Share2 className="w-4 h-4 mr-2" /> Share Result
           </Button>
           <Button asChild>
-            <Link href="/">
-              <Home className="w-4 h-4 mr-2" /> Back to Home
+            <Link href="/play">
+              Next Quiz <RefreshCw className="w-4 h-4 ml-2" />
             </Link>
           </Button>
         </CardFooter>
       </Card>
 
-      <h2 className="mb-4 text-xl font-bold text-center font-headline">
+      <h2 className="mb-4 text-2xl font-bold text-center font-headline">
         Review Your Answers
       </h2>
       <Accordion type="single" collapsible className="w-full">
@@ -73,37 +100,41 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
           const isCorrect = userAnswerIndex === question.correctAnswerIndex;
           return (
             <AccordionItem value={`item-${index}`} key={index}>
-              <AccordionTrigger>
-                <div className="flex items-center gap-4">
+              <AccordionTrigger className="text-left hover:no-underline">
+                <div className="flex items-start gap-4">
                   {isCorrect ? (
-                    <CheckCircle2 className="w-5 h-5 text-success" />
+                    <CheckCircle2 className="w-6 h-6 text-success shrink-0 mt-1" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-destructive" />
+                    <XCircle className="w-6 h-6 text-destructive shrink-0 mt-1" />
                   )}
-                  <span className="flex-1 text-left">{question.question}</span>
+                  <span>{question.question}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-4">
-                <p className="font-serif text-base">{question.explanation}</p>
-                <div className="p-4 rounded-md bg-secondary">
-                  <p className="text-sm">
-                    Your answer:{' '}
-                    <span
-                      className={`font-semibold ${
-                        isCorrect ? 'text-success' : 'text-destructive'
-                      }`}
-                    >
-                      {question.options[userAnswerIndex]}
-                    </span>
-                  </p>
-                  {!isCorrect && (
+                <div className="pl-10">
+                  <div className="p-4 rounded-lg bg-white/5 space-y-2">
                     <p className="text-sm">
-                      Correct answer:{' '}
-                      <span className="font-semibold text-success">
-                        {question.options[question.correctAnswerIndex]}
+                      Your answer:{' '}
+                      <span
+                        className={`font-semibold ${
+                          isCorrect ? 'text-success' : 'text-destructive'
+                        }`}
+                      >
+                        {question.options[userAnswerIndex]}
                       </span>
                     </p>
-                  )}
+                    {!isCorrect && (
+                      <p className="text-sm">
+                        Correct answer:{' '}
+                        <span className="font-semibold text-success">
+                          {question.options[question.correctAnswerIndex]}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                  <p className="mt-4 font-serif text-base text-muted-foreground">
+                    {question.explanation}
+                  </p>
                 </div>
               </AccordionContent>
             </AccordionItem>
