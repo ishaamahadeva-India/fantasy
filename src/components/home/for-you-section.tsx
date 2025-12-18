@@ -16,7 +16,7 @@ export function ForYouSection() {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
       {placeholderArticles.map((article) => (
-        <Link href="#" key={article.id} className="group">
+        <Link href={`/article/${article.slug}`} key={article.id} className="group">
           <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20">
             <CardHeader className="p-0">
               <div className="relative aspect-video">

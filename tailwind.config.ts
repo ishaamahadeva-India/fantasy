@@ -15,6 +15,28 @@ export default {
         code: ["'JetBrains Mono'", 'monospace'],
         serif: ["'Merriweather'", 'serif'],
       },
+      typography: (theme: (arg0: string) => any) => ({
+        invert: {
+          css: {
+            '--tw-prose-body': theme('colors.neutral[300]'),
+            '--tw-prose-headings': theme('colors.neutral[50]'),
+            '--tw-prose-lead': theme('colors.neutral[400]'),
+            '--tw-prose-links': theme('colors.white'),
+            '--tw-prose-bold': theme('colors.white'),
+            '--tw-prose-counters': theme('colors.neutral[400]'),
+            '--tw-prose-bullets': theme('colors.neutral[600]'),
+            '--tw-prose-hr': theme('colors.neutral[700]'),
+            '--tw-prose-quotes': theme('colors.neutral[100]'),
+            '--tw-prose-quote-borders': theme('colors.neutral[700]'),
+            '--tw-prose-captions': theme('colors.neutral[400]'),
+            '--tw-prose-code': theme('colors.white'),
+            '--tw-prose-pre-code': theme('colors.neutral[300]'),
+            '--tw-prose-pre-bg': 'rgba(0, 0, 0, 0.2)',
+            '--tw-prose-th-borders': theme('colors.neutral[600]'),
+            '--tw-prose-td-borders': theme('colors.neutral[700]'),
+          },
+        },
+      }),
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -100,5 +122,5 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
