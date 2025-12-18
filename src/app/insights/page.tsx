@@ -10,8 +10,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from '@/components/ui/chart';
 import { userInsightsData } from '@/lib/placeholder-data';
 import {
@@ -21,7 +19,6 @@ import {
   PolarGrid,
   Radar,
   RadarChart,
-  ResponsiveContainer,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -47,10 +44,10 @@ export default function InsightsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Your Insights
+          Performance Analytics
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Track your intellectual growth and discover your strengths.
+          Analyze your performance, track stats, and identify weak zones.
         </p>
       </div>
 
@@ -58,7 +55,7 @@ export default function InsightsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
-              Current Knowledge Index
+              Knowledge Index
             </CardTitle>
             <Target className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -69,7 +66,7 @@ export default function InsightsPage() {
             <p className="text-xs text-muted-foreground">
               +
               {userInsightsData.growthTrajectory.slice(-1)[0]['Knowledge Index'] -
-                userInsightsData.growthTrajectory.slice(-2)[0]['Knowledge Index']}
+                userInsightsData.growthTrajectory.slice(-2)[0]['Ci KNOW much about the topic of this quiz?']}
               % from last month
             </p>
           </CardContent>
@@ -88,7 +85,7 @@ export default function InsightsPage() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Dedicated to your growth
+              Total time spent in challenges
             </p>
           </CardContent>
         </Card>
@@ -100,7 +97,7 @@ export default function InsightsPage() {
           <CardContent>
             <div className="text-2xl font-bold">Technology</div>
             <p className="text-xs text-muted-foreground">
-              Based on your quiz performance
+              Highest accuracy category
             </p>
           </CardContent>
         </Card>
@@ -159,9 +156,9 @@ export default function InsightsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Category Performance</CardTitle>
+            <CardTitle className="font-headline">Skill Distribution</CardTitle>
             <CardDescription>
-              Your strengths across different topics
+              Performance analysis across categories
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-0">
