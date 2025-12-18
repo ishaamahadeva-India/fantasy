@@ -13,24 +13,24 @@ import { Check, User, Vault } from 'lucide-react';
 
 const tiers = [
   {
-    name: 'Premium',
+    name: 'Premium Pass',
     price: 'Monthly',
     features: [
-      'Full access to all content',
-      'Detailed explanations',
-      'Audio narrations',
+      'Full access to all game modes',
+      'Detailed explanations & insights',
+      'Audio and Video challenges',
     ],
     cta: 'Manage Subscription',
     current: false,
   },
   {
-    name: 'Pro',
+    name: 'Pro Pass',
     price: 'Annual',
     features: [
       'All Premium features',
       'Ad-free forever',
-      'Priority access to new features',
-      'Exclusive monthly deep-dive',
+      'Priority access to new modes',
+      'Exclusive monthly challenges',
     ],
     cta: 'Upgrade to Pro',
     current: true,
@@ -53,7 +53,7 @@ export default function ProfilePage() {
           <p className="mt-1 text-muted-foreground">user@example.com</p>
           <div className="mt-2">
             <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/20 text-primary">
-              Pro Subscriber
+              Pro Pass
             </span>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle>Your Knowledge Vault</CardTitle>
               <CardDescription>
-                Your saved facts and highlights from articles and quizzes.
+                Your saved facts and highlights from challenges.
               </CardDescription>
             </CardHeader>
             <CardContent>
