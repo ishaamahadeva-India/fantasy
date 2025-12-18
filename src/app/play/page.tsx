@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import {
   Card,
@@ -38,7 +39,7 @@ export default function PlayPage() {
             </p>
           </div>
           <Button asChild className="mt-6 md:mt-0 shrink-0" size="lg">
-            <Link href="/quiz/daily-news">
+            <Link href="/quiz/daily-news/start">
               Start Now <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
