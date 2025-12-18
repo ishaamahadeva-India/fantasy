@@ -8,19 +8,24 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, PlayCircle } from 'lucide-react';
 
 export function DailyBrief() {
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
-        <CardTitle className="font-headline">Your Daily Knowledge Dose</CardTitle>
+        <CardTitle className="font-headline">Today in 60 Seconds</CardTitle>
         <CardDescription>
-          A 60-second audio brief and a quick 3-question quiz on today's most
-          important events. Generated just for you.
+          Your daily audio brief and a 3-question quiz on today's most
+          important events.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow"></CardContent>
+      <CardContent className="flex-grow flex items-center justify-center">
+        <Button variant="outline" size="lg" className="w-full">
+            <PlayCircle className="w-6 h-6 mr-2" />
+            Play Audio Brief
+        </Button>
+      </CardContent>
       <CardFooter>
         <Button asChild className="w-full">
           <Link href="/quiz/daily-news">
