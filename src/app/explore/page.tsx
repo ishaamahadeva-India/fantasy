@@ -1,3 +1,4 @@
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -27,9 +28,11 @@ export default function ExplorePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">Explore</h1>
+        <h1 className="text-3xl font-bold md:text-4xl font-headline">
+          Discover Your Next Challenge
+        </h1>
         <p className="mt-2 text-muted-foreground">
-          Discover curated knowledge, deep dives, and new perspectives.
+          Explore curated collections and dive deep into new topics.
         </p>
       </div>
 
@@ -38,41 +41,17 @@ export default function ExplorePage() {
           <Search className="absolute w-4 h-4 left-3 top-3 text-muted-foreground" />
           <Input placeholder="Search for topics..." className="pl-10" />
         </div>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <Select>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="movie">Movie</SelectItem>
-              <SelectItem value="cricket">Cricket</SelectItem>
-              <SelectItem value="politics">Politics</SelectItem>
-              <SelectItem value="news">News</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Format" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="audio">Audio</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="image">Image</SelectItem>
-              <SelectItem value="survey">Survey</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Difficulty" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
-              <SelectItem value="expert">Expert</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select>
+          <SelectTrigger className="w-full md:w-[200px]">
+            <SelectValue placeholder="Filter by category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="technology">Technology</SelectItem>
+            <SelectItem value="geopolitics">Geopolitics</SelectItem>
+            <SelectItem value="business">Business</SelectItem>
+            <SelectItem value="arts">Arts &amp; Culture</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div>
