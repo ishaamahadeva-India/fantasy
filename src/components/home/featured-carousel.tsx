@@ -27,7 +27,7 @@ export function FeaturedCarousel() {
       <CarouselContent>
         {featuredImages.map((image, index) => (
           <CarouselItem key={index}>
-            <Card className="overflow-hidden border-0 rounded-xl">
+            <Card className="overflow-hidden border-0 rounded-3xl">
               <CardContent className="relative flex items-center justify-center p-0 aspect-video">
                 <Image
                   src={image.imageUrl}
@@ -36,15 +36,15 @@ export function FeaturedCarousel() {
                   className="object-cover"
                   data-ai-hint={image.imageHint}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="relative z-10 max-w-2xl p-8 text-center text-white">
-                  <h2 className="text-3xl font-bold md:text-5xl font-headline text-shadow">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="relative z-10 max-w-3xl p-8 text-center text-white">
+                  <h2 className="text-4xl font-bold md:text-6xl font-headline text-shadow">
                     {placeholderArticles[index % placeholderArticles.length].title}
                   </h2>
                   <p className="mt-4 text-lg text-neutral-200 text-shadow-sm">
                     {placeholderArticles[index % placeholderArticles.length].excerpt}
                   </p>
-                  <Button asChild className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button asChild className="mt-8 text-lg" size="lg">
                     <Link href="#">Read More</Link>
                   </Button>
                 </div>
@@ -53,8 +53,8 @@ export function FeaturedCarousel() {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="hidden ml-16 md:flex" />
-      <CarouselNext className="hidden mr-16 md:flex" />
+      <CarouselPrevious className="hidden ml-20 md:flex" />
+      <CarouselNext className="hidden mr-20 md:flex" />
     </Carousel>
   );
 }
