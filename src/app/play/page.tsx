@@ -37,7 +37,7 @@ export default function PlayPage() {
               updated are you?
             </p>
           </div>
-          <Button asChild className="mt-6 md:mt-0 shrink-0">
+          <Button asChild className="mt-6 md:mt-0 shrink-0" size="lg">
             <Link href="/quiz/daily-news">
               Start Now <ArrowRight className="w-4 h-4 ml-2" />
             </Link>

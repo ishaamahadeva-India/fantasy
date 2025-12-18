@@ -17,8 +17,11 @@ export function Greeting() {
   }, []);
 
   return (
-    <h1 className="text-3xl font-bold md:text-4xl font-headline">
-      {greeting}
-    </h1>
+    <div>
+        <h1 className="text-3xl font-bold md:text-4xl font-headline">
+            {greeting}, Kaarthu
+        </h1>
+        <p className="mt-1 text-lg text-muted-foreground">Let’s sharpen your mind in 5 minutes</p>
+    </div>
   );
 }

@@ -7,13 +7,13 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { placeholderImages } from '@/lib/placeholder-images';
 import { placeholderArticles } from '@/lib/placeholder-data';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 
 export function FeaturedCarousel() {
-  const featuredImages = PlaceHolderImages.filter((img) =>
+  const featuredImages = placeholderImages.filter((img) =>
     img.id.startsWith('hero-')
   );
 
