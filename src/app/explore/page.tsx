@@ -38,24 +38,38 @@ export default function ExplorePage() {
           <Search className="absolute w-4 h-4 left-3 top-3 text-muted-foreground" />
           <Input placeholder="Search for topics..." className="pl-10" />
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <Select>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Filter by length" />
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="short">Short</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="deep">Deep</SelectItem>
+              <SelectItem value="movie">Movie</SelectItem>
+              <SelectItem value="cricket">Cricket</SelectItem>
+              <SelectItem value="politics">Politics</SelectItem>
+              <SelectItem value="news">News</SelectItem>
             </SelectContent>
           </Select>
           <Select>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Filter by type" />
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Format" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="with-narration">With Narration</SelectItem>
-              <SelectItem value="without-narration">No Narration</SelectItem>
+              <SelectItem value="audio">Audio</SelectItem>
+              <SelectItem value="video">Video</SelectItem>
+              <SelectItem value="image">Image</SelectItem>
+              <SelectItem value="survey">Survey</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Difficulty" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="easy">Easy</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="hard">Hard</SelectItem>
+              <SelectItem value="expert">Expert</SelectItem>
             </SelectContent>
           </Select>
         </div>
