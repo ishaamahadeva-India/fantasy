@@ -2,9 +2,11 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { AudioPlayer } from '@/components/article/audio-player';
 
 type QuizQuestionProps = {
   question: string;
+  audioDataUri?: string;
   options: string[];
   correctAnswerIndex: number;
   selectedOption: number | undefined;
@@ -16,6 +18,7 @@ type QuizQuestionProps = {
 
 export function QuizQuestion({
   question,
+  audioDataUri,
   options,
   correctAnswerIndex,
   selectedOption,
@@ -29,9 +32,23 @@ export function QuizQuestion({
   return (
     <div className="relative w-full">
       <div className="text-center space-y-8">
-        <h1 className="text-3xl md:text-4xl font-serif text-balance">
-          {question}
-        </h1>
+        {audioDataUri && !hasAnswered && (
+          <div className="max-w-md mx-auto">
+            <AudioPlayer audioSrc={audioDataUri} autoPlay />
+          </div>
+        )}
+
+        <AnimatePresence>
+        {hasAnswered && (
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-3xl md:text-4xl font-serif text-balance"
+            >
+                {question}
+            </motion.h1>
+        )}
+        </AnimatePresence>
 
         <div className="grid grid-cols-1 gap-4 max-w-md mx-auto">
           {options.map((option, index) => {

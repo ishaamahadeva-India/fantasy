@@ -85,6 +85,7 @@ export function QuizClient({ quiz }: QuizClientProps) {
             >
                 <QuizQuestion
                     question={currentQuestion.question}
+                    audioDataUri={currentQuestion.audioDataUri}
                     options={currentQuestion.options}
                     correctAnswerIndex={currentQuestion.correctAnswerIndex}
                     selectedOption={selectedOption}

@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { textToSpeech } from './text-to-speech';
 
 const DailyNewsQuizInputSchema = z.object({
   topic: z
@@ -33,6 +34,7 @@ const DailyNewsQuizOutputSchema = z.object({
         .number()
         .describe('The index of the correct answer in the options array.'),
       explanation: z.string().optional().describe('Explanation of the correct answer.'),
+      audioDataUri: z.string().optional().describe('The audio data URI for the question narration.')
     })
   ).describe('An array of quiz questions, options and correct answers.'),
 });
@@ -85,6 +87,21 @@ const generateDailyNewsQuizFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await generateQuizPrompt(input);
-    return output!;
+    if (!output?.quiz) {
+      throw new Error('Failed to generate quiz content.');
+    }
+    
+    // Generate audio for each question
+    const narratedQuiz = await Promise.all(
+        output.quiz.map(async (q) => {
+            const narration = await textToSpeech({ text: q.question });
+            return {
+                ...q,
+                audioDataUri: narration.audioDataUri,
+            };
+        })
+    );
+
+    return { quiz: narratedQuiz };
   }
 );
