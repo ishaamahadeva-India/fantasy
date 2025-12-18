@@ -50,33 +50,32 @@ export default function PlayPage() {
         <h2 className="mb-4 text-2xl font-bold font-headline">
           Featured Quizzes
         </h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {placeholderQuizzes.map((quiz) => (
             <Link href="#" key={quiz.id} className="group">
-              <Card className="flex flex-col h-full transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20">
+              <Card
+                key={quiz.title}
+                className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20"
+              >
                 <CardHeader>
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-md bg-secondary">
-                      <BrainCircuit className="w-6 h-6 text-primary" />
+                  <div
+                    className="flex items-center gap-4"
+                  >
+                    <div className="rounded-md bg-secondary p-3">
+                      <BrainCircuit className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <Badge variant="secondary">{quiz.category}</Badge>
+                      <CardTitle className="font-headline text-lg">
+                        {quiz.title}
+                      </CardTitle>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-grow">
-                  <CardTitle className="text-lg font-headline">
-                    {quiz.title}
-                  </CardTitle>
-                  <CardDescription className="mt-2">
-                    {quiz.description}
-                  </CardDescription>
-                </CardContent>
-                <CardFooter>
-                  <p className="text-sm text-muted-foreground">
-                    {quiz.questions} Questions
-                  </p>
-                </CardFooter>
+                <CardDescription
+                  className="px-8 pb-8"
+                >
+                  {quiz.description}
+                </CardDescription>
               </Card>
             </Link>
           ))}
