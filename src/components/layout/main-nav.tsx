@@ -12,6 +12,7 @@ import {
   User,
   Settings,
   Flame,
+  Star,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -20,7 +21,7 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
-  { href: '/fan-war', label: 'Fan War', icon: Flame },
+  { href: '/fan-zone', label: 'Fan Zone', icon: Star },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/profile', label: 'Profile', icon: User },
 ];
