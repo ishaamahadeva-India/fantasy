@@ -1,6 +1,6 @@
 
 'use client';
-import { use } from 'react';
+import { use, useMemo, useEffect, useState } from 'react';
 import { placeholderIpTeams } from '@/lib/cricket-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -11,35 +11,111 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
+import { useCollection, useFirestore } from '@/firebase';
+import type { FanRating } from '@/lib/types';
+import { collection, query, where } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function MomentumVisualizer({ momentum }: { momentum: number[] }) {
-    return (
-        <div className="flex items-end gap-2 h-10">
-            {momentum.map((score, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center">
-                    <div 
-                        className="w-full rounded-t-sm bg-primary/50"
-                        style={{ height: `${Math.max(score, 10)}%`}}
-                        title={`Momentum: ${score}`}
-                    />
-                    <span className="text-xs font-code mt-1">{score}</span>
-                </div>
-            ))}
+  return (
+    <div className="flex items-end gap-2 h-10">
+      {momentum.map((score, index) => (
+        <div key={index} className="flex-1 flex flex-col items-center">
+          <div
+            className="w-full rounded-t-sm bg-primary/50"
+            style={{ height: `${Math.max(score, 10)}%` }}
+            title={`Momentum: ${score}`}
+          />
+          <span className="text-xs font-code mt-1">{score}</span>
         </div>
-    )
+      ))}
+    </div>
+  );
 }
 
-export default function IpTeamProfilePage({ params }: { params: { id: string } }) {
+function FanConfidenceDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
+  const [confidence, setConfidence] = useState(0);
+
+  useEffect(() => {
+    if (!ratings || ratings.length === 0) {
+      setConfidence(0);
+      return;
+    }
+    
+    // Filter for pulse check ratings, which store the vote in the 'review' field
+    const pulseCheckVotes = ratings.filter(r => r.review && ['Very Confident', 'Neutral', 'Not Confident'].includes(r.review));
+
+    if (pulseCheckVotes.length === 0) {
+      setConfidence(0);
+      return;
+    }
+
+    const totalScore = pulseCheckVotes.reduce((acc, vote) => {
+        if(vote.review === 'Very Confident') return acc + 100;
+        if(vote.review === 'Neutral') return acc + 50;
+        return acc; // 'Not Confident' is 0
+    }, 0);
+
+    setConfidence(totalScore / pulseCheckVotes.length);
+
+  }, [ratings]);
+
+  if (isLoading) {
+    return (
+        <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+                Fan Confidence
+            </p>
+            <Skeleton className="h-10 w-20 mx-auto mt-1" />
+        </div>
+    )
+  }
+
+  return (
+    <div className="text-center">
+        <p className="text-sm text-muted-foreground">
+            Fan Confidence
+        </p>
+        <p className="text-4xl font-bold font-code text-primary">
+            {confidence.toFixed(0)}%
+        </p>
+    </div>
+  )
+}
+
+
+export default function IpTeamProfilePage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const { id } = use(params);
   const team = placeholderIpTeams.find((t) => t.id === id);
-  const teamAttributes = ["Auction Strategy", "Youth Policy", "Brand Value", "Fan Engagement"];
+  const teamAttributes = [
+    'Auction Strategy',
+    'Youth Policy',
+    'Brand Value',
+    'Fan Engagement',
+  ];
+  
+  const firestore = useFirestore();
+  const ratingsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+        collection(firestore, 'ratings'),
+        where('entityId', '==', id),
+        where('entityType', '==', 'team')
+    )
+  }, [firestore, id]);
+
+  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+
 
   if (!team) {
     notFound();
@@ -68,8 +144,8 @@ export default function IpTeamProfilePage({ params }: { params: { id: string } }
               />
             </div>
           </Card>
-          <div className='text-center mt-4'>
-            <p className='text-sm text-muted-foreground'>{team.homeVenue}</p>
+          <div className="text-center mt-4">
+            <p className="text-sm text-muted-foreground">{team.homeVenue}</p>
           </div>
         </div>
         <div className="md:col-span-2 space-y-6">
@@ -103,14 +179,7 @@ export default function IpTeamProfilePage({ params }: { params: { id: string } }
                   {team.squadBalance.toFixed(1)}
                 </p>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  Fan Confidence
-                </p>
-                <p className="text-4xl font-bold font-code text-primary">
-                  {team.fanConfidence}%
-                </p>
-              </div>
+              <FanConfidenceDisplay ratings={ratings} isLoading={ratingsLoading} />
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Momentum</p>
                 <MomentumVisualizer momentum={team.momentum} />
@@ -130,12 +199,12 @@ export default function IpTeamProfilePage({ params }: { params: { id: string } }
                 entityId={team.id}
                 entityType="team"
               />
-               <PulseCheck 
-                 question="How confident are you in the team's chances this season?"
-                 options={['Very Confident', 'Neutral', 'Not Confident']}
-                 entityId={team.id}
-                 entityType="team"
-               />
+              <PulseCheck
+                question="How confident are you in the team's chances this season?"
+                options={['Very Confident', 'Neutral', 'Not Confident']}
+                entityId={team.id}
+                entityType="team"
+              />
             </div>
           </div>
         </div>
