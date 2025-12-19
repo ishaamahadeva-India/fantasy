@@ -1,7 +1,6 @@
-
 'use client';
 
-import { use } from 'react';
+import { use, useMemo } from 'react';
 import { popularStars } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -27,9 +26,9 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
     <div className="max-w-6xl mx-auto">
         <div className="mb-6">
             <Button variant="ghost" asChild>
-                <Link href="/fan-zone">
+                <Link href="/fan-zone/movies">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Fan Zone
+                    Back to Movie Zone
                 </Link>
             </Button>
         </div>
@@ -66,7 +65,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                     <CardContent className="grid grid-cols-3 gap-4 text-center">
                         <div>
                             <p className="text-sm text-muted-foreground">Popularity Index</p>
-                            <p className="text-3xl font-bold font-code">88.2</p>
+                            <p className="text-3xl font-bold font-code">{star.popularityIndex.toFixed(1)}</p>
                         </div>
                          <div>
                             <p className="text-sm text-muted-foreground">Consistency Score</p>
@@ -84,7 +83,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                 <div className='space-y-4'>
                     <h3 className="font-headline text-xl">Fan Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <AttributeRating triggerButtonText="Rate Performance" attributes={starAttributes} icon={Star} />
+                        <AttributeRating triggerButtonText="Rate Performance" attributes={starAttributes} icon={Star} entityId={star.id} entityType="star" />
                         <Button variant="outline" size="lg"><BrainCircuit className="mr-2"/> Compare Eras</Button>
                         <Button variant="outline" size="lg"><Gamepad2 className="mr-2"/> Pulse Check</Button>
                     </div>
