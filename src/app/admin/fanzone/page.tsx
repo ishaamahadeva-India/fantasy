@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { deleteCricketer } from '@/firebase/firestore/cricketers';
+import { deleteTeam } from '@/firebase/firestore/teams';
 
 type CricketerProfile = {
     id: string;
@@ -81,6 +82,24 @@ export default function AdminFanZonePage() {
             title: 'Error',
             description: 'Could not delete the cricketer. Please try again.',
         });
+        }
+    };
+    
+    const handleDeleteTeam = async (teamId: string) => {
+        if (!firestore) return;
+        try {
+            await deleteTeam(firestore, teamId);
+            toast({
+                title: 'Team Deleted',
+                description: 'The team profile has been successfully deleted.',
+            });
+        } catch (error) {
+            console.error('Error deleting team: ', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not delete the team. Please try again.',
+            });
         }
     };
 
@@ -193,9 +212,11 @@ export default function AdminFanZonePage() {
                 <CardHeader>
                     <div className='flex justify-between items-center'>
                         <CardTitle>Teams (IP & National)</CardTitle>
-                        <Button variant="outline" size="sm" onClick={() => handleAction('Create', 'New Team')}>
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            Add Team
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href="/admin/fanzone/teams/new">
+                                <PlusCircle className="w-4 h-4 mr-2" />
+                                Add Team
+                            </Link>
                         </Button>
                     </div>
                 </CardHeader>
@@ -218,8 +239,32 @@ export default function AdminFanZonePage() {
                                     <TableCell className="capitalize">{team.type}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', team.name)}><Edit className="w-4 h-4" /></Button>
-                                        <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', team.name)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                                            <Button variant="ghost" size="icon" asChild>
+                                                <Link href={`/admin/fanzone/teams/edit/${team.id}`}>
+                                                    <Edit className="w-4 h-4" />
+                                                </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="icon">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the profile for "{team.name}".
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteTeam(team.id)}>
+                                                        Delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </TableCell>
                                 </TableRow>
