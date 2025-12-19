@@ -23,7 +23,7 @@ type AttributeRatingProps = {
   attributes: string[];
   icon?: ElementType;
   entityId: string;
-  entityType: 'cricketer' | 'team';
+  entityType: 'cricketer' | 'team' | 'movie' | 'star';
 };
 
 const MAX_REVIEW_LENGTH = 140;

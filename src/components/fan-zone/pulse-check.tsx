@@ -23,7 +23,7 @@ type PulseCheckProps = {
   question: string;
   options: string[];
   entityId: string;
-  entityType: 'cricketer' | 'team';
+  entityType: 'cricketer' | 'team' | 'movie' | 'star';
 };
 
 export function PulseCheck({ question, options, entityId, entityType }: PulseCheckProps) {
