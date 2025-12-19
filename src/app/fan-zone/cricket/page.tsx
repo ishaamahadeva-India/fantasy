@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -5,7 +6,13 @@ import { Lock, Search, SlidersHorizontal, Flame } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   placeholderCricketers,
@@ -24,6 +31,13 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 function CricketersTab({
   searchTerm,
@@ -216,6 +230,59 @@ function TrendingTab() {
   );
 }
 
+function AnalystViewTab() {
+  const [player1, setPlayer1] = useState<string | null>(null);
+  const [player2, setPlayer2] = useState<string | null>(null);
+
+  const getPlayerById = (id: string) => placeholderCricketers.find(p => p.id === id);
+
+  return (
+      <Card>
+        <CardHeader>
+            <CardTitle className="font-headline">Analyst View</CardTitle>
+            <CardDescription>Compare player stats head-to-head.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+              <div className="flex flex-col items-center gap-2">
+                 <h3 className="font-semibold text-lg">Player 1</h3>
+                  <Select onValueChange={setPlayer1}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select a player" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {placeholderCricketers.map(p => (
+                        <SelectItem key={p.id} value={p.id} disabled={p.id === player2}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+              </div>
+              <div className="text-center font-bold text-2xl font-headline text-muted-foreground">VS</div>
+              <div className="flex flex-col items-center gap-2">
+                   <h3 className="font-semibold text-lg">Player 2</h3>
+                    <Select onValueChange={setPlayer2}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select a player" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {placeholderCricketers.map(p => (
+                        <SelectItem key={p.id} value={p.id} disabled={p.id === player1}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+              </div>
+          </div>
+          {player1 && player2 && (
+              <div className="pt-6">
+                <h3 className="text-center text-xl font-headline mb-4">Comparison Coming Soon</h3>
+                <p className="text-center text-muted-foreground">Detailed statistical analysis for {getPlayerById(player1)?.name} vs. {getPlayerById(player2)?.name} will be available here.</p>
+              </div>
+          )}
+        </CardContent>
+      </Card>
+  )
+}
+
 export default function CricketFanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<{ roles: string[], countries: string[] }>({ roles: [], countries: [] });
@@ -340,46 +407,7 @@ export default function CricketFanZonePage() {
           <TrendingTab />
         </TabsContent>
         <TabsContent value="analyst-view">
-          <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">Analyst View (Game Pass)</CardTitle>
-                <CardDescription>Unlock deep-dive analytics and player comparisons.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="relative text-center p-8 rounded-lg bg-white/5">
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                  <Lock className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="font-headline text-xl mb-2">
-                    Unlock Full Era Analysis
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Upgrade to Game Pass for detailed analytics.
-                  </p>
-                  <Button>Unlock Game Pass</Button>
-                </div>
-                <div className='opacity-30 blur-sm select-none'>
-                    <h4 className='font-semibold'>Head-to-Head Player Comparison</h4>
-                    <div className='flex justify-center items-center gap-4 mt-4'>
-                        <div className='w-40 p-2 border rounded-md border-dashed'>
-                            <Avatar className="w-12 h-12 mx-auto">
-                                <AvatarFallback>P1</AvatarFallback>
-                            </Avatar>
-                            <p className='text-sm mt-2'>Player One</p>
-                        </div>
-                        <span className='font-bold'>vs</span>
-                         <div className='w-40 p-2 border rounded-md border-dashed'>
-                            <Avatar className="w-12 h-12 mx-auto">
-                                <AvatarFallback>P2</AvatarFallback>
-                            </Avatar>
-                            <p className='text-sm mt-2'>Player Two</p>
-                        </div>
-                    </div>
-                    <p className="text-muted-foreground opacity-50 mt-4">Compare player stats across formats...</p>
-                    <p className="text-muted-foreground opacity-50 mt-2">Deep dive into performance vs opposition...</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AnalystViewTab />
         </TabsContent>
       </Tabs>
     </div>

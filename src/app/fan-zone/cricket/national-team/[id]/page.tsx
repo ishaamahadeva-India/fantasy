@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Lock, Users, Trophy, Percent } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, Percent } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -103,25 +103,13 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
           
           <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Era Analysis (Game Pass)</CardTitle>
-                <CardDescription>In-depth analysis of team strategies, player impact, and defining moments of the {selectedEra}.</CardDescription>
+                <CardTitle className="font-headline">Defining Moment: {selectedEra}</CardTitle>
+                <CardDescription>A summary of the team's defining achievement during this era.</CardDescription>
             </CardHeader>
             <CardContent>
-               <div className="relative text-center p-8 rounded-lg bg-white/5">
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                  <Lock className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="font-headline text-xl mb-2">
-                    Unlock Full Era Analysis
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Upgrade to Game Pass for detailed analytics.
-                  </p>
-                  <Button>Unlock Game Pass</Button>
-                </div>
-                <p className="text-muted-foreground opacity-30">Compare player stats across eras...</p>
-                <p className="text-muted-foreground opacity-30 mt-2">Deep dive into tactical shifts...</p>
-                <p className="text-muted-foreground opacity-30 mt-2">Watch iconic match highlights...</p>
-              </div>
+               <div className="p-4 rounded-lg bg-white/5 prose prose-invert max-w-none prose-sm">
+                 <p className='text-muted-foreground'>{eraData.definingMoment}</p>
+               </div>
             </CardContent>
           </Card>
 
