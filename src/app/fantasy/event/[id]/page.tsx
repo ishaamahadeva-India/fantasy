@@ -26,6 +26,7 @@ const allEvents = [
         type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
         status: 'Completed' as const,
+        points: 50,
         rules: ['Views from official YouTube, X, and Instagram channels only.'],
         options: ['0 - 10 Million', '10 - 20 Million', '20 - 30 Million', '30 Million+'],
         result: {
@@ -41,6 +42,7 @@ const allEvents = [
         type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
         description: 'Predict the primary location of the main pre-release event.',
+        points: 25,
         options: ['Hyderabad', 'Vizag', 'Dubai', 'Mumbai'],
         rules: ['The location of the main stage event will be considered final.'],
         result: {
@@ -57,6 +59,7 @@ const allEvents = [
         campaignId: 'campaign-devara',
         status: 'Live' as const,
         endsIn: '1 hour 45 minutes',
+        points: 75,
         options: ['0 - 25 Million', '25 - 50 Million', '50 - 75 Million', '75 Million+'],
         rules: [
             'Views from official YouTube channels only.',
@@ -71,6 +74,7 @@ const allEvents = [
         campaignId: 'campaign-devara',
         status: 'Upcoming' as const,
         endsIn: '3 days',
+        points: 40,
         rules: [
             'Official reports from platform holders or the production house will be considered final.',
         ],
@@ -84,6 +88,7 @@ const allEvents = [
         campaignId: 'campaign-devara',
         status: 'Upcoming' as const,
         endsIn: '5 days',
+        points: 200, // Max potential points
         rules: [
             'You have a budget of 100 credits.',
             'You must select one player for each role.',
@@ -114,6 +119,7 @@ const allEvents = [
         campaignId: 'campaign-devara',
         status: 'Upcoming' as const,
         endsIn: 'Soon',
+        points: 20,
         options: ['0 - 1 Million', '1 - 2 Million', '2 Million+'],
         rules: ['Views from official YouTube, X, and Instagram channels only.'],
     },
@@ -125,6 +131,7 @@ const allEvents = [
         campaignId: 'campaign-devara',
         status: 'Upcoming' as const,
         endsIn: 'Soon',
+        points: 100,
         options: ['0 - 50 Million', '50 - 100 Million', '100 Million+'],
         rules: ['Views from official YouTube, X, and Instagram channels only.'],
     }
@@ -289,18 +296,26 @@ function EventHeader({ eventDetails }: { eventDetails: any }) {
             <h1 className="text-3xl font-bold md:text-4xl font-headline">
                 {eventDetails.title}
             </h1>
-            {eventDetails.status === 'Live' && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-red-400">
-                    <Clock className="w-4 h-4" />
-                    <span>Prediction window closes in {eventDetails.endsIn}</span>
-                </div>
-            )}
-             {eventDetails.status === 'Completed' && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Event Completed</span>
-                </div>
-            )}
+            <div className="mt-2 flex items-center gap-6">
+                {eventDetails.status === 'Live' && eventDetails.endsIn && (
+                    <div className="flex items-center gap-2 text-sm text-red-400">
+                        <Clock className="w-4 h-4" />
+                        <span>Closes in {eventDetails.endsIn}</span>
+                    </div>
+                )}
+                 {eventDetails.status === 'Completed' && (
+                    <div className="flex items-center gap-2 text-sm text-green-400">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Event Completed</span>
+                    </div>
+                )}
+                {eventDetails.points && (
+                     <div className="flex items-center gap-2 text-sm text-amber-400">
+                        <Trophy className="w-4 h-4" />
+                        <span>{eventDetails.points} Points</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
