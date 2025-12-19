@@ -1,10 +1,50 @@
 
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { placeholderCricketers } from '@/lib/cricket-data';
+
+function CricketersTab({ searchTerm }: { searchTerm: string }) {
+    const filteredCricketers = placeholderCricketers.filter((cricketer) =>
+        cricketer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (filteredCricketers.length === 0) {
+        return (
+        <div className="py-12 text-center text-muted-foreground">
+            No cricketers found.
+        </div>
+        );
+    }
+    
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {filteredCricketers.map((cricketer) => (
+                <Link href={`/fan-zone/cricket/cricketer/${cricketer.id}`} key={cricketer.id} className="group">
+                    <Card className="text-center h-full">
+                        <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
+                        <Avatar className="w-24 h-24">
+                            <AvatarImage src={cricketer.avatar} alt={cricketer.name} />
+                            <AvatarFallback>{cricketer.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <h3 className="font-bold font-headline text-sm group-hover:text-primary">
+                            {cricketer.name}
+                        </h3>
+                        </CardContent>
+                    </Card>
+                </Link>
+            ))}
+        </div>
+    );
+}
+
 
 export default function CricketFanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,9 +85,7 @@ export default function CricketFanZonePage() {
           <TabsTrigger value="analyst-view" disabled>Analyst View</TabsTrigger>
         </TabsList>
         <TabsContent value="cricketers">
-          <div className="py-12 text-center text-muted-foreground">
-            Cricketer content coming soon.
-          </div>
+          <CricketersTab searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="national-teams">
           <div className="py-12 text-center text-muted-foreground">

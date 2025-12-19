@@ -7,7 +7,7 @@ export type Cricketer = {
   avatar: string;
   consistencyIndex: number;
   impactScore: number;
-  recentForm: number[]; // 5 numbers
+  recentForm: number[]; // 5 numbers representing scores or an indicator
   careerPhase: 'Early' | 'Peak' | 'Late';
 };
 
