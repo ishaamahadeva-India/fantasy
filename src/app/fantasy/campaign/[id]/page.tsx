@@ -80,7 +80,7 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
             </CardContent>
             <CardContent>
                 <Button asChild className="w-full" disabled={isUpcoming}>
-                    <Link href={`/fantasy/event/${event.id}`}>
+                    <Link href={`/fantasy/movie/event/${event.id}`}>
                         {isLive && 'Make Prediction'}
                         {isCompleted && 'View Results'}
                         {isUpcoming && 'Prediction Opens Soon'}
@@ -91,7 +91,7 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
     );
 }
 
-export default function FantasyCampaignPage({ params }: { params: { id: string } }) {
+export default function FantasyMovieCampaignPage({ params }: { params: { id: string } }) {
 
   const completedEvents = predictionEvents.filter(e => e.status === 'Completed');
   const totalPoints = completedEvents.reduce((acc, event) => acc + (event.score || 0), 0);
@@ -106,14 +106,16 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
 
   return (
     <div className="space-y-8">
+        <div className='flex-1'>
+            <Button variant="ghost" asChild className='mb-2 -ml-4'>
+                <Link href="/fantasy/movie">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to All Campaigns
+                </Link>
+            </Button>
+        </div>
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
-            <div className='flex-1'>
-                 <Button variant="ghost" asChild className='mb-2 -ml-4'>
-                    <Link href="/fantasy">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to All Campaigns
-                    </Link>
-                </Button>
+            <div>
                 <h1 className="text-3xl font-bold md:text-4xl font-headline">
                     {campaignDetails.title}
                 </h1>

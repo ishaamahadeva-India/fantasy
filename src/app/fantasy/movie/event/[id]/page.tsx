@@ -17,9 +17,6 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// This page has been renamed to /fantasy/movie/event/[id]
-// This file can be removed in a later step if needed, but is kept for now to avoid breaking links.
-
 // --- MOCK DATA ---
 const allEvents = [
     {
@@ -95,7 +92,7 @@ const allEvents = [
         rules: [
             'You have a budget of 100 credits.',
             'You must select one player for each role.',
-            'Select one player as your Captain to earn 2x points.',
+            'Select one player as your Captain to earn 1.5x points.',
         ],
         draftConfig: {
             budget: 100,
@@ -261,7 +258,7 @@ function DraftSelection({ config, prediction, setPrediction, isLocked }: { confi
                                     )}>
                                     <div className="relative">
                                         <Image src={player.avatar} alt={player.name} width={80} height={80} className="rounded-full mx-auto" />
-                                         {isCaptain && <div className="absolute top-0 right-0 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold">2x</div>}
+                                         {isCaptain && <div className="absolute top-0 right-0 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold">1.5x</div>}
                                     </div>
                                     <p className="font-semibold mt-2 text-sm">{player.name}</p>
                                     <p className="text-xs text-muted-foreground">Credits: {config.playerCredits[playerId]}</p>
@@ -323,5 +320,220 @@ function EventHeader({ eventDetails }: { eventDetails: any }) {
     );
 }
 
-const PredictionEventPage = () => notFound();
-export default PredictionEventPage;
+function LiveEventView({ eventDetails }: { eventDetails: any }) {
+    const [prediction, setPrediction] = useState<any>(
+        eventDetails?.type === 'draft_selection' ? { team: {}, captain: null } : ''
+    );
+    const [isLocked, setIsLocked] = useState(false);
+    const { user } = useUser();
+    const { saveUserPrediction } = usePredictions();
+
+    const handleLockPrediction = () => {
+        if (!user) {
+            toast({
+                variant: 'destructive',
+                title: 'Not Logged In',
+                description: 'You must be logged in to make a prediction.',
+            });
+            return;
+        }
+
+        let predictionData;
+        let isValid = false;
+
+        switch(eventDetails.type) {
+            case 'numeric_prediction':
+                isValid = prediction && Number(prediction) > 0;
+                if (isValid) predictionData = { predictedValue: Number(prediction) };
+                else toast({ variant: 'destructive', title: 'Invalid Prediction', description: 'Please enter a valid number.' });
+                break;
+            case 'choice_selection':
+                isValid = !!prediction;
+                 if (isValid) predictionData = { selectedChoice: prediction };
+                 else toast({ variant: 'destructive', title: 'Invalid Prediction', description: 'Please select an option.' });
+                break;
+            case 'draft_selection':
+                const team = prediction.team || {};
+                const captain = prediction.captain || null;
+                const rolesFilled = Object.keys(team).length === eventDetails.draftConfig.roles.length;
+                
+                if (!rolesFilled) {
+                    toast({ variant: 'destructive', title: 'Incomplete Team', description: 'You must select a player for each role.' });
+                    isValid = false;
+                } else if (!captain) {
+                    toast({ variant: 'destructive', title: 'No Captain Selected', description: 'You must select a captain for your team.' });
+                    isValid = false;
+                } else {
+                    isValid = true;
+                    predictionData = prediction;
+                }
+                break;
+            default:
+                isValid = false;
+                toast({ variant: 'destructive', title: 'Invalid Event', description: 'This event type is not supported.' });
+        }
+            
+        if (!isValid) return;
+
+        saveUserPrediction({
+            eventId: eventDetails.id,
+            campaignId: eventDetails.campaignId,
+            predictionData: predictionData,
+        }, user.uid);
+        
+        setIsLocked(true);
+
+        toast({
+            title: 'Prediction Locked!',
+            description: 'Your prediction has been successfully submitted.',
+        });
+    };
+    
+    const getLockedInDisplayValue = () => {
+        if (!prediction) return "N/A";
+        if (eventDetails.type === 'numeric_prediction') {
+            return Number(prediction).toLocaleString();
+        }
+        if (eventDetails.type === 'draft_selection') {
+             const teamSize = Object.keys(prediction.team || {}).length;
+             return `${teamSize}-player team drafted`;
+        }
+        return prediction;
+    }
+    
+    const renderPredictionInput = () => {
+        switch(eventDetails.type) {
+            case 'numeric_prediction':
+                return <NumericPrediction prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
+            case 'choice_selection':
+                return <ChoiceSelection options={eventDetails.options} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
+            case 'draft_selection':
+                return <DraftSelection config={eventDetails.draftConfig} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
+            default:
+                return <p>This event type is not supported.</p>;
+        }
+    }
+
+    return (
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle className='font-headline'>Event Objective</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">{eventDetails.description}</p>
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle className='font-headline'>Make Your Prediction</CardTitle>
+                     <CardDescription>
+                        {eventDetails.type === 'numeric_prediction' 
+                            ? 'Enter your predicted value below.'
+                            : eventDetails.type === 'choice_selection'
+                            ? 'Select one of the options below.'
+                            : 'Build your team within the credit budget.'
+                        }
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {renderPredictionInput()}
+                    <Button onClick={handleLockPrediction} disabled={isLocked} size="lg" className='w-full'>
+                        {isLocked ? 'Locked In' : 'Lock Prediction'}
+                    </Button>
+                </CardContent>
+            </Card>
+            
+            {isLocked && (
+                 <Card className="border-green-500/50">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-green-400">Prediction Locked!</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">Your prediction of <strong className='text-primary font-code'>{getLockedInDisplayValue()}</strong> has been submitted. You can now return to the campaign hub. Good luck!</p>
+                    </CardContent>
+                </Card>
+            )}
+        </>
+    );
+}
+
+function CompletedEventView({ eventDetails }: { eventDetails: any }) {
+    const isCorrect = eventDetails.result.score > 0;
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Event Results</CardTitle>
+                <CardDescription>See how your prediction fared against the final outcome.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="p-4 bg-white/5 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Winning Range</p>
+                        <p className="text-2xl font-bold font-code text-primary">{eventDetails.result.outcome}</p>
+                    </div>
+                    <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                        <p className="text-sm text-muted-foreground">Your Prediction</p>
+                        <p className="text-2xl font-bold font-code">{eventDetails.result.userPrediction}</p>
+                    </div>
+                </div>
+                 <div className="text-center p-6 bg-primary/10 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Points Awarded</p>
+                    <p className="text-5xl font-bold font-code text-primary flex items-center justify-center gap-2">
+                        <Trophy className="w-10 h-10 text-amber-400" />
+                        {eventDetails.result.score}
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function PredictionEventPage({ params }: { params: { id: string } }) {
+    const { id } = use(params);
+    const eventDetails = allEvents.find(e => e.id === id);
+
+    if (!eventDetails) {
+        return notFound();
+    }
+
+    return (
+        <div className="max-w-2xl mx-auto space-y-8">
+            <EventHeader eventDetails={eventDetails} />
+
+            {eventDetails.status === 'Live' && <LiveEventView eventDetails={eventDetails} />}
+            {eventDetails.status === 'Completed' && <CompletedEventView eventDetails={eventDetails} />}
+            
+            {eventDetails.status === 'Upcoming' && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Prediction Opens Soon</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">This event is not yet live. Check back later to make your prediction.</p>
+                    </CardContent>
+                </Card>
+            )}
+
+            <Card className="bg-white/5">
+                <CardHeader>
+                    <CardTitle className="font-headline text-lg flex items-center gap-2"><Info className='w-5 h-5'/>Rules & Guidelines</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                        {eventDetails.rules.map((rule, index) => (
+                            <li key={index}>{rule}</li>
+                        ))}
+                    </ul>
+                </CardContent>
+                <CardContent className="border-t pt-4">
+                     <p className="text-xs text-muted-foreground flex items-center gap-2">
+                        <Building className="w-4 h-4" />
+                        Powered by Kingfisher
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
