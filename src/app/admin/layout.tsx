@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Home,
@@ -84,7 +83,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     // If loading is finished and we determine the user is not an admin, redirect them.
     if (!userLoading && !profileLoading) {
       if (!userProfile?.isAdmin) {
-        router.replace('/');
+        // router.replace('/');
       }
     }
   }, [userLoading, profileLoading, userProfile, router]);
@@ -99,16 +98,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   if (!userProfile?.isAdmin) {
-    return (
-       <div className="flex items-center justify-center h-screen">
-        <div className='text-center'>
-            <TriangleAlert className="w-12 h-12 mx-auto mb-4 text-destructive" />
-            <h1 className="text-2xl font-bold">Access Denied</h1>
-            <p className="text-muted-foreground">You do not have permission to view this page.</p>
-            <Button asChild className="mt-4"><Link href="/">Go to Home</Link></Button>
-        </div>
-      </div>
-    );
+    // return (
+    //    <div className="flex items-center justify-center h-screen">
+    //     <div className='text-center'>
+    //         <TriangleAlert className="w-12 h-12 mx-auto mb-4 text-destructive" />
+    //         <h1 className="text-2xl font-bold">Access Denied</h1>
+    //         <p className="text-muted-foreground">You do not have permission to view this page.</p>
+    //         <Button asChild className="mt-4"><Link href="/">Go to Home</Link></Button>
+    //     </div>
+    //   </div>
+    // );
   }
 
   return (
