@@ -10,8 +10,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { User } from 'lucide-react';
+import { Award, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+import { Skeleton } from '../ui/skeleton';
+import Link from 'next/link';
 
 function Greeting() {
   const [greeting, setGreeting] = useState('');
@@ -38,6 +43,11 @@ function Greeting() {
 
 
 export function Header() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b shrink-0 bg-background md:px-6">
       <div className="flex items-center gap-4">
@@ -45,6 +55,16 @@ export function Header() {
         <Greeting />
       </div>
       <div className="flex items-center gap-4 ml-auto">
+        <Link href="/redeem">
+          <Button variant="outline" size="sm">
+            <Award className="w-4 h-4 mr-2 text-amber-400" />
+            {isLoading ? (
+                <Skeleton className="h-4 w-12" />
+            ) : (
+                <span className='font-code'>{userProfile?.points || 0}</span>
+            )}
+          </Button>
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative w-8 h-8 rounded-full">

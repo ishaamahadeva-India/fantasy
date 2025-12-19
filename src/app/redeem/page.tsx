@@ -11,7 +11,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Award, Ticket } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUser } from '@/firebase';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+
 
 // Placeholder rewards data
 const rewards = [
@@ -42,9 +45,16 @@ const rewards = [
 ];
 
 export default function RedemptionPage() {
-  const { user, isLoading } = useUser();
-  // TODO: Fetch user points from Firestore user profile
-  const userPoints = 1250; // Placeholder
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  // Create a document reference to the user's profile
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+
+  // Use the useDoc hook to get the user profile data
+  const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const userPoints = userProfile?.points || 0;
 
   return (
     <div className="space-y-8">

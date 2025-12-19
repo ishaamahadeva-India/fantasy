@@ -7,3 +7,9 @@ export type FanRating = {
   review?: string;
   createdAt: Date;
 };
+
+export type UserProfile = {
+    displayName: string;
+    avatarUrl?: string;
+    points: number;
+};
