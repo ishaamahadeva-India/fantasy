@@ -6,9 +6,9 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bookmark, Gamepad2, Mic, PieChart } from 'lucide-react';
+import { Bookmark, Gamepad2, Mic, PieChart, Lock } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 
@@ -67,11 +67,28 @@ export default function MovieProfilePage({ params }: { params: { id: string } })
                            <PieChart />
                            Community Insight
                         </CardTitle>
+                        <CardDescription>
+                            See how other fans rated this movie. Upgrade to unlock full analytics.
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className='text-center py-8 text-muted-foreground'>
-                            <p>Unlock Game Pass to see full community scores and attribute breakdowns.</p>
-                             <Button className="mt-4">Unlock Game Pass</Button>
+                        <div className='relative grid md:grid-cols-2 gap-8 text-center p-8 rounded-lg bg-white/5'>
+                            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                                <Lock className='w-12 h-12 text-primary mb-4' />
+                                <h3 className='font-headline text-xl mb-2'>Unlock Full Insights</h3>
+                                <p className='text-muted-foreground mb-4'>Upgrade to Game Pass for detailed analytics.</p>
+                                <Button>Unlock Game Pass</Button>
+                            </div>
+                            <div>
+                                <h4 className='text-lg font-semibold font-headline'>Community Score</h4>
+                                <p className='text-5xl font-bold font-code text-primary/50'>8.4</p>
+                            </div>
+                            <div>
+                                <h4 className='text-lg font-semibold font-headline'>Attribute Breakdown</h4>
+                                <div className='aspect-square relative w-full max-w-xs mx-auto opacity-40'>
+                                     <Image src="https://storage.googleapis.com/studioprod-assets/radar-chart-placeholder.svg" alt="Attribute breakdown chart" fill className='object-contain' />
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
