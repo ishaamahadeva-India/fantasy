@@ -47,7 +47,7 @@ const generateImageForMoviePrompt = ai.definePrompt({
     
     The image should be cinematic, well-composed, and evocative of the film's mood and style, but it should NOT contain any text, logos, or titles. Focus on a key moment, character pose, or setting that a fan of the movie would recognize.
     `,
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-pro-vision',
 });
 
 
