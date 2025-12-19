@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bookmark, Gamepad2, Mic, PieChart, Star } from 'lucide-react';
+import { Bookmark, Gamepad2, Mic, PieChart } from 'lucide-react';
+import { ScoreRating } from '@/components/fan-zone/score-rating';
 
 export default function MovieProfilePage({ params }: { params: { id: string } }) {
   const { id } = use(params);
@@ -51,7 +52,7 @@ export default function MovieProfilePage({ params }: { params: { id: string } })
                 <div className='space-y-4'>
                     <h3 className="font-headline text-xl">User Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <Button variant="outline" size="lg"><Star className="mr-2"/> Score Movie</Button>
+                        <ScoreRating />
                         <Button variant="outline" size="lg"><Mic className="mr-2"/> Rate Attributes</Button>
                         <Button variant="outline" size="lg"><Bookmark className="mr-2"/> Save to Watchlist</Button>
                         <Button variant="outline" size="lg"><Gamepad2 className="mr-2"/> Activate Quiz</Button>
