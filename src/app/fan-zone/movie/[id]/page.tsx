@@ -10,10 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Bookmark, Gamepad2, Mic, PieChart } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
+import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 
 export default function MovieProfilePage({ params }: { params: { id: string } }) {
   const { id } = use(params);
   const movie = popularMovies.find((m) => m.id === id);
+  const movieAttributes = ['Direction', 'Screenplay', 'Acting', 'Music Impact'];
 
   if (!movie) {
     notFound();
@@ -53,7 +55,7 @@ export default function MovieProfilePage({ params }: { params: { id: string } })
                     <h3 className="font-headline text-xl">User Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <ScoreRating />
-                        <Button variant="outline" size="lg"><Mic className="mr-2"/> Rate Attributes</Button>
+                        <AttributeRating triggerButtonText="Rate Attributes" attributes={movieAttributes} icon={Mic} />
                         <Button variant="outline" size="lg"><Bookmark className="mr-2"/> Save to Watchlist</Button>
                         <Button variant="outline" size="lg"><Gamepad2 className="mr-2"/> Activate Quiz</Button>
                     </div>
