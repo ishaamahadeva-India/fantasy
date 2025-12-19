@@ -62,8 +62,8 @@ const gameModes = [
         title: 'Frame Lock',
         description: 'Identify the movie from a single frame.',
         icon: Video,
-        href: '#',
-        isLocked: true,
+        href: '/frame-lock/start',
+        isLocked: false,
     },
     {
         title: 'Decision Room',

@@ -9,3 +9,4 @@ import '@/ai/flows/fact-or-fiction.ts';
 import '@/ai/flows/movie-quiz.ts';
 import '@/ai/flows/soundstrike-quiz.ts';
 import '@/ai/flows/compare-summaries.ts';
+import '@/ai/flows/frame-lock-quiz.ts';
