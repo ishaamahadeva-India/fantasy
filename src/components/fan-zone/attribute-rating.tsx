@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, type ElementType } from 'react';
 import { Button } from '@/components/ui/button';
@@ -12,12 +13,15 @@ import {
 } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type AttributeRatingProps = {
   triggerButtonText: string;
   attributes: string[];
   icon?: ElementType;
 };
+
+const MAX_REVIEW_LENGTH = 140;
 
 export function AttributeRating({
   triggerButtonText,
@@ -27,10 +31,17 @@ export function AttributeRating({
   const [scores, setScores] = useState<Record<string, number>>(
     attributes.reduce((acc, attr) => ({ ...acc, [attr]: 5 }), {})
   );
+  const [review, setReview] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSliderChange = (attr: string, value: number[]) => {
     setScores((prev) => ({ ...prev, [attr]: value[0] }));
+  };
+
+  const handleReviewChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (e.target.value.length <= MAX_REVIEW_LENGTH) {
+      setReview(e.target.value);
+    }
   };
 
   return (
@@ -41,11 +52,11 @@ export function AttributeRating({
           {triggerButtonText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Rate Attributes</DialogTitle>
           <DialogDescription>
-            Provide a detailed rating for each attribute from 0 to 10.
+            Provide a detailed rating and an optional one-line insight.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
@@ -67,6 +78,19 @@ export function AttributeRating({
               </span>
             </div>
           ))}
+           <div className="space-y-2">
+            <Label htmlFor="micro-review">One Line Insight (Optional)</Label>
+            <Textarea
+              id="micro-review"
+              placeholder="Share your one-line insight..."
+              value={review}
+              onChange={handleReviewChange}
+              className="resize-none"
+            />
+            <p className="text-xs text-right text-muted-foreground">
+              {review.length} / {MAX_REVIEW_LENGTH}
+            </p>
+          </div>
         </div>
         <DialogFooter>
           <Button onClick={() => setIsOpen(false)}>Submit Ratings</Button>
