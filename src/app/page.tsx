@@ -63,8 +63,8 @@ const gameModes = [
         title: 'Frame Lock',
         description: 'Identify the movie from a single frame.',
         icon: Video,
-        href: '#',
-        isLocked: true,
+        href: '/frame-lock/start',
+        isLocked: false,
     },
     {
         title: 'Decision Room',
@@ -77,8 +77,8 @@ const gameModes = [
         title: 'Fact or Fiction',
         description: 'Verify statements against a source.',
         icon: ClipboardCheck,
-        href: '#',
-        isLocked: true,
+        href: '/fact-or-fiction/ipl-franchise-dynasties/start',
+        isLocked: false,
     },
     {
         title: 'Topic Deep Dive',

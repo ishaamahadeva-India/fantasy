@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Lock, Search, SlidersHorizontal, Flame } from 'lucide-react';
+import { Lock, Search, SlidersHorizontal, Flame, BarChartHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import {
   placeholderCricketers,
   placeholderIpTeams,
   placeholderNationalTeams,
+  type Cricketer,
 } from '@/lib/cricket-data';
 import {
   Sheet,
@@ -38,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function CricketersTab({
   searchTerm,
@@ -230,11 +232,38 @@ function TrendingTab() {
   );
 }
 
-function AnalystViewTab() {
-  const [player1, setPlayer1] = useState<string | null>(null);
-  const [player2, setPlayer2] = useState<string | null>(null);
+function StatBar({ label, value1, value2, higherIsBetter = true }: { label: string, value1: number, value2: number, higherIsBetter?: boolean }) {
+  const p1_is_winner = higherIsBetter ? value1 > value2 : value1 < value2;
+  const p2_is_winner = higherIsBetter ? value2 > value1 : value2 < value1;
+  const is_tie = value1 === value2;
+  
+  return (
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-1 text-sm font-medium">
+        <span className={`${p1_is_winner && 'text-primary'}`}>{value1}</span>
+        <span className="text-muted-foreground">{label}</span>
+        <span className={`${p2_is_winner && 'text-primary'}`}>{value2}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className={`h-2 w-1/2 rounded-l-full ${p1_is_winner || is_tie ? 'bg-primary' : 'bg-muted'}`} />
+        <div className={`h-2 w-1/2 rounded-r-full ${p2_is_winner || is_tie ? 'bg-primary' : 'bg-muted'}`} />
+      </div>
+    </div>
+  );
+}
 
-  const getPlayerById = (id: string) => placeholderCricketers.find(p => p.id === id);
+function AnalystViewTab() {
+  const [player1, setPlayer1] = useState<string | undefined>(undefined);
+  const [player2, setPlayer2] = useState<string | undefined>(undefined);
+
+  const getPlayerById = (id: string | undefined): Cricketer | undefined => {
+      if (!id) return undefined;
+      return placeholderCricketers.find(p => p.id === id);
+  }
+
+  const p1Data = getPlayerById(player1);
+  const p2Data = getPlayerById(player2);
+
 
   return (
       <Card>
@@ -246,7 +275,7 @@ function AnalystViewTab() {
           <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
               <div className="flex flex-col items-center gap-2">
                  <h3 className="font-semibold text-lg">Player 1</h3>
-                  <Select onValueChange={setPlayer1}>
+                  <Select onValueChange={setPlayer1} value={player1}>
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Select a player" />
                     </SelectTrigger>
@@ -260,7 +289,7 @@ function AnalystViewTab() {
               <div className="text-center font-bold text-2xl font-headline text-muted-foreground">VS</div>
               <div className="flex flex-col items-center gap-2">
                    <h3 className="font-semibold text-lg">Player 2</h3>
-                    <Select onValueChange={setPlayer2}>
+                    <Select onValueChange={setPlayer2} value={player2}>
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Select a player" />
                     </SelectTrigger>
@@ -272,12 +301,39 @@ function AnalystViewTab() {
                   </Select>
               </div>
           </div>
-          {player1 && player2 && (
-              <div className="pt-6">
-                <h3 className="text-center text-xl font-headline mb-4">Comparison Coming Soon</h3>
-                <p className="text-center text-muted-foreground">Detailed statistical analysis for {getPlayerById(player1)?.name} vs. {getPlayerById(player2)?.name} will be available here.</p>
-              </div>
+          <AnimatePresence>
+          {p1Data && p2Data && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="pt-6 overflow-hidden"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4 border-t pt-6">
+                   <div className="flex flex-col items-center text-center gap-2">
+                     <Avatar className="w-20 h-20">
+                        <AvatarImage src={p1Data.avatar} alt={p1Data.name} />
+                        <AvatarFallback>{p1Data.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-bold font-headline">{p1Data.name}</h3>
+                    <p className="text-sm text-muted-foreground">{p1Data.country}</p>
+                   </div>
+                   <div className="space-y-4">
+                    <StatBar label="Consistency" value1={p1Data.consistencyIndex} value2={p2Data.consistencyIndex} />
+                    <StatBar label="Impact Score" value1={p1Data.impactScore} value2={p2Data.impactScore} />
+                   </div>
+                   <div className="flex flex-col items-center text-center gap-2">
+                     <Avatar className="w-20 h-20">
+                        <AvatarImage src={p2Data.avatar} alt={p2Data.name} />
+                        <AvatarFallback>{p2Data.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-bold font-headline">{p2Data.name}</h3>
+                    <p className="text-sm text-muted-foreground">{p2Data.country}</p>
+                   </div>
+                </div>
+              </motion.div>
           )}
+          </AnimatePresence>
         </CardContent>
       </Card>
   )
