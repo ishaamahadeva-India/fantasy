@@ -1,6 +1,5 @@
 
 'use client';
-import { placeholderCricketers } from '@/lib/cricket-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -9,15 +8,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
-import { use, useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
 import type { FanRating } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function RecentFormVisualizer({ form }: { form: number[] }) {
-    // Simple visualizer: height represents score, color changes based on value
+type Cricketer = {
+    id: string;
+    name: string;
+    roles: string[];
+    country: string;
+    avatarUrl?: string;
+    consistencyIndex?: number;
+    impactScore?: number;
+    recentForm?: number[];
+    careerPhase?: 'Early' | 'Peak' | 'Late';
+}
+
+
+function RecentFormVisualizer({ form }: { form: number[] | undefined }) {
+    if (!form) return <div className="h-10 text-xs text-muted-foreground flex items-center justify-center">No data</div>;
+
     const getBarColor = (score: number) => {
         if (score > 75) return 'bg-green-500';
         if (score > 40) return 'bg-yellow-500';
@@ -93,13 +106,43 @@ function FanRatingDisplay({ ratings, isLoading }: { ratings: FanRating[] | null,
     );
 }
 
+function ProfileSkeleton() {
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="mb-6">
+                <Skeleton className="h-8 w-48" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                <div className="md:col-span-1">
+                    <Skeleton className="aspect-square w-full rounded-lg" />
+                </div>
+                <div className="md:col-span-2 space-y-6">
+                    <Skeleton className="h-12 w-3/4" />
+                    <div className="flex gap-2">
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                        <Skeleton className="h-6 w-24 rounded-full" />
+                    </div>
+                    <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
+                    <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
+                    <Separator />
+                    <div className="flex gap-4">
+                        <Skeleton className="h-12 w-36" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 export default function CricketerProfilePage({ params }: { params: { id: string } }) {
-  const { id } = use(params);
-  const cricketer = placeholderCricketers.find((c) => c.id === id);
+  const { id } = params;
   const cricketerAttributes = ["Batting", "Bowling", "Fielding", "Power Hitting"];
   
   const firestore = useFirestore();
+  const cricketerRef = firestore ? doc(firestore, 'cricketers', id) : null;
+  const { data: cricketer, isLoading: cricketerLoading } = useDoc<Cricketer>(cricketerRef);
+
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -110,6 +153,10 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
   }, [firestore, id]);
 
   const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+
+  if (cricketerLoading) {
+    return <ProfileSkeleton />;
+  }
 
   if (!cricketer) {
     notFound();
@@ -130,7 +177,7 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
           <Card className="overflow-hidden">
             <div className="relative aspect-square w-full">
               <Image
-                src={cricketer.avatar}
+                src={cricketer.avatarUrl || `https://picsum.photos/seed/${id}/400/400`}
                 alt={cricketer.name}
                 fill
                 className="object-cover"
@@ -144,7 +191,7 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
               {cricketer.name}
             </h1>
             <div className="mt-2 flex items-center gap-2">
-              {cricketer.roles.map((role) => (
+              {cricketer.roles?.map((role) => (
                 <Badge key={role} variant="secondary">
                   {role}
                 </Badge>
@@ -160,15 +207,15 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Consistency Index</p>
-                        <p className="text-4xl font-bold font-code text-primary">{cricketer.consistencyIndex.toFixed(1)}</p>
+                        <p className="text-4xl font-bold font-code text-primary">{cricketer.consistencyIndex?.toFixed(1) || 'N/A'}</p>
                     </div>
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Impact Score</p>
-                        <p className="text-4xl font-bold font-code text-primary">{cricketer.impactScore.toFixed(1)}</p>
+                        <p className="text-4xl font-bold font-code text-primary">{cricketer.impactScore?.toFixed(1) || 'N/A'}</p>
                     </div>
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Career Phase</p>
-                        <p className="text-3xl font-bold">{cricketer.careerPhase}</p>
+                        <p className="text-3xl font-bold">{cricketer.careerPhase || 'N/A'}</p>
                     </div>
                     <div className='text-center'>
                          <p className="text-sm text-muted-foreground mb-2">Recent Form</p>
@@ -196,7 +243,7 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
                 triggerButtonText="Rate Performance"
                 attributes={cricketerAttributes}
                 icon={Star}
-                entityId={cricketer.id}
+                entityId={id}
                 entityType="cricketer"
               />
             </div>

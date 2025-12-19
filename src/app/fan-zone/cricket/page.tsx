@@ -15,10 +15,8 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  placeholderCricketers,
   placeholderIpTeams,
   placeholderNationalTeams,
-  type Cricketer,
 } from '@/lib/cricket-data';
 import {
   Sheet,
@@ -40,6 +38,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type Cricketer = {
+    id: string;
+    name: string;
+    roles: string[];
+    country: string;
+    avatarUrl?: string;
+    trendingRank?: number;
+    consistencyIndex: number;
+    impactScore: number;
+}
+
 
 function CricketersTab({
   searchTerm,
@@ -48,23 +61,43 @@ function CricketersTab({
   searchTerm: string;
   filters: { roles: string[]; countries: string[] };
 }) {
-  const filteredCricketers = placeholderCricketers
-    .filter((cricketer) =>
-      cricketer.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const firestore = useFirestore();
+  const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
+  const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
+
+  const filteredCricketers =
+    cricketers
+      ?.filter((cricketer) =>
+        cricketer.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter((cricketer) => {
+        if (filters.roles.length > 0) {
+          if (!filters.roles.some((role) => cricketer.roles.includes(role))) {
+            return false;
+          }
+        }
+        if (filters.countries.length > 0) {
+          if (!filters.countries.includes(cricketer.country)) {
+            return false;
+          }
+        }
+        return true;
+      }) || [];
+
+   if (isLoading) {
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...Array(6)].map((_, i) => (
+                <Card key={i}>
+                    <CardContent className="p-4 flex flex-col items-center gap-3">
+                        <Skeleton className="w-24 h-24 rounded-full" />
+                        <Skeleton className="h-5 w-20" />
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
     )
-    .filter((cricketer) => {
-      if (filters.roles.length > 0) {
-        if (!filters.roles.some((role) => cricketer.roles.includes(role))) {
-          return false;
-        }
-      }
-      if (filters.countries.length > 0) {
-        if (!filters.countries.includes(cricketer.country)) {
-          return false;
-        }
-      }
-      return true;
-    });
+   }
 
   if (filteredCricketers.length === 0) {
     return (
@@ -86,7 +119,7 @@ function CricketersTab({
             <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
               <Avatar className="w-24 h-24">
                 <AvatarImage
-                  src={cricketer.avatar}
+                  src={cricketer.avatarUrl || `https://picsum.photos/seed/${cricketer.id}/400/400`}
                   alt={cricketer.name}
                 />
                 <AvatarFallback>{cricketer.name.charAt(0)}</AvatarFallback>
@@ -179,10 +212,19 @@ function IpTeamsTab({ searchTerm }: { searchTerm: string }) {
 }
 
 function TrendingTab() {
-  const trendingCricketers = [...placeholderCricketers]
-    .filter(c => c.trendingRank)
-    .sort((a, b) => (a.trendingRank || 99) - (b.trendingRank || 99));
+  const firestore = useFirestore();
+  const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
+  const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
 
+  const trendingCricketers =
+    cricketers
+      ?.filter((c) => c.trendingRank)
+      .sort((a, b) => (a.trendingRank || 99) - (b.trendingRank || 99)) || [];
+
+  if (isLoading) {
+    return <Card><CardContent><Skeleton className="h-64" /></CardContent></Card>
+  }
+  
   if (trendingCricketers.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground">
@@ -208,7 +250,7 @@ function TrendingTab() {
                     {index + 1}
                   </span>
                   <Avatar className="w-16 h-16">
-                    <AvatarImage src={cricketer.avatar} alt={cricketer.name} />
+                    <AvatarImage src={cricketer.avatarUrl || `https://picsum.photos/seed/${cricketer.id}/400/400`} alt={cricketer.name} />
                     <AvatarFallback>{cricketer.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
@@ -253,17 +295,20 @@ function StatBar({ label, value1, value2, higherIsBetter = true }: { label: stri
 }
 
 function AnalystViewTab() {
+  const firestore = useFirestore();
+  const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
+  const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
+
   const [player1, setPlayer1] = useState<string | undefined>(undefined);
   const [player2, setPlayer2] = useState<string | undefined>(undefined);
 
   const getPlayerById = (id: string | undefined): Cricketer | undefined => {
-      if (!id) return undefined;
-      return placeholderCricketers.find(p => p.id === id);
+      if (!id || !cricketers) return undefined;
+      return cricketers.find(p => p.id === id);
   }
 
   const p1Data = getPlayerById(player1);
   const p2Data = getPlayerById(player2);
-
 
   return (
       <Card>
@@ -275,12 +320,12 @@ function AnalystViewTab() {
           <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
               <div className="flex flex-col items-center gap-2">
                  <h3 className="font-semibold text-lg">Player 1</h3>
-                  <Select onValueChange={setPlayer1} value={player1}>
+                  <Select onValueChange={setPlayer1} value={player1} disabled={isLoading}>
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Select a player" />
                     </SelectTrigger>
                     <SelectContent>
-                      {placeholderCricketers.map(p => (
+                      {cricketers?.map(p => (
                         <SelectItem key={p.id} value={p.id} disabled={p.id === player2}>{p.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -289,12 +334,12 @@ function AnalystViewTab() {
               <div className="text-center font-bold text-2xl font-headline text-muted-foreground">VS</div>
               <div className="flex flex-col items-center gap-2">
                    <h3 className="font-semibold text-lg">Player 2</h3>
-                    <Select onValueChange={setPlayer2} value={player2}>
+                    <Select onValueChange={setPlayer2} value={player2} disabled={isLoading}>
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Select a player" />
                     </SelectTrigger>
                     <SelectContent>
-                      {placeholderCricketers.map(p => (
+                      {cricketers?.map(p => (
                         <SelectItem key={p.id} value={p.id} disabled={p.id === player1}>{p.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -312,19 +357,19 @@ function AnalystViewTab() {
                 <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4 border-t pt-6">
                    <div className="flex flex-col items-center text-center gap-2">
                      <Avatar className="w-20 h-20">
-                        <AvatarImage src={p1Data.avatar} alt={p1Data.name} />
+                        <AvatarImage src={p1Data.avatarUrl || `https://picsum.photos/seed/${p1Data.id}/400/400`} alt={p1Data.name} />
                         <AvatarFallback>{p1Data.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <h3 className="font-bold font-headline">{p1Data.name}</h3>
                     <p className="text-sm text-muted-foreground">{p1Data.country}</p>
                    </div>
                    <div className="space-y-4">
-                    <StatBar label="Consistency" value1={p1Data.consistencyIndex} value2={p2Data.consistencyIndex} />
-                    <StatBar label="Impact Score" value1={p1Data.impactScore} value2={p2Data.impactScore} />
+                    <StatBar label="Consistency" value1={p1Data.consistencyIndex || 0} value2={p2Data.consistencyIndex || 0} />
+                    <StatBar label="Impact Score" value1={p1Data.impactScore || 0} value2={p2Data.impactScore || 0} />
                    </div>
                    <div className="flex flex-col items-center text-center gap-2">
                      <Avatar className="w-20 h-20">
-                        <AvatarImage src={p2Data.avatar} alt={p2Data.name} />
+                        <AvatarImage src={p2Data.avatarUrl || `https://picsum.photos/seed/${p2Data.id}/400/400`} alt={p2Data.name} />
                         <AvatarFallback>{p2Data.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <h3 className="font-bold font-headline">{p2Data.name}</h3>
@@ -361,10 +406,12 @@ export default function CricketFanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<{ roles: string[], countries: string[] }>({ roles: [], countries: [] });
 
-  const allRoles = [
-    ...new Set(placeholderCricketers.flatMap((c) => c.roles)),
-  ];
-  const allCountries = [...new Set(placeholderCricketers.map((c) => c.country))];
+  const firestore = useFirestore();
+  const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
+  const { data: cricketers } = useCollection<Cricketer>(cricketersQuery);
+
+  const allRoles = cricketers ? [...new Set(cricketers.flatMap((c) => c.roles))] : [];
+  const allCountries = cricketers ? [...new Set(cricketers.map((c) => c.country))] : [];
 
   const handleFilterChange = (type: 'roles' | 'countries', value: string, checked: boolean) => {
     setFilters(prev => {
