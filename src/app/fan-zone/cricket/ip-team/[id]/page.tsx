@@ -16,6 +16,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, BrainCircuit, Gamepad2, Mic } from 'lucide-react';
 import Link from 'next/link';
+import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 
 function MomentumVisualizer({ momentum }: { momentum: number[] }) {
     return (
@@ -37,6 +38,7 @@ function MomentumVisualizer({ momentum }: { momentum: number[] }) {
 export default function IpTeamProfilePage({ params }: { params: { id: string } }) {
   const { id } = use(params);
   const team = placeholderIpTeams.find((t) => t.id === id);
+  const teamAttributes = ["Auction Strategy", "Youth Policy", "Brand Value", "Fan Engagement"];
 
   if (!team) {
     notFound();
@@ -120,12 +122,11 @@ export default function IpTeamProfilePage({ params }: { params: { id: string } }
           <div className="space-y-4">
             <h3 className="font-headline text-xl">Fan Actions</h3>
             <div className="flex gap-4">
-              <Button variant="outline" size="lg" disabled>
-                <Mic className="mr-2" /> Rate Team Strategy
-              </Button>
-              <Button variant="outline" size="lg" disabled>
-                <BrainCircuit className="mr-2" /> Attribute Sliders
-              </Button>
+              <AttributeRating
+                triggerButtonText="Rate Team Attributes"
+                attributes={teamAttributes}
+                icon={BrainCircuit}
+              />
                <Button variant="outline" size="lg" disabled>
                 <Gamepad2 className="mr-2" /> Pulse Check
               </Button>
