@@ -1,11 +1,9 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -18,11 +16,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  placeholderArticles,
-  placeholderCollections,
+  placeholderArticles
 } from '@/lib/placeholder-data';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Mic, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function ExplorePage() {
   return (
@@ -46,89 +44,34 @@ export default function ExplorePage() {
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="technology">Technology</SelectItem>
-            <SelectItem value="geopolitics">Geopolitics</SelectItem>
-            <SelectItem value="business">Business</SelectItem>
-            <SelectItem value="arts">Arts &amp; Culture</SelectItem>
+            <SelectItem value="cricket">Cricket</SelectItem>
+            <SelectItem value="football">Football</SelectItem>
+            <SelectItem value="movies">Movies</SelectItem>
+            <SelectItem value="politics">Politics</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <h2 className="mb-4 text-2xl font-bold font-headline">Collections</h2>
-        <div className="grid gap-6">
-          {placeholderCollections.map((collection) => (
-            <Link href="#" key={collection.id} className="group">
-              <Card className="overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20">
-                <div className="flex flex-col md:flex-row">
-                  <div className="relative w-full md:w-1/3 aspect-video md:aspect-auto">
-                    <Image
-                      src={collection.image.imageUrl}
-                      alt={collection.image.description}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={collection.image.imageHint}
-                    />
-                  </div>
-                  <div className="flex flex-col justify-center flex-1 p-6">
-                    <CardTitle className="text-xl font-headline">
-                      {collection.title}
-                    </CardTitle>
-                    <CardDescription className="mt-2">
-                      {collection.description}
-                    </CardDescription>
-                    <div className="mt-4 text-sm text-muted-foreground">
-                      {collection.itemCount} items
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div>
         <h2 className="mb-4 text-2xl font-bold font-headline">
-          All Publications
+          Latest News
         </h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {placeholderArticles.map((article) => (
-            <Link href={`/article/${article.slug}`} key={article.id} className="group">
-              <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20">
-                <CardHeader className="p-0">
-                  <div className="relative aspect-video">
-                    <Image
-                      src={article.image.imageUrl}
-                      alt={article.image.description}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={article.image.imageHint}
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <Badge variant="secondary" className="mb-2">
-                    {article.category}
-                  </Badge>
-                  <CardTitle className="text-lg leading-snug font-headline">
-                    {article.title}
-                  </CardTitle>
-                </CardContent>
-                <CardFooter className="flex justify-between p-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <BookOpen className="w-3 h-3" />
-                    <span>{article.length} Read</span>
-                  </div>
-                  {article.hasNarration && (
-                    <div className="flex items-center gap-1">
-                      <Mic className="w-3 h-3" />
-                      <span>Narration</span>
+        <div className="flex flex-col gap-6">
+          {placeholderArticles.map((article, index) => (
+            <div key={article.id}>
+              <Link href={`/article/${article.slug}`} className="group">
+                <div className="grid gap-2">
+                    <h3 className="text-xl font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
+                        {article.title}
+                    </h3>
+                    <p className="text-muted-foreground line-clamp-2">{article.excerpt}</p>
+                    <div className="text-xs text-muted-foreground">
+                        <span>Published on {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric'})}</span>
                     </div>
-                  )}
-                </CardFooter>
-              </Card>
-            </Link>
+                </div>
+              </Link>
+              {index < placeholderArticles.length - 1 && <Separator className="mt-6" />}
+            </div>
           ))}
         </div>
       </div>
