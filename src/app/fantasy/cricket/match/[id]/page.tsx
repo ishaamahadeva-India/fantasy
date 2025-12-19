@@ -40,7 +40,6 @@ const players = {
 if (!players.AUS.find(p => p.id === 'c4')) {
     players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
 }
-players.AUS = players.AUS.filter(p => p.name !== 'Jasprit Bumrah');
 
 
 const microPredictions = [
@@ -309,21 +308,37 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
     return notFound();
   }
 
+  const currentUser = leaderboardData.find(p => p.name === 'You');
+  const totalPoints = currentUser?.score || 0;
+  const currentUserRank = currentUser?.rank;
+
   return (
     <div className="space-y-6">
-        <div>
-            <Button variant="ghost" asChild className='mb-2 -ml-4'>
-                <Link href="/fantasy/cricket">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to All Matches
-                </Link>
-            </Button>
-             <h1 className="text-3xl font-bold md:text-4xl font-headline">
-                {matchDetails.title}
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-                {matchDetails.series}
-            </p>
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
+            <div>
+                <Button variant="ghost" asChild className='mb-2 -ml-4'>
+                    <Link href="/fantasy/cricket">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to All Matches
+                    </Link>
+                </Button>
+                 <h1 className="text-3xl font-bold md:text-4xl font-headline">
+                    {matchDetails.title}
+                </h1>
+                <p className="mt-1 text-muted-foreground">
+                    {matchDetails.series}
+                </p>
+            </div>
+             <div className='grid grid-cols-2 gap-4'>
+                <Card className="text-center p-4">
+                    <CardDescription>Total Points</CardDescription>
+                    <CardTitle className="font-code text-4xl text-primary">{totalPoints}</CardTitle>
+                </Card>
+                 <Card className="text-center p-4">
+                    <CardDescription>Your Rank</CardDescription>
+                    <CardTitle className="font-code text-4xl text-primary">#{currentUserRank || 'N/A'}</CardTitle>
+                </Card>
+            </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -360,3 +375,5 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    
