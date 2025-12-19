@@ -1,11 +1,11 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Lock, Search, SlidersHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   placeholderCricketers,
@@ -164,7 +164,7 @@ function IpTeamsTab({ searchTerm }: { searchTerm: string }) {
 
 export default function CricketFanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({ roles: [], countries: [] });
+  const [filters, setFilters] = useState<{ roles: string[], countries: string[] }>({ roles: [], countries: [] });
 
   const allRoles = [
     ...new Set(placeholderCricketers.flatMap((c) => c.roles)),
@@ -269,7 +269,7 @@ export default function CricketFanZonePage() {
           <TabsTrigger value="national-teams">National Teams</TabsTrigger>
           <TabsTrigger value="ip-teams">IP Teams</TabsTrigger>
           <TabsTrigger value="trending">Trending</TabsTrigger>
-          <TabsTrigger value="analyst-view" disabled>
+          <TabsTrigger value="analyst-view">
             Analyst View
           </TabsTrigger>
         </TabsList>
@@ -288,9 +288,46 @@ export default function CricketFanZonePage() {
           </div>
         </TabsContent>
         <TabsContent value="analyst-view">
-          <div className="py-12 text-center text-muted-foreground">
-            Analyst View content coming soon.
-          </div>
+          <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Analyst View (Game Pass)</CardTitle>
+                <CardDescription>Unlock deep-dive analytics and player comparisons.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative text-center p-8 rounded-lg bg-white/5">
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                  <Lock className="w-12 h-12 text-primary mb-4" />
+                  <h3 className="font-headline text-xl mb-2">
+                    Unlock Full Era Analysis
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Upgrade to Game Pass for detailed analytics.
+                  </p>
+                  <Button>Unlock Game Pass</Button>
+                </div>
+                <div className='opacity-30 blur-sm select-none'>
+                    <h4 className='font-semibold'>Head-to-Head Player Comparison</h4>
+                    <div className='flex justify-center items-center gap-4 mt-4'>
+                        <div className='w-40 p-2 border rounded-md border-dashed'>
+                            <Avatar className="w-12 h-12 mx-auto">
+                                <AvatarFallback>P1</AvatarFallback>
+                            </Avatar>
+                            <p className='text-sm mt-2'>Player One</p>
+                        </div>
+                        <span className='font-bold'>vs</span>
+                         <div className='w-40 p-2 border rounded-md border-dashed'>
+                            <Avatar className="w-12 h-12 mx-auto">
+                                <AvatarFallback>P2</AvatarFallback>
+                            </Avatar>
+                            <p className='text-sm mt-2'>Player Two</p>
+                        </div>
+                    </div>
+                    <p className="text-muted-foreground opacity-50 mt-4">Compare player stats across formats...</p>
+                    <p className="text-muted-foreground opacity-50 mt-2">Deep dive into performance vs opposition...</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
