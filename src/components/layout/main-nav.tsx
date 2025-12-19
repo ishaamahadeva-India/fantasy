@@ -13,6 +13,7 @@ import {
   Settings,
   Star,
   Shield,
+  Gift,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/fan-zone/movies', label: 'Movie Zone', icon: Star },
   { href: '/fan-zone/cricket', label: 'Cricket Zone', icon: Shield },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
+  { href: '/redeem', label: 'Redemption Center', icon: Gift },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 

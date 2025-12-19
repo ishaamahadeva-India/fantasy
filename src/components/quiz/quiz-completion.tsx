@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CheckCircle2, Home, RefreshCw, XCircle, Share2 } from 'lucide-react';
+import { CheckCircle2, Home, RefreshCw, XCircle, Share2, Award } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 type Quiz = DailyNewsQuizOutput['quiz'];
@@ -35,6 +35,7 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
   }, 0);
   const totalQuestions = quiz.length;
   const percentage = Math.round((score / totalQuestions) * 100);
+  const pointsEarned = percentage; // 1 point per percentage point
 
   const comparisonData = [
     { name: 'You', score: percentage },
@@ -51,10 +52,18 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <p className="text-muted-foreground">Knowledge Gained</p>
-            <div className="text-6xl font-bold font-code text-primary">
-              {percentage}%
+          <div className="grid grid-cols-2 gap-4">
+             <div>
+                <p className="text-muted-foreground">Knowledge Score</p>
+                <div className="text-6xl font-bold font-code text-primary">
+                {percentage}%
+                </div>
+            </div>
+             <div>
+                <p className="text-muted-foreground">Intel Points Earned</p>
+                <div className="text-6xl font-bold font-code text-primary flex items-center justify-center gap-2">
+                 <Award className="w-12 h-12 text-amber-400" /> {pointsEarned}
+                </div>
             </div>
           </div>
           <div>

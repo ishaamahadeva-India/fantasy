@@ -13,6 +13,10 @@
           "type": "string",
           "format": "uri",
           "description": "URL of the user's profile picture."
+        },
+        "points": {
+          "type": "number",
+          "description": "The user's total accumulated intel points."
         }
       },
       "required": [
