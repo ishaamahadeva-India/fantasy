@@ -15,29 +15,55 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Gamepad2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRatings } from '@/firebase/firestore/ratings';
+import { useUser } from '@/firebase';
+import { toast } from '@/hooks/use-toast';
 
 type PulseCheckProps = {
   question: string;
   options: string[];
+  entityId: string;
+  entityType: 'cricketer' | 'team';
 };
 
-export function PulseCheck({ question, options }: PulseCheckProps) {
+export function PulseCheck({ question, options, entityId, entityType }: PulseCheckProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
+  const { saveFanRating } = useRatings();
+  const { user } = useUser();
 
   const handleSubmit = () => {
-    if(selectedValue) {
-        setHasVoted(true);
-        setTimeout(() => {
-            setIsOpen(false);
-            // Reset state for next time
-            setTimeout(() => {
-                setHasVoted(false);
-                setSelectedValue(null);
-            }, 500);
-        }, 2000);
+    if(!selectedValue) return;
+
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "You must be logged in to vote.",
+        });
+        return;
     }
+    
+    // Convert selected option to a numerical rating for consistency
+    const ratingValue = options.indexOf(selectedValue);
+    
+    saveFanRating({
+        entityId,
+        entityType,
+        ratings: { [question]: ratingValue },
+        review: selectedValue,
+    }, user.uid);
+
+    setHasVoted(true);
+    setTimeout(() => {
+        setIsOpen(false);
+        // Reset state for next time
+        setTimeout(() => {
+            setHasVoted(false);
+            setSelectedValue(null);
+        }, 500);
+    }, 2000);
   };
 
   return (

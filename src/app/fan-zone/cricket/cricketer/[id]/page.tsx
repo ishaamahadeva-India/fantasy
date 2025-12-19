@@ -115,6 +115,8 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
                 triggerButtonText="Rate Performance"
                 attributes={cricketerAttributes}
                 icon={Star}
+                entityId={cricketer.id}
+                entityType="cricketer"
               />
             </div>
           </div>

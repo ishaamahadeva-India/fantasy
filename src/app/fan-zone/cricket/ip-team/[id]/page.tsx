@@ -127,10 +127,14 @@ export default function IpTeamProfilePage({ params }: { params: { id: string } }
                 triggerButtonText="Rate Team Attributes"
                 attributes={teamAttributes}
                 icon={BrainCircuit}
+                entityId={team.id}
+                entityType="team"
               />
                <PulseCheck 
                  question="How confident are you in the team's chances this season?"
                  options={['Very Confident', 'Neutral', 'Not Confident']}
+                 entityId={team.id}
+                 entityType="team"
                />
             </div>
           </div>

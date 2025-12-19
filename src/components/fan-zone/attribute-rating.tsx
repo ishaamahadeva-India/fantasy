@@ -14,11 +14,16 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useRatings } from '@/firebase/firestore/ratings';
+import { useUser } from '@/firebase';
+import { toast } from '@/hooks/use-toast';
 
 type AttributeRatingProps = {
   triggerButtonText: string;
   attributes: string[];
   icon?: ElementType;
+  entityId: string;
+  entityType: 'cricketer' | 'team';
 };
 
 const MAX_REVIEW_LENGTH = 140;
@@ -27,12 +32,16 @@ export function AttributeRating({
   triggerButtonText,
   attributes,
   icon: Icon,
+  entityId,
+  entityType,
 }: AttributeRatingProps) {
   const [scores, setScores] = useState<Record<string, number>>(
     attributes.reduce((acc, attr) => ({ ...acc, [attr]: 5 }), {})
   );
   const [review, setReview] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const { saveFanRating } = useRatings();
+  const { user } = useUser();
 
   const handleSliderChange = (attr: string, value: number[]) => {
     setScores((prev) => ({ ...prev, [attr]: value[0] }));
@@ -43,6 +52,31 @@ export function AttributeRating({
       setReview(e.target.value);
     }
   };
+  
+  const handleSubmit = () => {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "You must be logged in to submit a rating.",
+        });
+        return;
+    }
+    
+    saveFanRating({
+        entityId,
+        entityType,
+        ratings: scores,
+        ...(review && { review }),
+    }, user.uid);
+
+    toast({
+        title: "Rating Submitted!",
+        description: "Thanks for sharing your opinion.",
+    });
+
+    setIsOpen(false);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -93,7 +127,7 @@ export function AttributeRating({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={() => setIsOpen(false)}>Submit Ratings</Button>
+          <Button onClick={handleSubmit}>Submit Ratings</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
