@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { placeholderArticles } from '@/lib/placeholder-data';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function ExplorePage() {
   const categories = ['Politics', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
@@ -13,6 +14,14 @@ export default function ExplorePage() {
       (article) => article.category.toLowerCase() === category.toLowerCase()
     );
   };
+  
+  const gossipArticles = [
+    { title: "Special Reason Behind Pawan's Gift to Sujeeth", href: '#' },
+    { title: 'Why Prabhas Travels Only in Private Jets?', href: '#' },
+    { title: "Why Magic Is Missing In Thaman's Music?", href: '#' },
+    { title: 'Pawan Signs Two Films for People Media Factory?', href: '#' },
+    { title: 'Akhanda 2... Lokesh\'s Timely Intervention!', href: '#' },
+  ];
 
   const renderArticleList = (articles: typeof placeholderArticles) => {
     if (articles.length === 0) {
@@ -29,13 +38,13 @@ export default function ExplorePage() {
             <Link href={`/article/${article.slug}`} className="group">
               <div className="flex items-start gap-4">
                 <div className="relative w-24 h-24 shrink-0">
-                    <Image
+                  <Image
                     src={`https://picsum.photos/seed/${article.id}/150/150`}
                     alt={article.title}
                     fill
                     className="object-cover rounded-md"
                     data-ai-hint={article.image.imageHint}
-                    />
+                  />
                 </div>
                 <div className="flex-grow">
                   <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
@@ -51,7 +60,7 @@ export default function ExplorePage() {
                       })}
                     </span>
                   </div>
-                   <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                     {article.excerpt}
                   </p>
                 </div>
@@ -65,36 +74,58 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Intel Hub
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Your source for the latest news and analysis.
-        </p>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-2 space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold md:text-4xl font-headline">
+            Intel Hub
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Your source for the latest news and analysis.
+          </p>
+        </div>
+
+        <Tabs defaultValue="latest" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-6">
+            <TabsTrigger value="latest">Latest</TabsTrigger>
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category.toLowerCase()}>
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <TabsContent value="latest">
+            {renderArticleList(articlesByCategory('latest'))}
+          </TabsContent>
+
+          {categories.map((category) => (
+            <TabsContent key={category} value={category.toLowerCase()}>
+              {renderArticleList(articlesByCategory(category))}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
 
-      <Tabs defaultValue="latest" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-6">
-          <TabsTrigger value="latest">Latest</TabsTrigger>
-          {categories.map((category) => (
-            <TabsTrigger key={category} value={category.toLowerCase()}>
-              {category}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="latest">
-          {renderArticleList(articlesByCategory('latest'))}
-        </TabsContent>
-
-        {categories.map((category) => (
-          <TabsContent key={category} value={category.toLowerCase()}>
-            {renderArticleList(articlesByCategory(category))}
-          </TabsContent>
-        ))}
-      </Tabs>
+      <aside className="lg:col-span-1 space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl">Gossip</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              {gossipArticles.map((item, index) => (
+                <li key={index}>
+                   <Link href={item.href} className="hover:text-primary transition-colors duration-200">
+                      {item.title}
+                   </Link>
+                   {index < gossipArticles.length - 1 && <Separator className="mt-4" />}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </aside>
     </div>
   );
 }
