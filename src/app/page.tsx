@@ -52,45 +52,46 @@ export default function ExplorePage() {
     }
     return (
       <div className="flex flex-col gap-6">
-        {articles.map((article, index) => (
-            <React.Fragment key={article.id}>
-              <div>
-                <Link href={`/article/${article.slug}`} className="group">
-                  <div className="flex items-start gap-4">
-                    <div className="relative w-24 h-24 shrink-0">
-                      <Image
-                        src={`https://picsum.photos/seed/${article.id}/150/150`}
-                        alt={article.title}
-                        fill
-                        className="object-cover rounded-md"
-                        data-ai-hint={article.image.imageHint}
-                      />
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
-                        {article.title}
-                      </h3>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        <span>
-                          Published on{' '}
-                          {new Date().toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                        {article.excerpt}
-                      </p>
-                    </div>
+        {articles.map((article, index) => {
+          const showAd = (index + 1) % 2 === 0 && index < articles.length - 1;
+          return (
+            <div key={article.id}>
+              <Link href={`/article/${article.slug}`} className="group">
+                <div className="flex items-start gap-4">
+                  <div className="relative w-24 h-24 shrink-0">
+                    <Image
+                      src={`https://picsum.photos/seed/${article.id}/150/150`}
+                      alt={article.title}
+                      fill
+                      className="object-cover rounded-md"
+                      data-ai-hint={article.image.imageHint}
+                    />
                   </div>
-                </Link>
-              </div>
-              {(index + 1) % 2 === 0 && index < articles.length - 1 && <AdBanner />}
-              {index < articles.length - 1 && (index + 1) % 2 !== 0 && <Separator />}
-            </React.Fragment>
-        ))}
+                  <div className="flex-grow">
+                    <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
+                      {article.title}
+                    </h3>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      <span>
+                        Published on{' '}
+                        {new Date().toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                      {article.excerpt}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              {showAd && <AdBanner />}
+              {!showAd && index < articles.length - 1 && <Separator className="mt-6" />}
+            </div>
+          );
+        })}
       </div>
     );
   };
