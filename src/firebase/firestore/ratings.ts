@@ -9,6 +9,7 @@ import { useFirestore } from '@/firebase';
 import type { FanRating } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { updateUserPoints } from './users';
 
 export function useRatings() {
   const firestore = useFirestore();
@@ -34,6 +35,10 @@ export function useRatings() {
     };
 
     addDoc(ratingsCollection, docToSave)
+      .then(() => {
+        // Award points for submitting a rating
+        updateUserPoints(firestore, userId, 25);
+      })
       .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: ratingsCollection.path,
