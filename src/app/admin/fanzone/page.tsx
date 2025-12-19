@@ -17,21 +17,31 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import {
-  placeholderIpTeams,
-  placeholderNationalTeams,
-} from '@/lib/cricket-data';
 import { popularMovies, popularStars } from '@/lib/placeholder-data';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { deleteCricketer } from '@/firebase/firestore/cricketers';
 
 type CricketerProfile = {
     id: string;
     name: string;
     country: string;
+    roles: string[];
 }
 
 type TeamProfile = {
@@ -55,6 +65,25 @@ export default function AdminFanZonePage() {
             description: `Entity "${title}" would be ${action.toLowerCase()}ed. This is a placeholder.`
         })
     }
+    
+     const handleDeleteCricketer = async (cricketerId: string) => {
+        if (!firestore) return;
+        try {
+        await deleteCricketer(firestore, cricketerId);
+        toast({
+            title: 'Cricketer Deleted',
+            description: 'The cricketer profile has been successfully deleted.',
+        });
+        } catch (error) {
+        console.error('Error deleting cricketer: ', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not delete the cricketer. Please try again.',
+        });
+        }
+    };
+
 
   return (
     <div className="space-y-8">
@@ -81,9 +110,11 @@ export default function AdminFanZonePage() {
             <CardHeader>
                 <div className='flex justify-between items-center'>
                     <CardTitle>Cricketers</CardTitle>
-                    <Button variant="outline" size="sm" onClick={() => handleAction('Create', 'New Cricketer')}>
+                    <Button variant="outline" size="sm" asChild>
+                       <Link href="/admin/fanzone/cricketers/new">
                         <PlusCircle className="w-4 h-4 mr-2" />
                         Add Cricketer
+                       </Link>
                     </Button>
                 </div>
             </CardHeader>
@@ -93,6 +124,7 @@ export default function AdminFanZonePage() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Country</TableHead>
+                    <TableHead>Roles</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -102,6 +134,7 @@ export default function AdminFanZonePage() {
                         <TableRow>
                             <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                             <TableCell><Skeleton className="h-5 w-40" /></TableCell>
                             <TableCell><Skeleton className="h-8 w-20" /></TableCell>
                         </TableRow>
                     </>
@@ -110,17 +143,42 @@ export default function AdminFanZonePage() {
                     <TableRow key={cricketer.id}>
                       <TableCell>{cricketer.name}</TableCell>
                       <TableCell>{cricketer.country}</TableCell>
+                      <TableCell>{cricketer.roles?.join(', ')}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                           <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', cricketer.name)}><Edit className="w-4 h-4" /></Button>
-                           <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', cricketer.name)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                           <Button variant="ghost" size="icon" asChild>
+                             <Link href={`/admin/fanzone/cricketers/edit/${cricketer.id}`}>
+                               <Edit className="w-4 h-4" />
+                             </Link>
+                           </Button>
+                           <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive" size="icon">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the profile for "{cricketer.name}".
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteCricketer(cricketer.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
                   {!cricketersLoading && cricketers?.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={3} className="h-24 text-center">
+                        <TableCell colSpan={4} className="h-24 text-center">
                             No cricketers found. Add one to get started.
                         </TableCell>
                     </TableRow>
