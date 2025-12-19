@@ -33,21 +33,27 @@ const roles = {
     ]
 }
 
-const uniquePlayerIds = new Set();
-const allPlayers = placeholderCricketers.filter(player => {
-    if (uniquePlayerIds.has(player.id)) {
-        return false;
-    } else {
-        uniquePlayerIds.add(player.id);
-        return true;
-    }
-});
+const players = {
+    IND: placeholderCricketers.filter(p => p.country === 'IND'),
+    AUS: [
+        { id: 'c4', name: 'Pat Cummins', roles: ['Bowler', 'Captain'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [8,7,9,8,9], careerPhase: 'Peak' },
+        { id: 'c5', name: 'David Warner', roles: ['Batsman', 'Opener'], country: 'AUS', avatar: 'https://picsum.photos/seed/warner/400/400', consistencyIndex: 8.2, impactScore: 9.0, recentForm: [70, 20, 90, 45, 30], careerPhase: 'Late' },
+        { id: 'c6', name: 'Mitchell Starc', roles: ['Bowler', 'Pacer'], country: 'AUS', avatar: 'https://picsum.photos/seed/starc/400/400', consistencyIndex: 8.5, impactScore: 9.4, recentForm: [9,8,7,9,8], careerPhase: 'Peak' },
+    ]
+}
 
 
 const microPredictions = [
-    { id: 'pred-1', question: 'Will the total Powerplay score be Over 45 runs?', outcome: true },
-    { id: 'pred-2', question: 'Will the Powerplay King hit a 6?', outcome: false },
-    { id: 'pred-3', question: 'Will the New Ball Striker take a wicket in their first over?', outcome: true },
+    { id: 'pred-1', question: 'Total score after 1st Over: Over 6.5 runs?', outcome: true },
+    { id: 'pred-2', question: 'Will a wicket fall in the first 3 overs?', outcome: true },
+    { id: 'pred-3', question: 'Powerplay (1-6 overs) total score: Over 48.5 runs?', outcome: false },
+    { id: 'pred-4', question: 'Will the Powerplay King (your pick) hit a boundary in the next over?', outcome: true },
+    { id: 'pred-5', question: 'Total 4s in the Powerplay: Over 5.5?', outcome: true },
+    { id: 'pred-6', question: 'Will a spinner be introduced before the 8th over?', outcome: true },
+    { id: 'pred-7', question: 'Total score at 10 over mark: Over 75.5?', outcome: false },
+    { id: 'pred-8', question: 'Will the New Ball Striker (your pick) take a wicket in their spell?', outcome: true },
+    { id: 'pred-9', question: 'Total 6s in the match: Over 12.5?', outcome: true },
+    { id: 'pred-10', question: 'Final score of the 1st Innings: Under 170.5 runs?', outcome: false }
 ]
 
 const leaderboardData = [
@@ -203,7 +209,7 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
                         <h3 className="text-xl font-bold font-headline mb-1 flex items-center gap-2"><Flame className="w-5 h-5 text-primary" /> {role.title}</h3>
                         <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
                         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {allPlayers.map(player => (
+                            {[...players.IND, ...players.AUS].map(player => (
                                 <PlayerSelectionCard
                                     key={player.id}
                                     player={player}
@@ -451,3 +457,5 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    
