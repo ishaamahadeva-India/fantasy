@@ -131,82 +131,31 @@ export const placeholderQuizzes = [
   },
 ];
 
-export const fanWarData = [
-  {
-    id: 'movie-star-1',
-    title: 'Tollywood King: Who Reigns Supreme?',
-    category: 'Movies',
-    entityOne: {
-      name: 'Prabhas',
-      avatar: `https://picsum.photos/seed/prabhas/200/200`,
-      stats: [
-        { label: 'Recent Hits', value: '3' },
-        { label: 'Upcoming Projects', value: '5' },
-        { label: 'Fan Following', value: '9.2/10' },
-      ],
-      votes: 1834,
-    },
-    entityTwo: {
-      name: 'Allu Arjun',
-      avatar: `https://picsum.photos/seed/alluarjun/200/200`,
-      stats: [
-        { label: 'Recent Hits', value: '4' },
-        { label: 'Upcoming Projects', value: '3' },
-        { label: 'Fan Following', value: '9.5/10' },
-      ],
-      votes: 2109,
-    },
-  },
-  {
-    id: 'cricket-captain-1',
-    title: 'Best IPL Captain: Dhoni vs Rohit',
-    category: 'Cricket',
-    entityOne: {
-      name: 'MS Dhoni',
-      avatar: `https://picsum.photos/seed/dhoni/200/200`,
-      stats: [
-        { label: 'IPL Titles', value: '5' },
-        { label: 'Win %', value: '58.9' },
-        { label: 'Matches', value: '226' },
-      ],
-      votes: 3456,
-    },
-    entityTwo: {
-      name: 'Rohit Sharma',
-      avatar: `https://picsum.photos/seed/rohit/200/200`,
-      stats: [
-        { label: 'IPL Titles', value: '5' },
-        { label: 'Win %', value: '56.6' },
-        { label: 'Matches', value: '158' },
-      ],
-      votes: 2987,
-    },
-  },
-];
-
 export const popularMovies = [
-    { id: 'm1', title: 'Kalki 2898 AD', releaseYear: 2024, genre: 'Sci-Fi', posterUrl: 'https://picsum.photos/seed/kalki/400/600' },
-    { id: 'm2', title: 'Pushpa 2: The Rule', releaseYear: 2024, genre: 'Action', posterUrl: 'https://picsum.photos/seed/pushpa2/400/600' },
-    { id: 'm3', title: 'Baahubali 2', releaseYear: 2017, genre: 'Action', posterUrl: 'https://picsum.photos/seed/baahubali2/400/600' },
-    { id: 'm4', title: 'RRR', releaseYear: 2022, genre: 'Action', posterUrl: 'https://picsum.photos/seed/rrr/400/600' },
-    { id: 'm5', title: 'K.G.F: Chapter 2', releaseYear: 2022, genre: 'Action', posterUrl: 'https://picsum.photos/seed/kgf2/400/600' },
-    { id: 'm6', title: 'Jawan', releaseYear: 2023, genre: 'Action', posterUrl: 'https://picsum.photos/seed/jawan/400/600' },
+    { id: 'm1', title: 'Kalki 2898 AD', releaseYear: 2024, genre: 'Sci-Fi', posterUrl: 'https://picsum.photos/seed/kalki/400/600', description: "A modern-day avatar of the Hindu god Vishnu, who is believed to have descended to Earth to protect the world from evil forces." },
+    { id: 'm2', title: 'Pushpa 2: The Rule', releaseYear: 2024, genre: 'Action', posterUrl: 'https://picsum.photos/seed/pushpa2/400/600', description: "The story of Pushpa Raj, a lorry driver who rises to become a smuggling syndicate kingpin." },
+    { id: 'm3', title: 'Baahubali 2', releaseYear: 2017, genre: 'Action', posterUrl: 'https://picsum.photos/seed/baahubali2/400/600', description: "The conclusion to the epic saga of Shivudu, who learns about his royal heritage and the treacherous past of his family." },
+    { id: 'm4', title: 'RRR', releaseYear: 2022, genre: 'Action', posterUrl: 'https://picsum.photos/seed/rrr/400/600', description: "A fictional story about two real-life Indian revolutionaries, Alluri Sitarama Raju and Komaram Bheem, and their fight against the British Raj." },
+    { id: 'm5', title: 'K.G.F: Chapter 2', releaseYear: 2022, genre: 'Action', posterUrl: 'https://picsum.photos/seed/kgf2/400/600', description: "The story of Rocky, who has become the kingpin of the Kolar Gold Fields, and his struggle to retain power." },
+    { id: 'm6', title: 'Jawan', releaseYear: 2023, genre: 'Action', posterUrl: 'https://picsum.photos/seed/jawan/400/600', description: "A man is driven by a personal vendetta to rectify the wrongs in society, in a way that is parallel to his past." },
 ];
 
 export const popularStars = [
-    { id: 'p1', name: 'Prabhas', avatar: 'https://picsum.photos/seed/prabhas/200/200' },
-    { id: 'p2', name: 'Allu Arjun', avatar: 'https://picsum.photos/seed/alluarjun/200/200' },
-    { id: 'p3', name: 'Mahesh Babu', avatar: 'https://picsum.photos/seed/maheshbabu/200/200' },
-    { id: 'p4', name: 'NTR Jr.', avatar: 'https://picsum.photos/seed/ntr/200/200' },
-    { id: 'p5', name: 'Ram Charan', avatar: 'https://picsum.photos/seed/ramcharan/200/200' },
-    { id: 'p6', name: 'Chiranjeevi', avatar: 'https://picsum.photos/seed/chiranjeevi/200/200' },
-    { id: 'p7', name: 'Pawan Kalyan', avatar: 'https://picsum.photos/seed/pawankalyan/200/200' },
-    { id: 'p8', name: 'Vijay Deverakonda', avatar: 'https://picsum.photos/seed/vijayd/200/200' },
-    { id: 'p9', name: 'Nani', avatar: 'https://picsum.photos/seed/nani/200/200' },
-    { id: 'p10', name: 'Suriya', avatar: 'https://picsum.photos/seed/suriya/200/200' },
-    { id: 'p11', name: 'Yash', avatar: 'https://picsum.photos/seed/yash/200/200' },
-    { id: 'p12', name: 'Shah Rukh Khan', avatar: 'https://picsum.photos/seed/srk/200/200' },
-    { id: 'p13', name: 'Vijay', avatar: 'https://picsum.photos/seed/vijay/200/200' },
-    { id: 'p14', name: 'Ajith Kumar', avatar: 'https://picsum.photos/seed/ajith/200/200' },
-    { id: 'p15', name: 'Kamal Haasan', avatar: 'https://picsum.photos/seed/kamal/200/200' },
+    { id: 's1', name: 'Prabhas', avatar: 'https://picsum.photos/seed/prabhas/400/400', genre: ['Action', 'Drama'] },
+    { id: 's2', name: 'Allu Arjun', avatar: 'https://picsum.photos/seed/alluarjun/400/400', genre: ['Action', 'Dance'] },
+    { id: 's3', name: 'Mahesh Babu', avatar: 'https://picsum.photos/seed/maheshbabu/400/400', genre: ['Action', 'Family'] },
+    { id: 's4', name: 'NTR Jr.', avatar: 'https://picsum.photos/seed/ntr/400/400', genre: ['Action', 'Historical'] },
+    { id: 's5', name: 'Ram Charan', avatar: 'https://picsum.photos/seed/ramcharan/400/400', genre: ['Action', 'Drama'] },
+    { id: 's6', name: 'Chiranjeevi', avatar: 'https://picsum.photos/seed/chiranjeevi/400/400', genre: ['Action', 'Legend'] },
+    { id: 's7', name: 'Pawan Kalyan', avatar: 'https://picsum.photos/seed/pawankalyan/400/400', genre: ['Action', 'Politics'] },
+    { id: 's8', name: 'Vijay Deverakonda', avatar: 'https://picsum.photos/seed/vijayd/400/400', genre: ['Romance', 'Drama'] },
+    { id: 's9', name: 'Nani', avatar: 'https://picsum.photos/seed/nani/400/400', genre: ['Comedy', 'Family'] },
+    { id: 's10', name: 'Suriya', avatar: 'https://picsum.photos/seed/suriya/400/400', genre: ['Action', 'Thriller'] },
+    { id: 's11', name: 'Yash', avatar: 'https://picsum.photos/seed/yash/400/400', genre: ['Action', 'Period'] },
+    { id: 's12', name: 'Shah Rukh Khan', avatar: 'https://picsum.photos/seed/srk/400/400', genre: ['Romance', 'King'] },
+    { id: 's13', name: 'Vijay', avatar: 'https://picsum.photos/seed/vijay/400/400', genre: ['Action', 'Mass'] },
+    { id: 's14', name: 'Ajith Kumar', avatar: 'https://picsum.photos/seed/ajith/400/400', genre: ['Action', 'Racing'] },
+    { id: 's15', name: 'Kamal Haasan', avatar: 'https://picsum.photos/seed/kamal/400/400', genre: ['Versatile', 'Legend'] },
 ];
+
+    

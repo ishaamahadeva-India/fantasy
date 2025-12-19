@@ -20,7 +20,7 @@ export function MoviesTab({ searchTerm }: { searchTerm: string }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {filteredMovies.map((movie) => (
-        <Link href="#" key={movie.id} className="group">
+        <Link href={`/fan-zone/movie/${movie.id}`} key={movie.id} className="group">
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               <div className="relative aspect-[2/3] w-full">
@@ -46,3 +46,5 @@ export function MoviesTab({ searchTerm }: { searchTerm: string }) {
     </div>
   );
 }
+
+    

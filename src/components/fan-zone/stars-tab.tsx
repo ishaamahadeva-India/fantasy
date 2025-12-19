@@ -22,7 +22,7 @@ export function StarsTab({ searchTerm }: { searchTerm: string }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {filteredStars.map((star) => (
-        <Link href="#" key={star.id} className="group">
+        <Link href={`/fan-zone/star/${star.id}`} key={star.id} className="group">
           <Card className="text-center h-full">
             <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
               <Avatar className="w-24 h-24">
@@ -43,3 +43,5 @@ export function StarsTab({ searchTerm }: { searchTerm: string }) {
     </div>
   );
 }
+
+    
