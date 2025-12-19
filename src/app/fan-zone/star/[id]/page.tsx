@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { popularStars } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -9,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-export default function StarProfilePage({ params: { id } }: { params: { id: string } }) {
+export default function StarProfilePage({ params }: { params: { id: string } }) {
+  const { id } = use(params);
   const star = popularStars.find((s) => s.id === id);
 
   if (!star) {
