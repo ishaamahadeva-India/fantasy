@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { placeholderCricketers, placeholderIpTeams } from '@/lib/cricket-data';
+import { placeholderCricketers, placeholderIpTeams, placeholderNationalTeams } from '@/lib/cricket-data';
 
 function CricketersTab({ searchTerm }: { searchTerm: string }) {
     const filteredCricketers = placeholderCricketers.filter((cricketer) =>
@@ -44,6 +44,41 @@ function CricketersTab({ searchTerm }: { searchTerm: string }) {
         </div>
     );
 }
+
+function NationalTeamsTab({ searchTerm }: { searchTerm: string }) {
+  const filteredTeams = placeholderNationalTeams.filter((team) =>
+    team.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (filteredTeams.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        No national teams found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      {filteredTeams.map((team) => (
+        <Link href={`/fan-zone/cricket/national-team/${team.id}`} key={team.id} className="group">
+          <Card className="text-center h-full">
+            <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={team.crest} alt={team.name} />
+                <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <h3 className="font-bold font-headline text-sm group-hover:text-primary">
+                {team.name}
+              </h3>
+            </CardContent>
+          </Card>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 
 function IpTeamsTab({ searchTerm }: { searchTerm: string }) {
   const filteredTeams = placeholderIpTeams.filter((team) =>
@@ -122,9 +157,7 @@ export default function CricketFanZonePage() {
           <CricketersTab searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="national-teams">
-          <div className="py-12 text-center text-muted-foreground">
-            National Team content coming soon.
-          </div>
+           <NationalTeamsTab searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="ip-teams">
            <IpTeamsTab searchTerm={searchTerm} />

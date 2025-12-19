@@ -88,17 +88,46 @@ export type NationalTeam = {
     id: string;
     name: string;
     crest: string;
+    eras: Record<string, {
+        winRate: number;
+        iccTrophies: number;
+        keyPlayers: string[];
+    }>
 };
 
 export const placeholderNationalTeams: NationalTeam[] = [
     {
         id: 'nt1',
         name: 'India',
-        crest: 'https://picsum.photos/seed/india/400/400'
+        crest: 'https://picsum.photos/seed/india/400/400',
+        eras: {
+            "2000s": {
+                winRate: 65,
+                iccTrophies: 2,
+                keyPlayers: ["Sachin Tendulkar", "Sourav Ganguly", "Anil Kumble"]
+            },
+            "2010s": {
+                winRate: 72,
+                iccTrophies: 3,
+                keyPlayers: ["MS Dhoni", "Virat Kohli", "Yuvraj Singh"]
+            }
+        }
     },
     {
         id: 'nt2',
         name: 'Australia',
-        crest: 'https://picsum.photos/seed/australia/400/400'
+        crest: 'https://picsum.photos/seed/australia/400/400',
+        eras: {
+            "2000s": {
+                winRate: 85,
+                iccTrophies: 4,
+                keyPlayers: ["Ricky Ponting", "Glenn McGrath", "Adam Gilchrist"]
+            },
+            "2010s": {
+                winRate: 68,
+                iccTrophies: 1,
+                keyPlayers: ["Michael Clarke", "Steve Smith", "Mitchell Johnson"]
+            }
+        }
     }
 ]
