@@ -53,8 +53,8 @@ export default function ExplorePage() {
     return (
       <div className="flex flex-col gap-6">
         {articles.map((article, index) => (
-            <>
-              <div key={article.id}>
+            <React.Fragment key={article.id}>
+              <div>
                 <Link href={`/article/${article.slug}`} className="group">
                   <div className="flex items-start gap-4">
                     <div className="relative w-24 h-24 shrink-0">
@@ -89,7 +89,7 @@ export default function ExplorePage() {
               </div>
               {(index + 1) % 2 === 0 && index < articles.length - 1 && <AdBanner />}
               {index < articles.length - 1 && (index + 1) % 2 !== 0 && <Separator />}
-            </>
+            </React.Fragment>
         ))}
       </div>
     );
