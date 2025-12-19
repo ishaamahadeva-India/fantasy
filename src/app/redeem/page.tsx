@@ -1,5 +1,7 @@
+
 'use client';
 
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -14,6 +16,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { updateUserPoints } from '@/firebase/firestore/users';
+import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 
 // Placeholder rewards data
@@ -47,14 +62,19 @@ const rewards = [
 export default function RedemptionPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-
-  // Create a document reference to the user's profile
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-
-  // Use the useDoc hook to get the user profile data
   const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
 
   const userPoints = userProfile?.points || 0;
+
+  const handleRedeem = (cost: number) => {
+    if (!user || !firestore) return;
+    updateUserPoints(firestore, user.uid, -cost);
+    toast({
+        title: "Reward Redeemed!",
+        description: `You have successfully redeemed a reward. ${cost} points have been deducted.`
+    });
+  }
 
   return (
     <div className="space-y-8">
@@ -109,12 +129,30 @@ export default function RedemptionPage() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button
-                  className="w-full"
-                  disabled={userPoints < reward.cost}
-                >
-                  {userPoints < reward.cost ? 'Not Enough Points' : 'Redeem Now'}
-                </Button>
+                 <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                     <Button
+                        className="w-full"
+                        disabled={userPoints < reward.cost || !user}
+                      >
+                        {userPoints < reward.cost ? 'Not Enough Points' : 'Redeem Now'}
+                      </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirm Redemption</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to redeem "{reward.title}" for {reward.cost} points? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleRedeem(reward.cost)}>
+                        Confirm
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardFooter>
             </Card>
           ))}
