@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Check, Lock, Users, Flame, Zap, Trophy, BarChart, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Users, Flame, Zap, Trophy, BarChart, HelpCircle, User, Award } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { placeholderCricketers } from '@/lib/cricket-data';
@@ -37,8 +37,10 @@ const players = {
     AUS: placeholderCricketers.filter(p => p.country === 'AUS'),
 };
 // Add Pat Cummins for AUS, remove duplicate Bumrah from placeholder
-players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
-players.AUS = players.AUS.filter(p => p.id !== 'c2');
+if (!players.AUS.find(p => p.id === 'c4')) {
+    players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
+}
+players.AUS = players.AUS.filter(p => p.name !== 'Jasprit Bumrah');
 
 
 const microPredictions = [
@@ -46,6 +48,14 @@ const microPredictions = [
     { id: 'pred-2', question: 'Will the Powerplay King hit a 6?', outcome: false },
     { id: 'pred-3', question: 'Will the New Ball Striker take a wicket in their first over?', outcome: true },
 ]
+
+const leaderboardData = [
+  { rank: 1, name: 'CricketFan1', score: 120 },
+  { rank: 2, name: 'You', score: 110 },
+  { rank: 3, name: 'StrategicThinker', score: 105 },
+  { rank: 4, name: 'ThePredictor', score: 95 },
+  { rank: 5, name: 'LuckyGuess', score: 80 },
+];
 
 
 function PlayerSelectionCard({ player, isSelected, isDisabled, onSelect }: { player: any, isSelected: boolean, isDisabled: boolean, onSelect: () => void }) {
@@ -258,10 +268,42 @@ function InningsBreakView({ onStartNextInnings }: { onStartNextInnings: () => vo
     )
 }
 
+function LeaderboardView() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Match Leaderboard</CardTitle>
+                <CardDescription>Live rankings for the {matchDetails.title} match.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {leaderboardData.map((player) => (
+                        <div key={player.rank} className={`flex items-center p-4 rounded-lg ${player.name === 'You' ? 'bg-primary/10 border border-primary/20' : 'bg-white/5'}`}>
+                            <div className="flex items-center gap-4 w-full">
+                                <span className="font-bold font-code text-lg w-8 text-center text-muted-foreground">
+                                    {player.rank}
+                                </span>
+                                <div className="flex items-center gap-3">
+                                    <User className="w-6 h-6 text-muted-foreground"/>
+                                    <span className="font-semibold">{player.name}</span>
+                                </div>
+                                <div className="ml-auto flex items-center gap-2 font-bold font-code text-primary text-lg">
+                                    <Award className="w-5 h-5 text-amber-400" />
+                                    {player.score}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function CricketMatchPage({ params }: { params: { id: string } }) {
   const { id } = use(params);
-  const [matchPhase, setMatchPhase] = useState('pre-match'); // 'pre-match', '1st-innings', 'break', '2nd-innings'
+  const [matchPhase, setMatchPhase] = useState('pre-match'); // 'pre-match', '1st-innings', 'break', '2nd-innings', 'leaderboard'
+  const [activeTab, setActiveTab] = useState('game');
 
   if (!matchDetails) {
     return notFound();
@@ -284,24 +326,35 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
             </p>
         </div>
 
-        <Tabs value={matchPhase} onValueChange={setMatchPhase} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="pre-match">Pre-Match</TabsTrigger>
-                <TabsTrigger value="1st-innings" disabled={matchPhase === 'pre-match'}>1st Innings</TabsTrigger>
-                <TabsTrigger value="break" disabled={matchPhase !== 'break'}>Innings Break</TabsTrigger>
-                <TabsTrigger value="2nd-innings" disabled>2nd Innings</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="game">Game</TabsTrigger>
+                <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             </TabsList>
-            <TabsContent value="pre-match" className="mt-6">
-                <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')}/>
+            <TabsContent value="game" className="mt-6">
+                 <Tabs value={matchPhase} onValueChange={setMatchPhase} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="pre-match">Pre-Match</TabsTrigger>
+                        <TabsTrigger value="1st-innings" disabled={matchPhase === 'pre-match'}>1st Innings</TabsTrigger>
+                        <TabsTrigger value="break" disabled={matchPhase !== 'break'}>Innings Break</TabsTrigger>
+                        <TabsTrigger value="2nd-innings" disabled>2nd Innings</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="pre-match" className="mt-6">
+                        <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')}/>
+                    </TabsContent>
+                    <TabsContent value="1st-innings" className="mt-6">
+                        <FirstInningsView onInningsEnd={() => setMatchPhase('break')} />
+                    </TabsContent>
+                    <TabsContent value="break" className="mt-6">
+                        <InningsBreakView onStartNextInnings={() => alert('2nd Innings feature coming soon!')} />
+                    </TabsContent>
+                    <TabsContent value="2nd-innings" className="mt-6">
+                        <p>2nd Innings content will go here.</p>
+                    </TabsContent>
+                </Tabs>
             </TabsContent>
-            <TabsContent value="1st-innings" className="mt-6">
-                <FirstInningsView onInningsEnd={() => setMatchPhase('break')} />
-            </TabsContent>
-             <TabsContent value="break" className="mt-6">
-                <InningsBreakView onStartNextInnings={() => alert('2nd Innings feature coming in Phase 3!')} />
-            </TabsContent>
-             <TabsContent value="2nd-innings" className="mt-6">
-                <p>2nd Innings content will go here.</p>
+            <TabsContent value="leaderboard" className="mt-6">
+                <LeaderboardView />
             </TabsContent>
         </Tabs>
     </div>
