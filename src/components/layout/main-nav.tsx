@@ -15,6 +15,7 @@ import {
   Star,
   Shield,
   Gift,
+  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
+  { href: '/fantasy', label: 'Fantasy', icon: Trophy },
   { href: '/fan-zone/movies', label: 'Movie Zone', icon: Star },
   { href: '/fan-zone/cricket', label: 'Cricket Zone', icon: Shield },
   { href: '/insights', label: 'Insights', icon: BarChart2 },

@@ -114,6 +114,97 @@
         "entityType",
         "ratings"
       ]
+    },
+    "MovieContest": {
+      "title": "Movie Contest",
+      "description": "Represents an upcoming fantasy movie contest.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "movieIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "upcoming",
+            "live",
+            "completed"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "movieIds",
+        "startTime",
+        "endTime",
+        "status"
+      ]
+    },
+    "FantasyTeam": {
+      "title": "Fantasy Team",
+      "description": "A user's drafted team for a specific movie contest.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "contestId": {
+          "type": "string"
+        },
+        "heroId": {
+          "type": "string"
+        },
+        "heroineId": {
+          "type": "string"
+        },
+        "directorId": {
+          "type": "string"
+        },
+        "musicDirectorId": {
+          "type": "string"
+        },
+        "supportingActorId": {
+          "type": "string"
+        },
+        "movieId": {
+          "type": "string"
+        },
+        "captainId": {
+          "type": "string",
+          "description": "The ID of the star chosen as captain (2x points)."
+        },
+        "totalCredits": {
+          "type": "number"
+        },
+        "finalScore": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "userId",
+        "contestId",
+        "heroId",
+        "heroineId",
+        "directorId",
+        "musicDirectorId",
+        "supportingActorId",
+        "movieId",
+        "captainId"
+      ]
     }
   },
   "auth": {
@@ -145,6 +236,18 @@
         "$ref": "#/entities/FanRating"
       },
       "description": "Collection of all individual fan ratings for players and teams."
+    },
+    "/contests/{contestId}": {
+        "schema": {
+            "$ref": "#/entities/MovieContest"
+        },
+        "description": "Stores all available fantasy movie contests."
+    },
+    "/fantasy-teams/{teamId}": {
+        "schema": {
+            "$ref": "#/entities/FantasyTeam"
+        },
+        "description": "Stores all user-submitted fantasy teams."
     }
   }
 }
