@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Bookmark, Gamepad2, Mic, PieChart, Star } from 'lucide-react';
 
-export default function MovieProfilePage({ params: { id } }: { params: { id: string } }) {
-  const movie = popularMovies.find((m) => m.id === id);
+export default function MovieProfilePage({ params }: { params: { id: string } }) {
+  const movie = popularMovies.find((m) => m.id === params.id);
 
   if (!movie) {
     notFound();
@@ -75,5 +75,3 @@ export default function MovieProfilePage({ params: { id } }: { params: { id: str
     </div>
   );
 }
-
-    
