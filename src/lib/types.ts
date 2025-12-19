@@ -1,4 +1,5 @@
 
+
 export type FanRating = {
   userId: string;
   entityId: string;
@@ -27,3 +28,27 @@ export type UserPrediction = {
     score?: number;
     createdAt: Date;
 };
+
+export type Article = {
+  title: string;
+  slug: string;
+  category: string;
+  excerpt: string;
+  content: string;
+}
+
+export type FantasyCampaign = {
+    title: string;
+    movieId: string;
+    startDate: Date;
+    endDate?: Date;
+    status: 'upcoming' | 'active' | 'completed';
+}
+
+export type FantasyMatch = {
+    matchName: string;
+    format: "T20" | "ODI" | "Test";
+    teams: string[];
+    startTime: Date;
+    status: "upcoming" | "live" | "completed";
+}

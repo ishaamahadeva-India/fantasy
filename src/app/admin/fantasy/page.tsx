@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -10,19 +11,24 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { FantasyCampaign, FantasyMatch } from '@/lib/types';
 
-// Mock data
-const campaigns = [
-  { id: 'campaign-devara', title: 'Devara: Part 1 - The Full Campaign', status: 'Ongoing', events: 8 },
-  { id: 'campaign-pushpa2', title: 'Pushpa 2: The Rule - The Full Campaign', status: 'Upcoming', events: 10 },
-];
-
-const matches = [
-    { id: 'match-1', title: 'IND vs AUS - T20 World Cup Final', status: 'Live' },
-    { id: 'match-2', title: 'CSK vs MI - IPL 2025 Opener', status: 'Upcoming' },
-]
+// Extend types to include Firestore document ID
+type FantasyCampaignWithId = FantasyCampaign & { id: string };
+type FantasyMatchWithId = FantasyMatch & { id: string };
 
 export default function AdminFantasyPage() {
+  const firestore = useFirestore();
+  
+  const campaignsQuery = firestore ? collection(firestore, 'fantasy-campaigns') : null;
+  const matchesQuery = firestore ? collection(firestore, 'fantasy_matches') : null;
+  
+  const { data: campaigns, isLoading: campaignsLoading } = useCollection<FantasyCampaignWithId>(campaignsQuery);
+  const { data: matches, isLoading: matchesLoading } = useCollection<FantasyMatchWithId>(matchesQuery);
+
   const handleAction = (action: string, title: string) => {
     toast({
       title: `Action: ${action}`,
@@ -55,19 +61,36 @@ export default function AdminFantasyPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {campaigns.map((campaign) => (
+          {campaignsLoading && (
+            <>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                        <Skeleton className="h-5 w-64 mb-2" />
+                        <Skeleton className="h-4 w-20" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                        <Skeleton className="h-8 w-8" />
+                    </div>
+                </div>
+            </>
+          )}
+          {campaigns && campaigns.map((campaign) => (
             <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                     <p className="font-semibold">{campaign.title}</p>
-                    <p className="text-sm text-muted-foreground">{campaign.events} events</p>
+                    <p className="text-sm text-muted-foreground">{campaign.movieId}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Badge variant={campaign.status === 'Ongoing' ? 'default' : 'secondary'}>{campaign.status}</Badge>
+                    <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
                     <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', campaign.title)}><Edit className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', campaign.title)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                 </div>
             </div>
           ))}
+          {!campaignsLoading && campaigns?.length === 0 && (
+            <div className="text-center p-6 text-muted-foreground">No movie campaigns found.</div>
+          )}
         </CardContent>
       </Card>
       
@@ -85,18 +108,32 @@ export default function AdminFantasyPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {matches.map((match) => (
+          {matchesLoading && (
+            <>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <Skeleton className="h-5 w-72" />
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                        <Skeleton className="h-8 w-8" />
+                    </div>
+                </div>
+            </>
+          )}
+          {matches && matches.map((match) => (
             <div key={match.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
-                    <p className="font-semibold">{match.title}</p>
+                    <p className="font-semibold">{match.matchName}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Badge variant={match.status === 'Live' ? 'destructive' : 'secondary'}>{match.status}</Badge>
-                    <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', match.title)}><Edit className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', match.title)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                    <Badge variant={match.status === 'live' ? 'destructive' : 'secondary'}>{match.status}</Badge>
+                    <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', match.matchName)}><Edit className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', match.matchName)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                 </div>
             </div>
           ))}
+           {!matchesLoading && matches?.length === 0 && (
+            <div className="text-center p-6 text-muted-foreground">No cricket matches found.</div>
+          )}
         </CardContent>
       </Card>
     </div>
