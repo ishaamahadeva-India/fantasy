@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Check, Lock, Flame, Zap } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Flame, Zap, ShieldCheck, Star } from 'lucide-react';
 import Link from 'next/link';
 import { placeholderCricketers } from '@/lib/cricket-data';
 import Image from 'next/image';
@@ -18,6 +18,8 @@ import { toast } from '@/hooks/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 
 // --- MOCK DATA ---
 const matchDetails = {
@@ -82,9 +84,29 @@ const players = {
 };
 
 const livePredictions = [
-    { id: 'pred-1', type: 'yesno', question: 'Total score after 1st Over: Over 6.5 runs?', outcome: true, phase: 'Powerplay' },
-    { id: 'pred-2', type: 'yesno', question: 'Will a wicket fall in the first 3 overs?', outcome: false, phase: 'Powerplay' },
-    { id: 'pred-3', type: 'yesno', question: 'Powerplay (1-6 overs) total score: Over 48.5 runs?', outcome: true, phase: 'Powerplay' },
+    { 
+        id: 'pred-1', 
+        type: 'yesno' as const, 
+        question: 'Will a wicket fall in the first 3 overs?', 
+        outcome: false, 
+        phase: 'Powerplay',
+    },
+    { 
+        id: 'pred-2', 
+        type: 'range' as const, 
+        question: 'How many runs will be scored in the Powerplay (1-6 overs)?', 
+        options: ['31-40', '41-50', '51-60', '61+'],
+        outcome: '51-60',
+        phase: 'Powerplay',
+    },
+    {
+        id: 'pred-3',
+        type: 'ranking' as const,
+        question: 'Rank the top run-scorer in the first 10 overs.',
+        options: ['c1', 'c3', 'c5'], // Kohli, Rohit, Warner
+        outcome: ['c1', 'c5', 'c3'], // Actual ranking
+        phase: 'Middle Overs',
+    }
 ];
 
 function PlayerSelectionCard({
@@ -220,29 +242,178 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
   );
 }
 
-function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
-    type PredictionStatus = 'predicting' | 'locked' | 'waiting' | 'result';
-    const [currentPredIndex, setCurrentPredIndex] = useState(0);
-    const [userPredictions, setUserPredictions] = useState<Record<number, { answer: boolean, confidence: number }>>({});
-    const [status, setStatus] = useState<PredictionStatus>('predicting');
-    
-    const currentPrediction = livePredictions[currentPredIndex];
-    const hasAnswered = userPredictions[currentPredIndex] !== undefined;
+// --- Prediction Components ---
 
-    const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
+function YesNoPrediction({ prediction, onLock, status }: { prediction: any, onLock: (pred: any) => void, status: string }) {
+    const [answer, setAnswer] = useState<boolean | null>(null);
     const [confidence, setConfidence] = useState(1); // 0=Low, 1=Medium, 2=High
+
+    const handleLock = () => {
+        if (answer === null) {
+             toast({ variant: 'destructive', title: 'No Answer', description: 'Please select Yes or No.'});
+             return;
+        }
+        onLock({ answer, confidence });
+    }
+    
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+            <Button onClick={() => setAnswer(true)} disabled={status !== 'predicting'} variant={answer === true ? 'default' : 'outline'} className="h-20 text-xl">Yes</Button>
+            <Button onClick={() => setAnswer(false)} disabled={status !== 'predicting'} variant={answer === false ? 'default' : 'outline'} className="h-20 text-xl">No</Button>
+        </div>
+        <div className="space-y-3 pt-4">
+            <Label htmlFor="confidence-slider" className="font-semibold">Confidence</Label>
+            <Slider
+                id="confidence-slider"
+                min={0} max={2} step={1}
+                value={[confidence]}
+                onValueChange={(val) => setConfidence(val[0])}
+                disabled={status !== 'predicting'}
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Low</span><span>Medium</span><span>High</span>
+            </div>
+        </div>
+        <Button onClick={handleLock} disabled={status !== 'predicting'} size="lg" className="w-full">
+            <Lock className="w-4 h-4 mr-2"/> Lock Prediction
+        </Button>
+      </div>
+    );
+}
+
+function RangePrediction({ prediction, onLock, status }: { prediction: any, onLock: (pred: any) => void, status: string }) {
+    const [answer, setAnswer] = useState<string | null>(null);
+    const handleLock = () => {
+        if (!answer) {
+             toast({ variant: 'destructive', title: 'No Selection', description: 'Please select a range.'});
+             return;
+        }
+        onLock({ answer });
+    }
+
+    return (
+         <div className="space-y-4">
+            <RadioGroup value={answer || ''} onValueChange={setAnswer} disabled={status !== 'predicting'} className="space-y-3">
+                {prediction.options.map((option: string) => (
+                    <Label key={option} htmlFor={option} className={`flex items-center gap-4 p-4 rounded-lg border-2 ${answer === option ? 'border-primary' : 'border-input'} cursor-pointer`}>
+                        <RadioGroupItem value={option} id={option} />
+                        <span className='font-semibold text-lg'>{option}</span>
+                    </Label>
+                ))}
+            </RadioGroup>
+            <Button onClick={handleLock} disabled={status !== 'predicting'} size="lg" className="w-full">
+                <Lock className="w-4 h-4 mr-2"/> Lock Prediction
+            </Button>
+        </div>
+    );
+}
+
+function RankingPrediction({ prediction, onLock, status }: { prediction: any, onLock: (pred: any) => void, status: string }) {
+    const getPlayerById = (id: string) => [...players.IND, ...players.AUS].find(p => p.id === id);
+    const [rankedPlayers, setRankedPlayers] = useState<string[]>([]);
+
+    const handleSelectPlayer = (playerId: string) => {
+        setRankedPlayers(prev => {
+            if (prev.includes(playerId)) return prev;
+            if (prev.length >= prediction.options.length) return prev;
+            return [...prev, playerId];
+        });
+    }
+
+    const handleLock = () => {
+        if(rankedPlayers.length < prediction.options.length) {
+             toast({ variant: 'destructive', title: 'Incomplete Ranking', description: `Please rank all ${prediction.options.length} players.`});
+             return;
+        }
+        onLock({ answer: rankedPlayers });
+    }
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h4 className="font-semibold mb-2">Your Ranking</h4>
+                <div className="p-2 rounded-lg bg-background min-h-[140px] space-y-2">
+                    {rankedPlayers.map((pId, index) => {
+                        const player = getPlayerById(pId);
+                        return (
+                            <div key={pId} className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
+                                <span className="font-bold font-code text-lg w-6">{index + 1}.</span>
+                                <Image src={player?.avatar || ''} alt={player?.name || ''} width={32} height={32} className="rounded-full" />
+                                <span>{player?.name}</span>
+                            </div>
+                        )
+                    })}
+                </div>
+                <Button variant="link" onClick={() => setRankedPlayers([])} disabled={status !== 'predicting'}>Reset</Button>
+            </div>
+            <div>
+                <h4 className="font-semibold mb-2">Select Players in Order</h4>
+                <div className="grid grid-cols-3 gap-2">
+                    {prediction.options.map((pId: string) => {
+                        const player = getPlayerById(pId);
+                        const isSelected = rankedPlayers.includes(pId);
+                        return (
+                            <Card key={pId} onClick={() => handleSelectPlayer(pId)} className={cn('p-2 text-center cursor-pointer', isSelected && 'opacity-50')}>
+                                <Image src={player?.avatar || ''} alt={player?.name || ''} width={40} height={40} className="rounded-full mx-auto" />
+                                <p className="text-xs mt-1 truncate">{player?.name}</p>
+                            </Card>
+                        )
+                    })}
+                </div>
+            </div>
+            <Button onClick={handleLock} disabled={status !== 'predicting'} size="lg" className="w-full">
+                <Lock className="w-4 h-4 mr-2"/> Lock Ranking
+            </Button>
+        </div>
+    );
+}
+
+function getPointsForResult(prediction: any, userAnswer: any) {
     const confidenceLabels = ["Low", "Medium", "High"];
     const pointsMap = { 'Low': {correct: 10, incorrect: -2}, 'Medium': {correct: 15, incorrect: -5}, 'High': {correct: 20, incorrect: -10} };
 
-    const handleLockPrediction = () => {
-        if(selectedAnswer === null) {
-            toast({ variant: 'destructive', title: 'No Answer', description: 'Please select Yes or No.'});
-            return;
+    switch(prediction.type) {
+        case 'yesno': {
+            const isCorrect = userAnswer.answer === prediction.outcome;
+            const confidence = userAnswer.confidence;
+            return isCorrect ? pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].correct : pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].incorrect;
         }
+        case 'range': {
+            const isCorrect = userAnswer.answer === prediction.outcome;
+            if (isCorrect) return 25;
+            const options = prediction.options;
+            const correctIndex = options.indexOf(prediction.outcome);
+            const userIndex = options.indexOf(userAnswer.answer);
+            if (Math.abs(correctIndex - userIndex) === 1) return 15;
+            return -5;
+        }
+        case 'ranking': {
+            let score = 0;
+            userAnswer.answer.forEach((pId: string, index: number) => {
+                if (prediction.outcome[index] === pId) score += 20; // Exact rank
+                else if (prediction.outcome.includes(pId)) score += 10; // Off by one (simplified)
+            });
+            return score / prediction.options.length; // Average score
+        }
+        default: return 0;
+    }
+}
+
+
+function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
+    type PredictionStatus = 'predicting' | 'locked' | 'waiting' | 'result';
+    const [currentPredIndex, setCurrentPredIndex] = useState(0);
+    const [userPredictions, setUserPredictions] = useState<Record<number, any>>({});
+    const [status, setStatus] = useState<PredictionStatus>('predicting');
+    
+    const currentPrediction = livePredictions[currentPredIndex];
+
+    const handleLockPrediction = (predictionData: any) => {
         setStatus('locked');
-        setUserPredictions(prev => ({...prev, [currentPredIndex]: { answer: selectedAnswer, confidence }}));
+        setUserPredictions(prev => ({...prev, [currentPredIndex]: predictionData}));
         
-        toast({ title: 'Prediction Locked!', description: `You predicted '${selectedAnswer ? 'Yes' : 'No'}' with ${confidenceLabels[confidence]} confidence.` });
+        toast({ title: 'Prediction Locked!' });
         
         // Simulate waiting for outcome
         setTimeout(() => {
@@ -254,8 +425,6 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
                     if (currentPredIndex < livePredictions.length - 1) {
                         setCurrentPredIndex(prev => prev + 1);
                         setStatus('predicting');
-                        setSelectedAnswer(null);
-                        setConfidence(1);
                     } else {
                         onInningsEnd();
                     }
@@ -264,12 +433,24 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
         }, 500);
     };
 
+    const renderPredictionComponent = () => {
+        switch(currentPrediction.type) {
+            case 'yesno':
+                return <YesNoPrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status}/>
+            case 'range':
+                return <RangePrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status}/>
+            case 'ranking':
+                return <RankingPrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status}/>
+            default:
+                return <p>Unsupported prediction type</p>;
+        }
+    }
+    
     if (!currentPrediction) {
         return <p>Loading predictions...</p>
     }
 
-    const isCorrect = status === 'result' && userPredictions[currentPredIndex]?.answer === currentPrediction.outcome;
-    const points = isCorrect ? pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].correct : pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].incorrect;
+    const points = status === 'result' ? getPointsForResult(currentPrediction, userPredictions[currentPredIndex]) : 0;
 
     return (
         <div className="space-y-8">
@@ -288,44 +469,15 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <p className="text-2xl font-semibold text-balance min-h-[64px]">{currentPrediction.question}</p>
-                            
-                            <div className="grid grid-cols-2 gap-4">
-                                <Button onClick={() => setSelectedAnswer(true)} disabled={status !== 'predicting'} variant={selectedAnswer === true ? 'default' : 'outline'} className="h-20 text-xl">Yes</Button>
-                                <Button onClick={() => setSelectedAnswer(false)} disabled={status !== 'predicting'} variant={selectedAnswer === false ? 'default' : 'outline'} className="h-20 text-xl">No</Button>
-                            </div>
-                            
-                             <div className="space-y-3 pt-4">
-                               <Label htmlFor="confidence-slider" className="font-semibold">Confidence</Label>
-                               <Slider
-                                 id="confidence-slider"
-                                 min={0}
-                                 max={2}
-                                 step={1}
-                                 value={[confidence]}
-                                 onValueChange={(val) => setConfidence(val[0])}
-                                 disabled={status !== 'predicting'}
-                               />
-                               <div className="flex justify-between text-xs text-muted-foreground">
-                                 <span>Low</span>
-                                 <span>Medium</span>
-                                 <span>High</span>
-                               </div>
-                             </div>
-
-                             <Button onClick={handleLockPrediction} disabled={status !== 'predicting'} size="lg" className="w-full">
-                                <Lock className="w-4 h-4 mr-2"/> Lock Prediction
-                             </Button>
-
+                            {renderPredictionComponent()}
                              {status !== 'predicting' && (
                                 <div className='mt-4 min-h-[40px]'>
                                     {status === 'locked' && <p className='font-semibold text-primary animate-pulse'>Prediction Locked! Waiting for event...</p>}
                                     {status === 'waiting' && <p className='font-semibold text-muted-foreground animate-pulse'>Waiting for outcome...</p>}
                                     {status === 'result' && (
-                                        isCorrect ? (
-                                            <p className="text-lg font-bold text-green-400">Correct! +{points} Points</p>
-                                        ) : (
-                                            <p className="text-lg font-bold text-red-400">Incorrect! {points} Points. The outcome was '{currentPrediction.outcome ? 'Yes' : 'No'}'</p>
-                                        )
+                                        <p className={`text-lg font-bold ${points > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {points > 0 ? `Correct! +${points} Points` : `Incorrect! ${points} Points`}
+                                        </p>
                                     )}
                                 </div>
                             )}
