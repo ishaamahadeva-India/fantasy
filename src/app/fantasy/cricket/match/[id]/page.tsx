@@ -12,7 +12,7 @@ import { placeholderCricketers } from '@/lib/cricket-data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/ui/table';
 
 // --- MOCK DATA ---
 const matchDetails = {
@@ -33,16 +33,8 @@ const roles = {
     ]
 }
 
-const players = {
-    IND: placeholderCricketers.filter(p => p.country === 'IND'),
-    AUS: placeholderCricketers.filter(p => p.country === 'AUS'),
-};
-// Add Pat Cummins for AUS and clean up data
-if (!players.AUS.find(p => p.id === 'c4')) {
-    players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
-}
 const uniquePlayerIds = new Set();
-const allPlayers = [...players.IND, ...players.AUS].filter(player => {
+const allPlayers = placeholderCricketers.filter(player => {
     if (uniquePlayerIds.has(player.id)) {
         return false;
     } else {
@@ -99,18 +91,28 @@ function ScoringRulesCard() {
                 <div>
                     <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Trophy className="w-5 h-5 text-primary"/> Role Performance Points</h4>
                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Powerplay King (Batting)</TableHead>
+                                <TableHead className="text-right">Points</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
                             <TableRow>
-                                <TableCell className="font-semibold">Powerplay King scores ≥ 25 runs</TableCell>
+                                <TableCell>Scores ≥ 25 runs</TableCell>
                                 <TableCell className="text-right font-code text-primary font-bold">+30</TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell>Powerplay King scores 15-24</TableCell>
+                                <TableCell>Scores 15–24</TableCell>
                                 <TableCell className="text-right font-code text-primary font-bold">+20</TableCell>
                             </TableRow>
+                            <TableRow>
+                                <TableCell>Scores &lt; 15</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+5</TableCell>
+                            </TableRow>
                              <TableRow>
-                                <TableCell className='border-b-0'>Death Overs Specialist takes 2+ wickets</TableCell>
-                                <TableCell className="text-right font-code text-primary font-bold border-b-0">+30</TableCell>
+                                <TableCell className="border-b-0">Strike rate ≥ 140 bonus</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold border-b-0">+10</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -433,8 +435,19 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
                 <LeaderboardView />
             </TabsContent>
         </Tabs>
+        
+        <Card className="text-center bg-transparent border-dashed">
+            <CardHeader>
+                <CardTitle className="font-headline text-lg">Skill Declaration</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-muted-foreground space-y-2">
+                <p>This is a skill-based cricket strategy and prediction game where users make informed decisions based on player roles, match situations, and real-time analysis. Outcomes depend entirely on the user’s knowledge, judgment, and timing.</p>
+                <p>Success in this game depends on the participant’s understanding of cricket, analytical skills, and ability to make strategic decisions. There is no element of chance or randomness involved. This platform does not involve betting, wagering, or games of chance.</p>
+            </CardContent>
+             <CardFooter className="justify-center text-xs text-muted-foreground">
+                <p>This game is open only to users aged 18 years and above.</p>
+            </CardFooter>
+        </Card>
     </div>
   );
 }
-
-    
