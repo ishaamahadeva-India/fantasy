@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, use } from 'react';
 import { notFound } from 'next/navigation';
@@ -41,11 +42,12 @@ const roles = {
 };
 
 const players = {
-    IND: placeholderCricketers.filter(p => p.country === 'IND'),
+    IND: placeholderCricketers.filter(p => p.country === 'IND' && p.id !== 'c2'),
     AUS: [
         { id: 'c4', name: 'Pat Cummins', roles: ['Bowler', 'Captain'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [8,7,9,8,9], careerPhase: 'Peak' },
         { id: 'c5', name: 'David Warner', roles: ['Batsman', 'Opener'], country: 'AUS', avatar: 'https://picsum.photos/seed/warner/400/400', consistencyIndex: 8.2, impactScore: 9.0, recentForm: [70, 20, 90, 45, 30], careerPhase: 'Late' },
         { id: 'c6', name: 'Mitchell Starc', roles: ['Bowler', 'Pacer'], country: 'AUS', avatar: 'https://picsum.photos/seed/starc/400/400', consistencyIndex: 8.5, impactScore: 9.4, recentForm: [9,8,7,9,8], careerPhase: 'Peak' },
+        { id: 'c2', name: 'Jasprit Bumrah', roles: ['Bowler', 'Pacer'], country: 'IND', avatar: 'https://picsum.photos/seed/bumrah/400/400', consistencyIndex: 8.8, impactScore: 9.7, recentForm: [9, 10, 8, 9, 9], careerPhase: 'Peak', trendingRank: 1},
     ]
 };
 

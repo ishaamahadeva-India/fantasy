@@ -46,7 +46,10 @@ export function MainNav() {
            let isActive = pathname === item.href;
            if (item.href === '/fan-zone') {
                 isActive = pathname.startsWith('/fan-zone');
-           } else if (item.href !== '/') {
+           } else if (item.href === '/fantasy') {
+                isActive = pathname.startsWith('/fantasy') && !pathname.startsWith('/fantasy/cricket') && !pathname.startsWith('/fantasy/movie');
+           }
+            else if (item.href !== '/') {
                 isActive = pathname.startsWith(item.href);
            }
 
