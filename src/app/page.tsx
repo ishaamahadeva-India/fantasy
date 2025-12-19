@@ -41,7 +41,7 @@ const gameModes = [
         title: 'Soundstrike',
         description: 'Listen to audio clips and answer questions.',
         icon: Mic,
-        href: '#',
+        href: '/soundstrike/start',
         isLocked: false,
     },
     {
