@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,8 +22,10 @@ import {
   Brain,
   Award,
   History,
+  LogIn,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { handleGoogleSignIn } from '@/firebase/auth/auth-service';
 
 const tiers = [
   {
@@ -79,10 +81,33 @@ function ProfileHeader({ user, isLoading }: { user: any, isLoading: boolean}) {
             </div>
         )
     }
+    
+    if (!user) {
+        return (
+             <div className="flex items-center gap-6">
+                <Avatar className="w-24 h-24">
+                    <AvatarFallback>
+                        <User className="w-12 h-12" />
+                    </AvatarFallback>
+                </Avatar>
+                <div>
+                    <h1 className="text-3xl font-bold md:text-4xl font-headline">
+                        Welcome, Guest
+                    </h1>
+                    <p className="mt-1 text-muted-foreground">Log in to view your profile and save your progress.</p>
+                     <Button className="mt-4" onClick={handleGoogleSignIn}>
+                        <LogIn className='mr-2'/>
+                        Login with Google
+                    </Button>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="flex items-center gap-6">
             <Avatar className="w-24 h-24">
+              {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
               <AvatarFallback>
                 <User className="w-12 h-12" />
               </AvatarFallback>
@@ -111,9 +136,9 @@ export default function ProfilePage() {
 
       <Tabs defaultValue="badges">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="badges">Insight Badges</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="vault">Knowledge Vault</TabsTrigger>
+          <TabsTrigger value="badges" disabled={!user || isLoading}>Insight Badges</TabsTrigger>
+          <TabsTrigger value="history" disabled={!user || isLoading}>History</TabsTrigger>
+          <TabsTrigger value="vault" disabled={!user || isLoading}>Knowledge Vault</TabsTrigger>
         </TabsList>
         <TabsContent value="badges" className="mt-6">
            <Card>
@@ -188,7 +213,7 @@ export default function ProfilePage() {
             <Card
               key={tier.name}
               className={`flex flex-col ${
-                tier.current
+                tier.current && user
                   ? 'border-primary ring-2 ring-primary shadow-primary/20'
                   : ''
               }`}
@@ -210,7 +235,8 @@ export default function ProfilePage() {
               <CardFooter>
                 <Button
                   className="w-full"
-                  variant={tier.current ? 'outline' : 'default'}
+                  variant={tier.current && user ? 'outline' : 'default'}
+                  disabled={!user}
                 >
                   {tier.cta}
                 </Button>

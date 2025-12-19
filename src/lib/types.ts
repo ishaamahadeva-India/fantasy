@@ -10,9 +10,12 @@ export type FanRating = {
 
 export type UserProfile = {
     displayName: string;
+    email: string;
     avatarUrl?: string;
     points: number;
     watchlist?: string[];
+    ageVerified?: boolean;
+    fantasyEnabled?: boolean;
 };
 
 export type UserPrediction = {

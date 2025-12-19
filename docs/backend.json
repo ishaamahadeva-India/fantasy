@@ -10,6 +10,10 @@
           "type": "string",
           "description": "The user's public display name."
         },
+        "email": {
+            "type": "string",
+            "description": "The user's email address."
+        },
         "avatarUrl": {
           "type": "string",
           "format": "uri",
@@ -40,7 +44,8 @@
         }
       },
       "required": [
-        "displayName"
+        "displayName",
+        "email"
       ]
     },
     "CricketerProfile": {
@@ -333,7 +338,8 @@
   },
   "auth": {
     "providers": [
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
