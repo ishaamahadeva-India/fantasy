@@ -1,9 +1,11 @@
 import { placeholderArticles } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { Clock } from 'lucide-react';
+import { Clock, ThumbsUp, Star, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { AudioPlayer } from '@/components/article/audio-player';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 export default function ArticlePage({ params }: { params: { slug: string } }) {
   const article = placeholderArticles.find((a) => a.slug === params.slug);
@@ -25,6 +27,21 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
                     <Clock className="w-4 h-4" />
                     <span>{article.length} Read</span>
                 </div>
+            </div>
+             <Separator className="my-6" />
+             <div className="flex items-center gap-4">
+                <Button variant="outline">
+                    <ThumbsUp className="w-4 h-4 mr-2" />
+                    Like
+                </Button>
+                 <Button variant="outline">
+                    <Star className="w-4 h-4 mr-2" />
+                    Rate
+                </Button>
+                 <Button variant="outline">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share
+                </Button>
             </div>
         </div>
         
