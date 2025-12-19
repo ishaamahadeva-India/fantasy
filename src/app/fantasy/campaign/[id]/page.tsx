@@ -18,7 +18,7 @@ const campaignDetails = {
 
 const predictionEvents = [
     { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 85, type: 'numeric_prediction' },
-    { id: 'event-2', title: 'Teaser Release Date Prediction', status: 'Completed', score: 120, type: 'date_prediction' },
+    { id: 'event-2', title: 'Teaser Release Date Prediction', status: 'Completed', score: 0, type: 'date_prediction' },
     { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours', type: 'numeric_prediction' },
     { id: 'event-4', title: 'First Song Streaming Milestone', status: 'Upcoming', type: 'choice_selection' },
     { id: 'event-5', title: 'Opening Day Box Office Prediction', status: 'Upcoming', type: 'numeric_prediction' },
@@ -28,7 +28,7 @@ const predictionEvents = [
 const leaderboardData = [
   { rank: 1, name: 'CinemaFanatic', score: 205 },
   { rank: 2, name: 'BoxOfficeGuru', score: 190 },
-  { rank: 3, name: 'You', score: 185 }, // Current user's rank
+  { rank: 3, name: 'You', score: 85 }, // Updated score
   { rank: 4, name: 'ReelTalk', score: 170 },
   { rank: 5, name: 'FirstDayFirstShow', score: 165 },
 ];
@@ -65,13 +65,13 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
-                {isCompleted && event.score && (
+                {isCompleted && event.score !== undefined && (
                     <p>Your Score: <span className="font-bold text-primary font-code">{event.score}</span></p>
                 )}
             </CardContent>
             <CardContent>
                 <Button asChild className="w-full" disabled={isUpcoming}>
-                    <Link href={isLive ? `/fantasy/event/${event.id}` : '#'}>
+                    <Link href={`/fantasy/event/${event.id}`}>
                         {isLive && 'Make Prediction'}
                         {isCompleted && 'View Results'}
                         {isUpcoming && 'Prediction Opens Soon'}
@@ -85,7 +85,7 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
 export default function FantasyCampaignPage({ params }: { params: { id: string } }) {
 
   const completedEvents = predictionEvents.filter(e => e.status === 'Completed');
-  const totalPoints = completedEvents.reduce((acc, e) => acc + (e.score || 0), 0);
+  const totalPoints = leaderboardData.find(p => p.name === 'You')?.score || 0;
   const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank;
 
 
@@ -186,5 +186,3 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
     </div>
   );
 }
-
-    

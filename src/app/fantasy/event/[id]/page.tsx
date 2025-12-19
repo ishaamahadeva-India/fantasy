@@ -4,7 +4,7 @@ import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Clock, Info, ShieldCheck, Star } from 'lucide-react';
+import { ArrowLeft, Clock, Info, ShieldCheck, Star, Trophy, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -20,11 +20,40 @@ import { motion, AnimatePresence } from 'framer-motion';
 // --- MOCK DATA ---
 const allEvents = [
     {
+        id: 'event-1', 
+        title: 'First Look Views (24h)', 
+        description: 'Predict the total views for the "Devara" first look poster in its first 24 hours.',
+        type: 'numeric_prediction' as const,
+        campaignId: 'campaign-devara',
+        status: 'Completed' as const,
+        rules: ['Views from official social media channels only.'],
+        result: {
+            outcome: '15,234,567 views',
+            userPrediction: '14,500,000',
+            score: 85
+        }
+    },
+    {
+        id: 'event-2', 
+        title: 'Teaser Release Date Prediction', 
+        status: 'Completed' as const, 
+        type: 'date_prediction' as const,
+        campaignId: 'campaign-devara',
+        description: 'Predict the release date of the official teaser.',
+        rules: ['The official date announced by the production house will be considered.'],
+        result: {
+            outcome: 'July 20, 2024',
+            userPrediction: 'July 22, 2024',
+            score: 0
+        }
+    },
+    {
         id: 'event-3', 
         title: 'Trailer Views (24h)', 
         description: 'Predict the total number of views the official "Devara: Part 1" trailer will receive across all official channels within the first 24 hours of its release.',
         type: 'numeric_prediction' as const,
         campaignId: 'campaign-devara',
+        status: 'Live' as const,
         endsIn: '1 hour 45 minutes',
         rules: [
             'Views from official YouTube channels only.',
@@ -38,6 +67,7 @@ const allEvents = [
         description: 'Which of the first two released songs will be the first to cross 50 Million streams across all platforms?',
         type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
+        status: 'Upcoming' as const,
         endsIn: '3 days',
         rules: [
             'Includes streams from Spotify, Gaana, JioSaavn, and Apple Music.',
@@ -51,6 +81,7 @@ const allEvents = [
         description: 'Draft your fantasy team for the opening weekend. Your team will score points based on performance mentions, social media buzz, and critics\' ratings.',
         type: 'draft_selection' as const,
         campaignId: 'campaign-devara',
+        status: 'Upcoming' as const,
         endsIn: '5 days',
         rules: [
             'You have a budget of 100 credits.',
@@ -223,21 +254,41 @@ function DraftSelection({ config, prediction, setPrediction, isLocked }: { confi
     )
 }
 
+function EventHeader({ eventDetails }: { eventDetails: any }) {
+    return (
+        <div>
+            <Button variant="ghost" asChild className='mb-4 -ml-4'>
+                <Link href={`/fantasy/campaign/${eventDetails.campaignId}`}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Campaign
+                </Link>
+            </Button>
+            <h1 className="text-3xl font-bold md:text-4xl font-headline">
+                {eventDetails.title}
+            </h1>
+            {eventDetails.status === 'Live' && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-red-400">
+                    <Clock className="w-4 h-4" />
+                    <span>Prediction window closes in {eventDetails.endsIn}</span>
+                </div>
+            )}
+             {eventDetails.status === 'Completed' && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Event Completed</span>
+                </div>
+            )}
+        </div>
+    );
+}
 
-export default function PredictionEventPage({ params }: { params: { id: string } }) {
-    const { id } = use(params);
-    const eventDetails = allEvents.find(e => e.id === id);
+function LiveEventView({ eventDetails }: { eventDetails: any }) {
     const [prediction, setPrediction] = useState<any>(
         eventDetails?.type === 'draft_selection' ? { team: {}, captain: null } : ''
     );
     const [isLocked, setIsLocked] = useState(false);
-    
     const { user } = useUser();
     const { saveUserPrediction } = usePredictions();
-
-    if (!eventDetails) {
-        return notFound();
-    }
 
     const handleLockPrediction = () => {
         if (!user) {
@@ -325,25 +376,8 @@ export default function PredictionEventPage({ params }: { params: { id: string }
         return prediction;
     }
 
-
     return (
-        <div className="max-w-2xl mx-auto space-y-8">
-            <div>
-                <Button variant="ghost" asChild className='mb-4 -ml-4'>
-                    <Link href={`/fantasy/campaign/${eventDetails.campaignId}`}>
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Campaign
-                    </Link>
-                </Button>
-                <h1 className="text-3xl font-bold md:text-4xl font-headline">
-                    {eventDetails.title}
-                </h1>
-                <div className="mt-2 flex items-center gap-2 text-sm text-red-400">
-                    <Clock className="w-4 h-4" />
-                    <span>Prediction window closes in {eventDetails.endsIn}</span>
-                </div>
-            </div>
-
+        <>
             <Card>
                 <CardHeader>
                     <CardTitle className='font-headline'>Event Objective</CardTitle>
@@ -383,8 +417,67 @@ export default function PredictionEventPage({ params }: { params: { id: string }
                     </CardContent>
                 </Card>
             )}
+        </>
+    );
+}
 
-             <Card className="bg-white/5">
+function CompletedEventView({ eventDetails }: { eventDetails: any }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Event Results</CardTitle>
+                <CardDescription>See how your prediction fared against the final outcome.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="p-4 bg-white/5 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Final Outcome</p>
+                        <p className="text-2xl font-bold font-code text-primary">{eventDetails.result.outcome}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Your Prediction</p>
+                        <p className="text-2xl font-bold font-code">{eventDetails.result.userPrediction}</p>
+                    </div>
+                </div>
+                 <div className="text-center p-6 bg-primary/10 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Points Awarded</p>
+                    <p className="text-5xl font-bold font-code text-primary flex items-center justify-center gap-2">
+                        <Trophy className="w-10 h-10 text-amber-400" />
+                        {eventDetails.result.score}
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function PredictionEventPage({ params }: { params: { id: string } }) {
+    const { id } = use(params);
+    const eventDetails = allEvents.find(e => e.id === id);
+
+    if (!eventDetails) {
+        return notFound();
+    }
+
+    return (
+        <div className="max-w-2xl mx-auto space-y-8">
+            <EventHeader eventDetails={eventDetails} />
+
+            {eventDetails.status === 'Live' && <LiveEventView eventDetails={eventDetails} />}
+            {eventDetails.status === 'Completed' && <CompletedEventView eventDetails={eventDetails} />}
+            
+            {eventDetails.status === 'Upcoming' && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Prediction Opens Soon</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">This event is not yet live. Check back later to make your prediction.</p>
+                    </CardContent>
+                </Card>
+            )}
+
+            <Card className="bg-white/5">
                 <CardHeader>
                     <CardTitle className="font-headline text-lg flex items-center gap-2"><Info className='w-5 h-5'/>Rules & Guidelines</CardTitle>
                 </CardHeader>
@@ -396,9 +489,6 @@ export default function PredictionEventPage({ params }: { params: { id: string }
                     </ul>
                 </CardContent>
             </Card>
-
         </div>
     );
 }
-
-    
