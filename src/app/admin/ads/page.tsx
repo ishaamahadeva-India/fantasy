@@ -10,17 +10,42 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, doc, updateDoc } from 'firebase/firestore';
+import { toast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for ad placements
-const adPlacements = [
-  { id: 'ad-home-sidebar', name: 'Home Page Sidebar', page: 'Home', active: true },
-  { id: 'ad-feed-inline', name: 'Intel Hub In-Feed', page: 'Home', active: true },
-  { id: 'ad-fantasy-campaign', name: 'Fantasy Campaign Banner', page: 'Fantasy Campaign', active: true },
-  { id: 'ad-cricket-fanzone', name: 'Cricket Fan Zone Banner', page: 'Cricket Fan Zone', active: false },
-  { id: 'ad-live-match', name: 'Live Match Banner', page: 'Live Match', active: true },
-];
+type AdPlacement = {
+  id: string;
+  name: string;
+  page: string;
+  active: boolean;
+};
 
 export default function AdminAdsPage() {
+  const firestore = useFirestore();
+  const adPlacementsQuery = firestore ? collection(firestore, 'ad-placements') : null;
+  const { data: adPlacements, isLoading } = useCollection<AdPlacement>(adPlacementsQuery);
+
+  const handleToggle = async (id: string, currentStatus: boolean) => {
+    if (!firestore) return;
+    try {
+      const adRef = doc(firestore, 'ad-placements', id);
+      await updateDoc(adRef, { active: !currentStatus });
+      toast({
+        title: 'Placement Updated',
+        description: `The ad placement has been ${!currentStatus ? 'activated' : 'deactivated'}.`,
+      });
+    } catch (error) {
+      console.error('Error updating ad placement:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not update the ad placement status.',
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -32,7 +57,7 @@ export default function AdminAdsPage() {
             Control ad placements and sponsors.
           </p>
         </div>
-        <Button>
+        <Button disabled>
           <PlusCircle className="w-4 h-4 mr-2" />
           Add New Placement
         </Button>
@@ -46,7 +71,25 @@ export default function AdminAdsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {adPlacements.map((placement) => (
+          {isLoading && (
+             <>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className='w-full'>
+                  <Skeleton className="h-5 w-48 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-6 w-24" />
+              </div>
+               <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className='w-full'>
+                  <Skeleton className="h-5 w-48 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-6 w-24" />
+              </div>
+            </>
+          )}
+          {adPlacements && adPlacements.map((placement) => (
             <div
               key={placement.id}
               className="flex items-center justify-between p-4 border rounded-lg"
@@ -58,7 +101,8 @@ export default function AdminAdsPage() {
               <div className="flex items-center space-x-2">
                 <Switch
                   id={`switch-${placement.id}`}
-                  defaultChecked={placement.active}
+                  checked={placement.active}
+                  onCheckedChange={() => handleToggle(placement.id, placement.active)}
                 />
                 <Label htmlFor={`switch-${placement.id}`}>
                   {placement.active ? 'Active' : 'Inactive'}
@@ -66,6 +110,11 @@ export default function AdminAdsPage() {
               </div>
             </div>
           ))}
+          {!isLoading && adPlacements?.length === 0 && (
+            <div className="py-12 text-center text-muted-foreground">
+                No ad placements found. You may need to seed your database.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
