@@ -70,10 +70,10 @@ export default function LiveFantasyPage() {
       
        <Card className="text-center bg-transparent border-dashed">
             <CardHeader>
-                <CardTitle className="font-headline">A Game of Skill</CardTitle>
+                <CardTitle className="font-headline text-lg">A Game of Skill</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground max-w-3xl mx-auto space-y-2">
-                <p>This is a skill-based cricket strategy and prediction game. Outcomes depend entirely on the user’s knowledge, judgment, and timing. Success in this game depends on the participant’s understanding of cricket, analytical skills, and ability to make strategic decisions. There is no element of chance or randomness involved.</p>
+                <p>This is a skill-based cricket strategy and prediction game. Outcomes depend on the user’s knowledge, analysis, and timing. There is no element of chance or randomness.</p>
                 <p>This platform does not involve betting, wagering, or games of chance.</p>
             </CardContent>
             <CardFooter className='flex-col gap-2'>

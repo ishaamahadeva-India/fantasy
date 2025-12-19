@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Check, Lock, Flame, Zap, ShieldCheck, Star } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Flame, Zap, HelpCircle, User, Award } from 'lucide-react';
 import Link from 'next/link';
 import { placeholderCricketers } from '@/lib/cricket-data';
 import Image from 'next/image';
@@ -20,6 +20,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/ui/table';
 
 
 // --- MOCK DATA ---
@@ -27,7 +29,7 @@ const matchDetails = {
   id: 'live-match-1',
   title: 'IND vs AUS',
   series: 'T20 World Cup Final',
-  status: 'Upcoming',
+  status: 'Live',
 };
 
 const roles = {
@@ -58,6 +60,7 @@ const players = {
       impactScore: 9.1,
       recentForm: [8, 7, 9, 8, 9],
       careerPhase: 'Peak',
+      trendingRank: 0
     },
     {
       id: 'c5',
@@ -69,6 +72,7 @@ const players = {
       impactScore: 9.0,
       recentForm: [70, 20, 90, 45, 30],
       careerPhase: 'Late',
+      trendingRank: 0
     },
     {
       id: 'c6',
@@ -80,6 +84,7 @@ const players = {
       impactScore: 9.4,
       recentForm: [9, 8, 7, 9, 8],
       careerPhase: 'Peak',
+      trendingRank: 0
     },
   ],
 };
@@ -109,6 +114,15 @@ const livePredictions = [
         phase: 'Middle Overs',
     }
 ];
+
+const leaderboardData = [
+  { rank: 1, name: 'CricketFan1', score: 120 },
+  { rank: 2, name: 'You', score: 110 },
+  { rank: 3, name: 'StrategicThinker', score: 105 },
+  { rank: 4, name: 'ThePredictor', score: 95 },
+  { rank: 5, name: 'LuckyGuess', score: 80 },
+];
+
 
 function PlayerSelectionCard({
   player,
@@ -148,6 +162,106 @@ function PlayerSelectionCard({
       <p className="font-semibold mt-2 text-sm truncate">{player.name}</p>
     </Card>
   );
+}
+
+
+function ScoringRulesCard() {
+    return (
+         <Card>
+            <CardHeader>
+                <CardTitle className="font-headline flex items-center gap-2 text-xl"><HelpCircle className="w-6 h-6"/> Points Engine</CardTitle>
+                <CardDescription>Points are awarded based on predictions and streaks. All points are final.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-6">
+                
+                <div>
+                    <h4 className="font-bold text-base mb-2">Range-Based Predictions</h4>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>Exact Range</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+25</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Adjacent Range</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+15</TableCell>
+                            </TableRow>
+                             <TableRow className='border-b-0'>
+                                <TableCell className="text-red-400">Wrong Range</TableCell>
+                                <TableCell className="text-right font-code text-red-400 font-bold">-5</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div>
+                    <h4 className="font-bold text-base mb-2">Yes/No with Confidence</h4>
+                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Confidence</TableHead>
+                                <TableHead className="text-right text-green-400">Correct</TableHead>
+                                <TableHead className="text-right text-red-400">Incorrect</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>Low</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+10</TableCell>
+                                <TableCell className="text-right font-code text-red-400 font-bold">-2</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Medium</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+15</TableCell>
+                                <TableCell className="text-right font-code text-red-400 font-bold">-5</TableCell>
+                            </TableRow>
+                            <TableRow className='border-b-0'>
+                                <TableCell>High</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+20</TableCell>
+                                <TableCell className="text-right font-code text-red-400 font-bold">-10</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+                 <div>
+                    <h4 className="font-bold text-base mb-2">Ranking-Based Predictions</h4>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>Correct Rank</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+20</TableCell>
+                            </TableRow>
+                            <TableRow className='border-b-0'>
+                                <TableCell>Off by one rank</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+10</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div>
+                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Flame className="w-5 h-5 text-amber-400"/> Skill Streak Bonuses</h4>
+                     <Table>
+                        <TableBody>
+                             <TableRow>
+                                <TableCell>3 Correct Predictions</TableCell>
+                                <TableCell className="text-right font-code text-amber-400 font-bold">+10</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>5 Correct Predictions</TableCell>
+                                <TableCell className="text-right font-code text-amber-400 font-bold">+25</TableCell>
+                            </TableRow>
+                            <TableRow className='border-b-0'>
+                                <TableCell>7 Correct Predictions</TableCell>
+                                <TableCell className="text-right font-code text-amber-400 font-bold">+40</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+            </CardContent>
+        </Card>
+    )
 }
 
 function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
@@ -226,6 +340,8 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
             </div>
           </div>
         ))}
+        
+        <ScoringRulesCard />
 
         <div className="sticky bottom-6 z-10">
           <Button
@@ -374,6 +490,8 @@ function getPointsForResult(prediction: any, userAnswer: any) {
     const confidenceLabels = ["Low", "Medium", "High"];
     const pointsMap = { 'Low': {correct: 10, incorrect: -2}, 'Medium': {correct: 15, incorrect: -5}, 'High': {correct: 20, incorrect: -10} };
 
+    if (!userAnswer) return -5; // Penalty for not answering
+
     switch(prediction.type) {
         case 'yesno': {
             const isCorrect = userAnswer.answer === prediction.outcome;
@@ -382,7 +500,7 @@ function getPointsForResult(prediction: any, userAnswer: any) {
             return isCorrect ? pointsMap[confidenceLabel].correct : pointsMap[confidenceLabel].incorrect;
         }
         case 'range': {
-            if (!userAnswer || !userAnswer.answer) return -5;
+            if (!userAnswer.answer) return -5;
             const isCorrect = userAnswer.answer === prediction.outcome;
             if (isCorrect) return 25;
             const options = prediction.options;
@@ -393,12 +511,12 @@ function getPointsForResult(prediction: any, userAnswer: any) {
         }
         case 'ranking': {
             let score = 0;
-            if (!userAnswer || !userAnswer.answer) return score;
+            if (!userAnswer.answer) return score;
             userAnswer.answer.forEach((pId: string, index: number) => {
                 if (prediction.outcome[index] === pId) score += 20; // Exact rank
-                else if (prediction.outcome.includes(pId)) score += 5; // In the ranking, but wrong spot
+                else if (prediction.outcome.includes(pId)) score += 10; // Off by one
             });
-            return Math.round(score / prediction.options.length); // Average score
+            return Math.round(score / prediction.options.length);
         }
         default: return 0;
     }
@@ -493,15 +611,48 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
     );
 }
 
+function LeaderboardView() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Match Leaderboard</CardTitle>
+                <CardDescription>Live rankings for the {matchDetails.title} match.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {leaderboardData.map((player) => (
+                        <div key={player.rank} className={`flex items-center p-4 rounded-lg ${player.name === 'You' ? 'bg-primary/10 border border-primary/20' : 'bg-white/5'}`}>
+                            <div className="flex items-center gap-4 w-full">
+                                <span className="font-bold font-code text-lg w-8 text-center text-muted-foreground">
+                                    {player.rank}
+                                </span>
+                                <div className="flex items-center gap-3">
+                                    <User className="w-6 h-6 text-muted-foreground"/>
+                                    <span className="font-semibold">{player.name}</span>
+                                </div>
+                                <div className="ml-auto flex items-center gap-2 font-bold font-code text-primary text-lg">
+                                    <Award className="w-5 h-5 text-amber-400" />
+                                    {player.score}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+
 export default function LiveFantasyMatchPage({
   params,
 }: {
   params: { id: string };
 }) {
   const { id } = use(params);
-  const [matchPhase, setMatchPhase] = useState<'pre-match' | '1st-innings'>(
-    'pre-match'
-  );
+  const [matchPhase, setMatchPhase] = useState<'pre-match' | '1st-innings'>('pre-match');
+  const [activeTab, setActiveTab] = useState('game');
+
 
   if (id !== 'live-match-1') {
     return notFound();
@@ -522,12 +673,35 @@ export default function LiveFantasyMatchPage({
         <p className="mt-1 text-muted-foreground">{matchDetails.series}</p>
       </div>
 
-      {matchPhase === 'pre-match' && (
-        <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />
-      )}
-      {matchPhase === '1st-innings' && (
-        <FirstInningsView onInningsEnd={() => alert("Innings Over!")} />
-      )}
+       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="game">Game</TabsTrigger>
+                <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+            </TabsList>
+            <TabsContent value="game" className="mt-6">
+                {matchPhase === 'pre-match' && (
+                    <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />
+                )}
+                {matchPhase === '1st-innings' && (
+                    <FirstInningsView onInningsEnd={() => alert("Innings Over!")} />
+                )}
+            </TabsContent>
+            <TabsContent value="leaderboard" className="mt-6">
+                <LeaderboardView />
+            </TabsContent>
+        </Tabs>
+      
+       <Card className="text-center bg-transparent border-dashed">
+            <CardHeader>
+                <CardTitle className="font-headline text-lg">Skill Declaration</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-muted-foreground space-y-2">
+                <p>This is a skill-based cricket strategy and prediction game. Outcomes depend on the user’s knowledge, analysis, and timing. There is no element of chance or randomness.</p>
+            </CardContent>
+             <CardFooter className="justify-center text-xs text-muted-foreground">
+                <p>This game is open only to users aged 18 years and above.</p>
+            </CardFooter>
+        </Card>
     </div>
   );
 }
