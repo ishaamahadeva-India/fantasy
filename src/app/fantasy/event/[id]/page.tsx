@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useUser } from '@/firebase';
+import { usePredictions } from '@/firebase/firestore/predictions';
+import { toast } from '@/hooks/use-toast';
 
 // --- MOCK DATA ---
 // In a real app, you would fetch the event details based on the `params.id`
@@ -74,15 +78,41 @@ export default function PredictionEventPage({ params }: { params: { id: string }
     const eventDetails = allEvents.find(e => e.id === id);
     const [prediction, setPrediction] = useState('');
     const [isLocked, setIsLocked] = useState(false);
+    
+    const { user } = useUser();
+    const { saveUserPrediction } = usePredictions();
 
     if (!eventDetails) {
         return notFound();
     }
 
     const handleLockPrediction = () => {
-        // In a real app, this would save the prediction to Firestore
-        console.log(`Prediction locked: ${prediction}`);
+        if (!user) {
+            toast({
+                variant: 'destructive',
+                title: 'Not Logged In',
+                description: 'You must be logged in to make a prediction.',
+            });
+            return;
+        }
+
+        const predictionData = 
+            eventDetails.type === 'numeric_prediction'
+            ? { predictedValue: Number(prediction) }
+            : { selectedChoice: prediction };
+            
+        saveUserPrediction({
+            eventId: eventDetails.id,
+            campaignId: eventDetails.campaignId,
+            predictionData: predictionData,
+        }, user.uid);
+        
         setIsLocked(true);
+
+        toast({
+            title: 'Prediction Locked!',
+            description: 'Your prediction has been successfully submitted.',
+        });
     };
     
     const renderPredictionInput = () => {

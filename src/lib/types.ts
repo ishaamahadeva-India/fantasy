@@ -13,3 +13,12 @@ export type UserProfile = {
     avatarUrl?: string;
     points: number;
 };
+
+export type UserPrediction = {
+    userId: string;
+    eventId: string;
+    campaignId: string;
+    predictionData: Record<string, any>;
+    score?: number;
+    createdAt: Date;
+};
