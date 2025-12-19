@@ -20,6 +20,9 @@ import Link from 'next/link';
 import { CheckCircle2, Home, RefreshCw, XCircle, Share2, Award } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { toast } from '@/hooks/use-toast';
+import { useUser, useFirestore } from '@/firebase';
+import { updateUserPoints } from '@/firebase/firestore/users';
+import { useEffect } from 'react';
 
 type Quiz = DailyNewsQuizOutput['quiz'];
 
@@ -29,6 +32,9 @@ type QuizCompletionProps = {
 };
 
 export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
   const score = quiz.reduce((acc, question, index) => {
     if (userAnswers[index] === question.correctAnswerIndex) {
       return acc + 1;
@@ -38,6 +44,13 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
   const totalQuestions = quiz.length;
   const percentage = Math.round((score / totalQuestions) * 100);
   const pointsEarned = percentage; // 1 point per percentage point
+
+  useEffect(() => {
+    if (user && firestore && pointsEarned > 0) {
+      updateUserPoints(firestore, user.uid, pointsEarned);
+    }
+  }, [user, firestore, pointsEarned]);
+
 
   const comparisonData = [
     { name: 'You', score: percentage },
