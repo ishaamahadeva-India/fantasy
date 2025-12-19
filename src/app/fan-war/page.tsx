@@ -16,15 +16,15 @@ export default function FanWarPage() {
     setBattles(currentBattles => 
       currentBattles.map(battle => {
         if (battle.id === battleId) {
-          const updatedBattle = { ...battle };
-          // For demonstration, we just increment votes.
           // In a real app, you'd prevent multiple votes from the same user.
+          // For this demo, we'll just increment the votes.
+          const newVotes = { ...battle };
           if (entity === 'entityOne') {
-            updatedBattle.entityOne.votes += 1;
+            newVotes.entityOne.votes += 1;
           } else {
-            updatedBattle.entityTwo.votes += 1;
+            newVotes.entityTwo.votes += 1;
           }
-          return updatedBattle;
+          return newVotes;
         }
         return battle;
       })
@@ -96,12 +96,18 @@ export default function FanWarPage() {
                   </div>
                 </div>
 
-                {/* Progress Bar */}
+                {/* Progress Bar & Vote Count */}
                 <div className="mt-6 space-y-2">
                     <Progress value={entityOnePercentage} className="h-4"/>
                     <div className="flex justify-between text-sm font-bold font-code">
-                        <span className="text-primary">{entityOnePercentage.toFixed(0)}%</span>
-                        <span className="text-primary">{(100 - entityOnePercentage).toFixed(0)}%</span>
+                        <div className="text-left">
+                            <p className="text-primary">{entityOnePercentage.toFixed(0)}%</p>
+                            <p className="text-xs font-normal text-muted-foreground">{battle.entityOne.votes.toLocaleString()} votes</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-primary">{(100 - entityOnePercentage).toFixed(0)}%</p>
+                            <p className="text-xs font-normal text-muted-foreground">{battle.entityTwo.votes.toLocaleString()} votes</p>
+                        </div>
                     </div>
                 </div>
               </CardContent>

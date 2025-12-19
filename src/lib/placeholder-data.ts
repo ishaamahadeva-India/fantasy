@@ -144,7 +144,7 @@ export const fanWarData = [
         { label: 'Upcoming Projects', value: '5' },
         { label: 'Fan Following', value: '9.2/10' },
       ],
-      votes: 55,
+      votes: 1834,
     },
     entityTwo: {
       name: 'Allu Arjun',
@@ -154,7 +154,7 @@ export const fanWarData = [
         { label: 'Upcoming Projects', value: '3' },
         { label: 'Fan Following', value: '9.5/10' },
       ],
-      votes: 45,
+      votes: 2109,
     },
   },
   {
@@ -169,7 +169,7 @@ export const fanWarData = [
         { label: 'Win %', value: '58.9' },
         { label: 'Matches', value: '226' },
       ],
-      votes: 60,
+      votes: 3456,
     },
     entityTwo: {
       name: 'Rohit Sharma',
@@ -179,7 +179,7 @@ export const fanWarData = [
         { label: 'Win %', value: '56.6' },
         { label: 'Matches', value: '158' },
       ],
-      votes: 40,
+      votes: 2987,
     },
   },
 ];
