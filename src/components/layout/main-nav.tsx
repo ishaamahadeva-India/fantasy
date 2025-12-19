@@ -11,9 +11,8 @@ import {
   BarChart2,
   User,
   Settings,
-  Flame,
   Star,
-  Cricket,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,8 +21,8 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
-  { href: '/fan-zone', label: 'Movie Zone', icon: Star },
-  { href: '/fan-zone/cricket', label: 'Cricket Zone', icon: Cricket },
+  { href: '/fan-zone/movies', label: 'Movie Zone', icon: Star },
+  { href: '/fan-zone/cricket', label: 'Cricket Zone', icon: Shield },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/profile', label: 'Profile', icon: User },
 ];
