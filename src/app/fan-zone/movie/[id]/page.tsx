@@ -1,7 +1,7 @@
 
 'use client';
 
-import { use } from 'react';
+import { use, useMemo, useState, useEffect } from 'react';
 import { popularMovies } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -15,10 +15,91 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bookmark, Gamepad2, Mic, PieChart, Lock, ArrowLeft } from 'lucide-react';
+import { Bookmark, Gamepad2, Mic, PieChart, ArrowLeft } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { FanRating } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function CommunityInsightDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
+    const movieAttributes = ['Direction', 'Screenplay', 'Acting', 'Music Impact'];
+    const [averageRatings, setAverageRatings] = useState<Record<string, number>>({});
+    const [overallScore, setOverallScore] = useState(0);
+
+    useEffect(() => {
+        if (!ratings || ratings.length === 0) {
+            setAverageRatings({});
+            setOverallScore(0);
+            return;
+        }
+
+        const newAverageRatings: Record<string, number> = {};
+        let totalScore = 0;
+        let ratingCount = 0;
+
+        movieAttributes.forEach(attr => {
+            const relevantRatings = ratings.map(r => r.ratings[attr]).filter(v => v !== undefined);
+            if(relevantRatings.length > 0) {
+                const sum = relevantRatings.reduce((acc, curr) => acc + curr, 0);
+                const avg = sum / relevantRatings.length;
+                newAverageRatings[attr] = avg;
+                totalScore += sum;
+                ratingCount += relevantRatings.length;
+            }
+        });
+        setAverageRatings(newAverageRatings);
+
+        // A simple overall score average
+        const overall = totalScore / (ratingCount || 1);
+        setOverallScore(overall);
+
+    }, [ratings]);
+
+    if (isLoading) {
+        return (
+            <div className="grid md:grid-cols-2 gap-8 text-center">
+                <div>
+                    <h4 className="text-lg font-semibold font-headline">Community Score</h4>
+                    <Skeleton className="h-16 w-24 mx-auto mt-2" />
+                </div>
+                <div>
+                     <h4 className="text-lg font-semibold font-headline">Attribute Breakdown</h4>
+                     <Skeleton className="h-40 w-40 mx-auto mt-2" />
+                </div>
+            </div>
+        )
+    }
+    
+    if (!ratings || ratings.length === 0) {
+        return <p className="text-center text-muted-foreground">Be the first to rate this movie!</p>
+    }
+
+    return (
+        <div className="grid md:grid-cols-2 gap-8 text-center">
+            <div>
+                <h4 className="text-lg font-semibold font-headline">Community Score</h4>
+                <p className="text-5xl font-bold font-code text-primary">
+                    {overallScore.toFixed(1)}
+                </p>
+            </div>
+            <div>
+                <h4 className="text-lg font-semibold font-headline mb-2">Attribute Breakdown</h4>
+                <div className="space-y-2">
+                {movieAttributes.map(attr => (
+                    <div key={attr} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{attr}</span>
+                        <span className="font-bold font-code">{averageRatings[attr] ? averageRatings[attr].toFixed(1) : '-'}</span>
+                    </div>
+                ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 
 export default function MovieProfilePage({
   params,
@@ -33,6 +114,19 @@ export default function MovieProfilePage({
     'Acting',
     'Music Impact',
   ];
+  
+  const firestore = useFirestore();
+  const ratingsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'ratings'),
+      where('entityId', '==', id),
+      where('entityType', '==', 'movie')
+    );
+  }, [firestore, id]);
+
+  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+
 
   if (!movie) {
     notFound();
@@ -42,9 +136,9 @@ export default function MovieProfilePage({
     <div className="max-w-6xl mx-auto">
         <div className="mb-6">
             <Button variant="ghost" asChild>
-                <Link href="/fan-zone">
+                <Link href="/fan-zone/movies">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Fan Zone
+                    Back to Movie Zone
                 </Link>
             </Button>
         </div>
@@ -83,6 +177,8 @@ export default function MovieProfilePage({
               <AttributeRating
                 triggerButtonText="Rate Attributes"
                 attributes={movieAttributes}
+                entityId={movie.id}
+                entityType="movie"
               />
               <Button variant="outline" size="lg">
                 <Bookmark className="mr-2" /> Save to Watchlist
@@ -102,44 +198,11 @@ export default function MovieProfilePage({
                 Community Insight
               </CardTitle>
               <CardDescription>
-                See how other fans rated this movie. Upgrade to unlock full
-                analytics.
+                See how other fans have rated this movie.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative grid md:grid-cols-2 gap-8 text-center p-8 rounded-lg bg-white/5">
-                <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                  <Lock className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="font-headline text-xl mb-2">
-                    Unlock Full Insights
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Upgrade to Game Pass for detailed analytics.
-                  </p>
-                  <Button>Unlock Game Pass</Button>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold font-headline">
-                    Community Score
-                  </h4>
-                  <p className="text-5xl font-bold font-code text-primary/50">
-                    8.4
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold font-headline">
-                    Attribute Breakdown
-                  </h4>
-                  <div className="aspect-square relative w-full max-w-xs mx-auto opacity-40">
-                    <Image
-                      src="https://storage.googleapis.com/studioprod-assets/radar-chart-placeholder.svg"
-                      alt="Attribute breakdown chart"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                </div>
-              </div>
+              <CommunityInsightDisplay ratings={ratings} isLoading={ratingsLoading} />
             </CardContent>
           </Card>
         </div>
