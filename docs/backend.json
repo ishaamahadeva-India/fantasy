@@ -139,10 +139,19 @@
         },
         "status": {
           "type": "string",
-          "enum": ["upcoming", "active", "completed"]
+          "enum": [
+            "upcoming",
+            "active",
+            "completed"
+          ]
         }
       },
-      "required": ["title", "movieId", "startDate", "status"]
+      "required": [
+        "title",
+        "movieId",
+        "startDate",
+        "status"
+      ]
     },
     "PredictionEvent": {
       "title": "Prediction Event",
@@ -162,7 +171,11 @@
         },
         "eventType": {
           "type": "string",
-          "enum": ["numeric_prediction", "draft_selection", "choice_selection"],
+          "enum": [
+            "numeric_prediction",
+            "draft_selection",
+            "choice_selection"
+          ],
           "description": "The type of prediction the user needs to make."
         },
         "startTime": {
@@ -177,10 +190,20 @@
         },
         "status": {
           "type": "string",
-          "enum": ["upcoming", "live", "completed"]
+          "enum": [
+            "upcoming",
+            "live",
+            "completed"
+          ]
         }
       },
-      "required": ["campaignId", "title", "eventType", "endTime", "status"]
+      "required": [
+        "campaignId",
+        "title",
+        "eventType",
+        "endTime",
+        "status"
+      ]
     },
     "UserPrediction": {
       "title": "User Prediction",
@@ -205,7 +228,12 @@
           "description": "The points awarded for this specific prediction after the event is completed."
         }
       },
-      "required": ["userId", "eventId", "campaignId", "predictionData"]
+      "required": [
+        "userId",
+        "eventId",
+        "campaignId",
+        "predictionData"
+      ]
     }
   },
   "auth": {
