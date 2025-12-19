@@ -91,16 +91,15 @@ const generateDailyNewsQuizFlow = ai.defineFlow(
       throw new Error('Failed to generate quiz content.');
     }
     
-    // Generate audio for each question
-    const narratedQuiz = await Promise.all(
-        output.quiz.map(async (q) => {
-            const narration = await textToSpeech({ text: q.question });
-            return {
-                ...q,
-                audioDataUri: narration.audioDataUri,
-            };
-        })
-    );
+    // Generate audio for each question sequentially to avoid rate limiting.
+    const narratedQuiz = [];
+    for (const q of output.quiz) {
+        const narration = await textToSpeech({ text: q.question });
+        narratedQuiz.push({
+            ...q,
+            audioDataUri: narration.audioDataUri,
+        });
+    }
 
     return { quiz: narratedQuiz };
   }
