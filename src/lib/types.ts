@@ -16,6 +16,7 @@ export type UserProfile = {
     watchlist?: string[];
     ageVerified?: boolean;
     fantasyEnabled?: boolean;
+    isAdmin?: boolean;
 };
 
 export type UserPrediction = {
