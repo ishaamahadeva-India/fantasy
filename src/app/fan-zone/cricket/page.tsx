@@ -339,6 +339,24 @@ function AnalystViewTab() {
   )
 }
 
+function SponsorBanner() {
+    return (
+        <Card className="bg-gradient-to-r from-primary/10 via-background to-background border-primary/20">
+            <CardContent className="p-4">
+                 <div className="flex flex-col md:flex-row items-center justify-center gap-x-6 gap-y-2 text-center md:text-left">
+                    <span className="text-xs font-semibold tracking-widest uppercase text-primary">Official Partner</span>
+                    <p className="font-semibold text-lg text-foreground">
+                        Play Fantasy Cricket on <span className="text-primary font-bold">My11Circle</span>
+                    </p>
+                    <Button asChild size="sm" className="ml-auto shrink-0">
+                        <Link href="#" target="_blank">Play Now</Link>
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function CricketFanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<{ roles: string[], countries: string[] }>({ roles: [], countries: [] });
@@ -372,72 +390,75 @@ export default function CricketFanZonePage() {
         <p className="mt-2 text-muted-foreground">Teams · Players · Leagues</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Search teams, players..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline">
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Filter
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Filter Cricketers</SheetTitle>
-            </SheetHeader>
-            <div className="py-4 space-y-6">
-              <div>
-                <h3 className="font-semibold mb-3">Role</h3>
-                <div className="space-y-2">
-                  {allRoles.map((role) => (
-                    <div key={role} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`role-${role}`}
-                        checked={filters.roles.includes(role)}
-                        onCheckedChange={(checked) => handleFilterChange('roles', role, !!checked)}
-                      />
-                      <Label htmlFor={`role-${role}`} className="font-normal">
-                        {role}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Separator />
-               <div>
-                <h3 className="font-semibold mb-3">Country</h3>
-                <div className="space-y-2">
-                  {allCountries.map((country) => (
-                    <div key={country} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`country-${country}`}
-                         checked={filters.countries.includes(country)}
-                        onCheckedChange={(checked) => handleFilterChange('countries', country, !!checked)}
-                      />
-                      <Label htmlFor={`country-${country}`} className="font-normal">
-                        {country}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+                placeholder="Search teams, players..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
             </div>
-            <SheetFooter>
-                <Button variant="ghost" onClick={clearFilters}>Clear All</Button>
-              <SheetClose asChild>
-                <Button>Apply Filters</Button>
-              </SheetClose>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline">
+                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                Filter
+                </Button>
+            </SheetTrigger>
+            <SheetContent>
+                <SheetHeader>
+                <SheetTitle>Filter Cricketers</SheetTitle>
+                </SheetHeader>
+                <div className="py-4 space-y-6">
+                <div>
+                    <h3 className="font-semibold mb-3">Role</h3>
+                    <div className="space-y-2">
+                    {allRoles.map((role) => (
+                        <div key={role} className="flex items-center space-x-2">
+                        <Checkbox
+                            id={`role-${role}`}
+                            checked={filters.roles.includes(role)}
+                            onCheckedChange={(checked) => handleFilterChange('roles', role, !!checked)}
+                        />
+                        <Label htmlFor={`role-${role}`} className="font-normal">
+                            {role}
+                        </Label>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                <Separator />
+                <div>
+                    <h3 className="font-semibold mb-3">Country</h3>
+                    <div className="space-y-2">
+                    {allCountries.map((country) => (
+                        <div key={country} className="flex items-center space-x-2">
+                        <Checkbox
+                            id={`country-${country}`}
+                            checked={filters.countries.includes(country)}
+                            onCheckedChange={(checked) => handleFilterChange('countries', country, !!checked)}
+                        />
+                        <Label htmlFor={`country-${country}`} className="font-normal">
+                            {country}
+                        </Label>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                </div>
+                <SheetFooter>
+                    <Button variant="ghost" onClick={clearFilters}>Clear All</Button>
+                <SheetClose asChild>
+                    <Button>Apply Filters</Button>
+                </SheetClose>
+                </SheetFooter>
+            </SheetContent>
+            </Sheet>
+        </div>
+        <SponsorBanner />
       </div>
 
       <Tabs defaultValue="cricketers" className="w-full">

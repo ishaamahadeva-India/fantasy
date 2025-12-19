@@ -139,11 +139,13 @@ export default function FantasyMovieCampaignPage({ params }: { params: { id: str
             </div>
         </div>
 
-        <Card className="p-4 bg-white/10">
-            <CardDescription className='text-center'>Sponsored By</CardDescription>
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl text-primary">
-                <Building className='w-6 h-6'/> {campaignDetails.sponsor.name}
-            </CardTitle>
+        <Card className="p-4 bg-gradient-to-r from-primary/10 via-background to-background border-primary/20">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+                <span className="text-xs font-semibold tracking-widest uppercase text-primary">Sponsored By</span>
+                <div className="flex items-center gap-2 text-2xl font-bold text-foreground">
+                    <Building className='w-6 h-6 text-primary'/> {campaignDetails.sponsor.name}
+                </div>
+            </div>
         </Card>
 
         <Tabs defaultValue="events" className="w-full">

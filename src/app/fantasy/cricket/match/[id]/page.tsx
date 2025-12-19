@@ -23,6 +23,9 @@ const matchDetails = {
     teams: {
         teamA: { id: 'IND', name: 'India' },
         teamB: { id: 'AUS', name: 'Australia' }
+    },
+    sponsor: {
+        name: "Dream11"
     }
 };
 
@@ -153,7 +156,7 @@ function ScoringRulesCard() {
                                 <TableCell>Economy ≤ 8</TableCell>
                                 <TableCell className="text-right font-code text-primary font-bold">+10</TableCell>
                             </TableRow>
-                             <TableRow>
+                             <TableRow className="border-b-0 text-red-400">
                                 <TableCell className="border-b-0 text-red-400">Economy &gt; 10</TableCell>
                                 <TableCell className="text-right font-code text-red-400 font-bold border-b-0">-10</TableCell>
                             </TableRow>
@@ -185,8 +188,8 @@ function ScoringRulesCard() {
                                 <TableCell>5 Correct Predictions</TableCell>
                                 <TableCell className="text-right font-code text-amber-400 font-bold">+25</TableCell>
                             </TableRow>
-                            <TableRow>
-                                <TableCell className='border-b-0'>7 Correct Predictions</TableCell>
+                            <TableRow className='border-b-0'>
+                                <TableCell>7 Correct Predictions</TableCell>
                                 <TableCell className="text-right font-code text-amber-400 font-bold border-b-0">+40</TableCell>
                             </TableRow>
                         </TableBody>
@@ -368,7 +371,7 @@ function InningsBreakView({ onStartNextInnings }: { onStartNextInnings: () => vo
                 <CardContent>
                     <p className="text-muted-foreground">The 2nd Innings selection will begin shortly...</p>
                 </CardContent>
-                 <CardFooter>
+                 <CardFooter className="justify-center">
                      <Button onClick={onStartNextInnings}>Start 2nd Innings Selections</Button>
                 </CardFooter>
             </Card>
@@ -423,14 +426,30 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
 
   return (
     <div className="space-y-6">
+        <div className="flex items-center justify-between gap-4">
+             <Button variant="ghost" asChild className='mb-2 -ml-4'>
+                <Link href="/fantasy/cricket">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                </Link>
+            </Button>
+            <div className="p-2 rounded-lg bg-red-500/20 text-red-400 font-semibold text-sm animate-pulse">
+                LIVE
+            </div>
+        </div>
+
+        <Card className="p-4 bg-gradient-to-r from-primary/10 via-background to-background border-primary/20">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+                <span className="text-xs font-semibold tracking-widest uppercase text-primary">Powered By</span>
+                <div className="flex items-center gap-2 text-2xl font-bold text-foreground">
+                    {matchDetails.sponsor.name}
+                </div>
+            </div>
+        </Card>
+
+
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
             <div>
-                <Button variant="ghost" asChild className='mb-2 -ml-4'>
-                    <Link href="/fantasy/cricket">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to All Matches
-                    </Link>
-                </Button>
                  <h1 className="text-3xl font-bold md:text-4xl font-headline">
                     {matchDetails.title}
                 </h1>
