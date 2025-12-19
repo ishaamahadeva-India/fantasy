@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, Clock, ListOrdered, Lock, Trophy, ArrowLeft, User, Award } from 'lucide-react';
+import { Check, Clock, ListOrdered, Lock, Trophy, ArrowLeft, User, Award, Building } from 'lucide-react';
 import Link from 'next/link';
 
 // Placeholder Data
@@ -13,7 +13,11 @@ const campaignDetails = {
     movie: {
         title: 'Devara: Part 1',
     },
-    prizePool: 'Vouchers & 1,00,000 Intel Points'
+    prizePool: 'Vouchers & 1,00,000 Intel Points',
+    sponsor: {
+        name: 'Kingfisher',
+        logo: 'https://picsum.photos/seed/kingfisher/100/100'
+    }
 };
 
 const predictionEvents = [
@@ -116,8 +120,12 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
                 <p className="mt-2 text-muted-foreground">
                     Predict events for <span className="font-semibold text-primary">{campaignDetails.movie.title}</span> and win big.
                 </p>
+                 <div className="mt-4 flex items-center gap-2 text-primary">
+                    <Trophy className="w-5 h-5"/>
+                    <span className="font-semibold">{campaignDetails.prizePool}</span>
+                </div>
             </div>
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-2 lg:grid-cols-3 gap-4'>
                 <Card className="text-center p-4">
                     <CardDescription>Total Points</CardDescription>
                     <CardTitle className="font-code text-4xl text-primary">{totalPoints}</CardTitle>
@@ -125,6 +133,12 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
                  <Card className="text-center p-4">
                     <CardDescription>Your Rank</CardDescription>
                     <CardTitle className="font-code text-4xl text-primary">#{currentUserRank || 'N/A'}</CardTitle>
+                </Card>
+                <Card className="text-center p-4 col-span-2 lg:col-span-1">
+                    <CardDescription>Sponsored By</CardDescription>
+                    <CardTitle className="flex items-center justify-center gap-2 text-2xl text-primary">
+                        <Building className='w-6 h-6'/> {campaignDetails.sponsor.name}
+                    </CardTitle>
                 </Card>
             </div>
         </div>

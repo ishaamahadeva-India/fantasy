@@ -4,7 +4,7 @@ import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Clock, Info, ShieldCheck, Star, Trophy, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Clock, Info, ShieldCheck, Star, Trophy, CheckCircle2, Building } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -389,19 +389,6 @@ function LiveEventView({ eventDetails }: { eventDetails: any }) {
         });
     };
     
-    const renderPredictionInput = () => {
-        switch (eventDetails.type) {
-            case 'numeric_prediction':
-                return <NumericPrediction prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
-            case 'choice_selection':
-                return <ChoiceSelection options={eventDetails.options!} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
-            case 'draft_selection':
-                return <DraftSelection config={eventDetails.draftConfig} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
-            default:
-                return <p className='text-muted-foreground'>This event type is not available yet.</p>
-        }
-    }
-    
     const getLockedInDisplayValue = () => {
         if (!prediction) return "N/A";
         if (eventDetails.type === 'numeric_prediction') {
@@ -526,6 +513,12 @@ export default function PredictionEventPage({ params }: { params: { id: string }
                             <li key={index}>{rule}</li>
                         ))}
                     </ul>
+                </CardContent>
+                <CardContent className="border-t pt-4">
+                     <p className="text-xs text-muted-foreground flex items-center gap-2">
+                        <Building className="w-4 h-4" />
+                        Powered by Kingfisher
+                    </p>
                 </CardContent>
             </Card>
         </div>
