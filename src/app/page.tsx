@@ -1,6 +1,5 @@
 'use client';
 import { ForYouSection } from '@/components/home/for-you-section';
-import { Greeting } from '@/components/home/greeting';
 import { TrendingTopics } from '@/components/home/trending-topics';
 import { DailyBrief } from '@/components/home/daily-brief';
 import {
@@ -142,8 +141,6 @@ isLocked: true,
 export default function Home() {
   return (
     <div className="flex flex-col gap-8 md:gap-12">
-      <Greeting />
-
       <div className="space-y-12">
         <div>
           <h2 className="mb-4 text-2xl font-bold font-headline">

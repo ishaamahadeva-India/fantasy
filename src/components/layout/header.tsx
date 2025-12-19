@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,11 +11,39 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+function Greeting() {
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      setGreeting('Good morning');
+    } else if (hour < 18) {
+      setGreeting('Good afternoon');
+    } else {
+      setGreeting('Good evening');
+    }
+  }, []);
+
+  return (
+    <div>
+        <h1 className="text-xl font-bold md:text-2xl font-headline">
+            {greeting}, Kaarthu
+        </h1>
+    </div>
+  );
+}
+
 
 export function Header() {
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b shrink-0 bg-background md:px-6">
-      <SidebarTrigger className="md:hidden" />
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="md:hidden" />
+        <Greeting />
+      </div>
       <div className="flex items-center gap-4 ml-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
