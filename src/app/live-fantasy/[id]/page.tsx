@@ -46,6 +46,18 @@ const roles = {
       description: 'Takes most wickets with the new ball.',
     },
   ],
+  '2nd-innings': [
+    {
+      id: 'middle-overs-anchor',
+      title: 'Middle Overs Anchor (Batting)',
+      description: 'Scores most runs between overs 7-15.',
+    },
+    {
+      id: 'death-overs-finisher',
+      title: 'Death Overs Finisher (Batting)',
+      description: 'Scores most runs with a high strike rate in overs 16-20.',
+    },
+  ]
 };
 
 const players = {
@@ -123,7 +135,6 @@ const leaderboardData = [
   { rank: 4, name: 'ThePredictor', score: 95 },
   { rank: 5, name: 'LuckyGuess', score: 80 },
 ];
-
 
 function PlayerSelectionCard({
   player,
@@ -612,6 +623,119 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
     );
 }
 
+function InningsBreakView({ onStartNextInnings }: { onStartNextInnings: () => void }) {
+    return (
+        <div className="text-center space-y-4">
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Innings Break</CardTitle>
+                    <CardDescription>Review the 1st innings and prepare your roles for the 2nd innings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">The 2nd Innings selection will begin shortly...</p>
+                </CardContent>
+                 <CardFooter>
+                     <Button onClick={onStartNextInnings}>Start 2nd Innings Selections</Button>
+                </CardFooter>
+            </Card>
+        </div>
+    )
+}
+
+
+function SecondInningsSelectionView({ onLockSelections }: { onLockSelections: () => void }) {
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [isLocked, setIsLocked] = useState(false);
+
+  const handleSelectPlayer = (roleId: string, playerId: string) => {
+    setSelections((prev) => ({
+      ...prev,
+      [roleId]: prev[roleId] === playerId ? '' : playerId,
+    }));
+  };
+
+  const handleLock = () => {
+    if (
+      Object.values(selections).filter(Boolean).length !==
+      roles['2nd-innings'].length
+    ) {
+      toast({
+        variant: 'destructive',
+        title: 'Incomplete Selections',
+        description: 'Please select one player for each role.',
+      });
+      return;
+    }
+    setIsLocked(true);
+    toast({
+      title: 'Selections Locked for 2nd Innings!',
+      description: 'The chase is about to begin.',
+    });
+    setTimeout(() => onLockSelections(), 1500);
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="space-y-8"
+      >
+        <Card className="bg-primary/10 border-primary/20">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl">
+              2nd Innings Selections
+            </CardTitle>
+            <CardDescription>
+             Select your player roles for the chase. Your choices cannot be changed after locking.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {roles['2nd-innings'].map((role) => (
+          <div key={role.id}>
+            <h3 className="text-xl font-bold font-headline mb-1 flex items-center gap-2">
+              <Flame className="w-5 h-5 text-primary" /> {role.title}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {role.description}
+            </p>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {[...players.IND, ...players.AUS].map((player) => (
+                <PlayerSelectionCard
+                  key={`${role.id}-${player.id}`}
+                  player={player}
+                  isSelected={selections[role.id] === player.id}
+                  isDisabled={
+                    isLocked ||
+                    (!!selections[role.id] && selections[role.id] !== player.id)
+                  }
+                  onSelect={() =>
+                    !isLocked && handleSelectPlayer(role.id, player.id)
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+        
+        <div className="sticky bottom-6 z-10">
+          <Button
+            onClick={handleLock}
+            disabled={isLocked}
+            size="lg"
+            className="w-full shadow-2xl shadow-primary/20"
+          >
+            <Lock className="w-5 h-5 mr-2" />
+            {isLocked ? `Selections Locked` : `Lock Selections for 2nd Innings`}
+          </Button>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+
 function LeaderboardView() {
     return (
         <Card>
@@ -644,6 +768,8 @@ function LeaderboardView() {
     );
 }
 
+type MatchPhase = 'pre-match' | '1st-innings' | 'innings-break' | '2nd-innings-selection' | '2nd-innings-live' | 'match-over';
+
 
 export default function LiveFantasyMatchPage({
   params,
@@ -651,13 +777,33 @@ export default function LiveFantasyMatchPage({
   params: { id: string };
 }) {
   const { id } = use(params);
-  const [matchPhase, setMatchPhase] = useState<'pre-match' | '1st-innings'>('pre-match');
+  const [matchPhase, setMatchPhase] = useState<MatchPhase>('pre-match');
   const [activeTab, setActiveTab] = useState('game');
 
 
   if (id !== 'live-match-1') {
     return notFound();
   }
+
+  const renderGameContent = () => {
+    switch(matchPhase) {
+      case 'pre-match':
+        return <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />;
+      case '1st-innings':
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} />;
+      case 'innings-break':
+        return <InningsBreakView onStartNextInnings={() => setMatchPhase('2nd-innings-selection')} />;
+      case '2nd-innings-selection':
+        return <SecondInningsSelectionView onLockSelections={() => setMatchPhase('2nd-innings-live')} />;
+      case '2nd-innings-live':
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} />; // Re-use for simulation
+      case 'match-over':
+        return <Card><CardHeader><CardTitle>Match Over!</CardTitle><CardContent><p>Final leaderboard is now available.</p></CardContent></CardHeader></Card>;
+      default:
+        return <p>Loading match...</p>;
+    }
+  }
+
 
   return (
     <div className="space-y-8">
@@ -680,12 +826,7 @@ export default function LiveFantasyMatchPage({
                 <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             </TabsList>
             <TabsContent value="game" className="mt-6">
-                {matchPhase === 'pre-match' && (
-                    <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />
-                )}
-                {matchPhase === '1st-innings' && (
-                    <FirstInningsView onInningsEnd={() => alert("Innings Over!")} />
-                )}
+                {renderGameContent()}
             </TabsContent>
             <TabsContent value="leaderboard" className="mt-6">
                 <LeaderboardView />
