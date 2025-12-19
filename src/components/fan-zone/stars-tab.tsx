@@ -1,11 +1,34 @@
 
 'use client';
+import { useState } from 'react';
 import { popularStars } from '@/lib/placeholder-data';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import Link from 'next/link';
+
+function FollowButton({ starId }: { starId: string }) {
+    const [isFollowing, setIsFollowing] = useState(false);
+
+    const handleFollow = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsFollowing(!isFollowing);
+    };
+
+    return (
+        <Button 
+            variant={isFollowing ? 'secondary' : 'outline'} 
+            size="sm" 
+            className="w-full text-xs"
+            onClick={handleFollow}
+        >
+            {isFollowing ? <Check className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+            {isFollowing ? 'Following' : 'Follow'}
+        </Button>
+    );
+}
 
 export function StarsTab({ searchTerm }: { searchTerm: string }) {
   const filteredStars = popularStars.filter((star) =>
@@ -33,10 +56,7 @@ export function StarsTab({ searchTerm }: { searchTerm: string }) {
               <h3 className="font-bold font-headline text-sm group-hover:text-primary">
                 {star.name}
               </h3>
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                <Plus className="w-4 h-4 mr-2" />
-                Follow
-              </Button>
+              <FollowButton starId={star.id} />
             </CardContent>
           </Card>
         </Link>
@@ -44,5 +64,3 @@ export function StarsTab({ searchTerm }: { searchTerm: string }) {
     </div>
   );
 }
-
-    

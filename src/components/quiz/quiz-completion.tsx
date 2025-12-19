@@ -1,3 +1,4 @@
+
 'use client';
 import type { DailyNewsQuizOutput } from '@/ai/flows/daily-news-quiz';
 import {
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { CheckCircle2, Home, RefreshCw, XCircle, Share2, Award } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { toast } from '@/hooks/use-toast';
 
 type Quiz = DailyNewsQuizOutput['quiz'];
 
@@ -41,6 +43,22 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
     { name: 'You', score: percentage },
     { name: 'Average', score: 72 }, // Placeholder data
   ];
+  
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'I just took a quiz!',
+        text: `I scored ${percentage}% on the quiz! Can you beat my score?`,
+        url: window.location.href,
+      }).catch(error => console.log('Error sharing', error));
+    } else {
+        navigator.clipboard.writeText(`I scored ${percentage}% on the quiz! Check it out at ${window.location.href}`);
+        toast({
+            title: 'Link Copied!',
+            description: 'Quiz result link copied to your clipboard.',
+        });
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8">
@@ -89,7 +107,7 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
           </div>
         </CardContent>
         <CardFooter className="justify-center gap-2 sm:gap-4 flex-wrap">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleShare}>
             <Share2 className="w-4 h-4 mr-2" /> Share Result
           </Button>
           <Button asChild>
