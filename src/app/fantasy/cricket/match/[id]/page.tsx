@@ -34,7 +34,7 @@ const roles = {
 
 const players = {
     IND: placeholderCricketers.filter(p => p.country === 'IND'),
-    AUS: placeholderCricketers.filter(p => p.country === 'AUS' || p.id === 'c2'), // temp
+    AUS: placeholderCricketers.filter(p => p.country === 'AUS'),
 };
 // Add Pat Cummins for AUS
 players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
