@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, BrainCircuit, Clock, Video } from 'lucide-react';
+import { ArrowRight, BrainCircuit, Clock, Video, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { popularMovies } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
@@ -73,9 +73,12 @@ export default function PreMovieQuizPage({
               Start Quiz <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
-          <p className="text-xs text-muted-foreground">
-            No interruptions • ~3 minutes
-          </p>
+           <Button asChild variant="ghost" className="w-full">
+                <Link href={`/fan-zone/movie/${movie.id}`}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Movie Profile
+                </Link>
+            </Button>
         </div>
       </div>
     </div>

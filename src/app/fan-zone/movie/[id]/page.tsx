@@ -1,3 +1,4 @@
+
 'use client';
 
 import { use } from 'react';
@@ -14,7 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bookmark, Gamepad2, Mic, PieChart, Lock } from 'lucide-react';
+import { Bookmark, Gamepad2, Mic, PieChart, Lock, ArrowLeft } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
@@ -39,6 +40,14 @@ export default function MovieProfilePage({
 
   return (
     <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+            <Button variant="ghost" asChild>
+                <Link href="/fan-zone">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Fan Zone
+                </Link>
+            </Button>
+        </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
         <div className="md:col-span-1">
           <Card className="overflow-hidden">
@@ -74,7 +83,6 @@ export default function MovieProfilePage({
               <AttributeRating
                 triggerButtonText="Rate Attributes"
                 attributes={movieAttributes}
-                icon={Mic}
               />
               <Button variant="outline" size="lg">
                 <Bookmark className="mr-2" /> Save to Watchlist

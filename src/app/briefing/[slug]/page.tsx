@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BriefingPage({ params: { slug } }: { params: { slug: string } }) {
@@ -40,6 +40,14 @@ export default function BriefingPage({ params: { slug } }: { params: { slug: str
 
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12 w-full">
+        <div className='mb-4'>
+             <Button variant="ghost" asChild>
+                <Link href={`/briefing/${slug}/start`}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                </Link>
+            </Button>
+        </div>
         <h1 className="text-3xl md:text-4xl font-bold font-headline text-center mb-2">Intel Briefing</h1>
         <p className="text-center text-muted-foreground mb-8">Test your comprehension and summarization skills.</p>
         
@@ -97,4 +105,3 @@ export default function BriefingPage({ params: { slug } }: { params: { slug: str
     </div>
   );
 }
-

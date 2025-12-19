@@ -1,11 +1,13 @@
+
 import { placeholderArticles } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { Clock, ThumbsUp, Star, Share2 } from 'lucide-react';
+import { Clock, ThumbsUp, Star, Share2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { AudioPlayer } from '@/components/article/audio-player';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 export default function ArticlePage({ params: { slug } }: { params: { slug: string } }) {
   const article = placeholderArticles.find((a) => a.slug === slug);
@@ -16,6 +18,14 @@ export default function ArticlePage({ params: { slug } }: { params: { slug: stri
 
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12">
+        <div className='mb-6'>
+            <Button variant="ghost" asChild>
+                <Link href="/explore">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Intel Hub
+                </Link>
+            </Button>
+        </div>
       <article className="prose prose-invert prose-lg max-w-none">
         <div className="space-y-4 not-prose">
             <Badge variant="secondary">{article.category}</Badge>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { use } from 'react';
@@ -7,9 +8,10 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star } from 'lucide-react';
+import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
+import Link from 'next/link';
 
 
 export default function StarProfilePage({ params }: { params: { id: string } }) {
@@ -23,6 +25,14 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
 
   return (
     <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+            <Button variant="ghost" asChild>
+                <Link href="/fan-zone">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Fan Zone
+                </Link>
+            </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             <div className="md:col-span-1">
                 <Card className="overflow-hidden">
