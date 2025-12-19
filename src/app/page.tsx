@@ -1,3 +1,4 @@
+
 'use client';
 import { ForYouSection } from '@/components/home/for-you-section';
 import { TrendingTopics } from '@/components/home/trending-topics';
@@ -151,7 +152,7 @@ export default function Home() {
         
         <div>
             <h2 className="mb-4 text-2xl font-bold font-headline">
-                Game Lobby
+                Challenge Lobby
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {gameModes.map((mode) => (
