@@ -13,6 +13,7 @@ import {
   Settings,
   Flame,
   Star,
+  Cricket,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -21,7 +22,8 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
-  { href: '/fan-zone', label: 'Fan Zone', icon: Star },
+  { href: '/fan-zone', label: 'Movie Zone', icon: Star },
+  { href: '/fan-zone/cricket', label: 'Cricket Zone', icon: Cricket },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/profile', label: 'Profile', icon: User },
 ];
@@ -36,7 +38,7 @@ export function MainNav() {
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton
               asChild
-              isActive={pathname === item.href}
+              isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
               tooltip={item.label}
             >
               <Link href={item.href}>
