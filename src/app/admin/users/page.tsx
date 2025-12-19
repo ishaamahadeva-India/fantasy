@@ -47,11 +47,19 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-8">
+       <div>
+          <h1 className="text-3xl font-bold md:text-4xl font-headline">
+            User Management
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            View and manage all users in your application.
+          </p>
+        </div>
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>All Users</CardTitle>
           <CardDescription>
-            A list of all users in your application.
+            A list of all registered users.
           </CardDescription>
         </CardHeader>
         <CardContent>
