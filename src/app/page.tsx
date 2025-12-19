@@ -25,6 +25,9 @@ import {
   Calendar,
   Compass,
   Trophy,
+  BarChart2,
+  Quote,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -116,21 +119,21 @@ const gameModes = [
     {
         title: 'The Analyst',
         description: 'Interpret data and charts to draw conclusions.',
-        icon: 'BarChart2',
+        icon: BarChart2,
         href: '#',
         isLocked: true,
     },
     {
         title: 'Quote Quest',
         description: 'Attribute famous quotes to the right person.',
-        icon: 'Quote',
+        icon: Quote,
         href: '#',
         isLocked: true,
     },
     {
         title: 'The Negotiator',
         description: 'Navigate a negotiation scenario to a successful outcome.',
-        icon: 'Users',
+        icon: Users,
         href: '#',
         isLocked: true,
     },
