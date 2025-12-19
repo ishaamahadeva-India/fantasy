@@ -22,58 +22,59 @@ const allEvents = [
     {
         id: 'event-1', 
         title: 'First Look Views (24h)', 
-        description: 'Predict the total views for the "Devara" first look poster in its first 24 hours.',
-        type: 'numeric_prediction' as const,
+        description: 'Predict the range of total views for the "Devara" first look across all official channels in its first 24 hours.',
+        type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
         status: 'Completed' as const,
-        rules: ['Views from official social media channels only.'],
+        rules: ['Views from official YouTube, X, and Instagram channels only.'],
+        options: ['0 - 10 Million', '10 - 20 Million', '20 - 30 Million', '30 Million+'],
         result: {
-            outcome: '15,234,567 views',
-            userPrediction: '14,500,000',
-            score: 85
+            outcome: '20 - 30 Million', // The winning range
+            userPrediction: '20 - 30 Million', // User's selected range
+            score: 50 // Predetermined points for correct prediction
         }
     },
     {
         id: 'event-2', 
-        title: 'Teaser Release Date Prediction', 
+        title: 'Pre-Release Event Location', 
         status: 'Completed' as const, 
-        type: 'date_prediction' as const,
+        type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
-        description: 'Predict the release date of the official teaser.',
-        rules: ['The official date announced by the production house will be considered.'],
+        description: 'Predict the primary location of the main pre-release event.',
+        options: ['Hyderabad', 'Vizag', 'Dubai', 'Mumbai'],
+        rules: ['The location of the main stage event will be considered final.'],
         result: {
-            outcome: 'July 20, 2024',
-            userPrediction: 'July 22, 2024',
+            outcome: 'Hyderabad',
+            userPrediction: 'Vizag',
             score: 0
         }
     },
     {
         id: 'event-3', 
         title: 'Trailer Views (24h)', 
-        description: 'Predict the total number of views the official "Devara: Part 1" trailer will receive across all official channels within the first 24 hours of its release.',
-        type: 'numeric_prediction' as const,
+        description: 'Predict the range of total views for the official "Devara: Part 1" trailer across all official channels within the first 24 hours.',
+        type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
         status: 'Live' as const,
         endsIn: '1 hour 45 minutes',
+        options: ['0 - 25 Million', '25 - 50 Million', '50 - 75 Million', '75 Million+'],
         rules: [
             'Views from official YouTube channels only.',
             'The 24-hour window starts from the exact time of the trailer release.',
-            'Prediction must be a whole number.'
         ],
     },
     {
         id: 'event-4',
-        title: 'First Song Streaming Milestone',
-        description: 'Which of the first two released songs will be the first to cross 50 Million streams across all platforms?',
+        title: 'First Song: Streaming Platform Milestone',
+        description: 'Which streaming platform will be the first to report 10 million streams for the first single?',
         type: 'choice_selection' as const,
         campaignId: 'campaign-devara',
         status: 'Upcoming' as const,
         endsIn: '3 days',
         rules: [
-            'Includes streams from Spotify, Gaana, JioSaavn, and Apple Music.',
-            'The winner is the first song to reach the milestone, regardless of release date.',
+            'Official reports from platform holders or the production house will be considered final.',
         ],
-        options: ['Fear Song', 'Anaganaganaga'],
+        options: ['Spotify', 'Gaana', 'JioSaavn', 'Apple Music'],
     },
     {
         id: 'event-6',
@@ -104,6 +105,28 @@ const allEvents = [
                 's-placeholder-4': 15, // Anirudh
             }
         },
+    },
+    {
+        id: 'event-7',
+        title: 'First Look Views (1hr)',
+        description: 'Predict the range of total views for the "Devara" first look in its first hour.',
+        type: 'choice_selection' as const,
+        campaignId: 'campaign-devara',
+        status: 'Upcoming' as const,
+        endsIn: 'Soon',
+        options: ['0 - 1 Million', '1 - 2 Million', '2 Million+'],
+        rules: ['Views from official YouTube, X, and Instagram channels only.'],
+    },
+    {
+        id: 'event-8',
+        title: 'First Look Views (7 Days)',
+        description: 'Predict the range of total views for the "Devara" first look after 7 days.',
+        type: 'choice_selection' as const,
+        campaignId: 'campaign-devara',
+        status: 'Upcoming' as const,
+        endsIn: 'Soon',
+        options: ['0 - 50 Million', '50 - 100 Million', '100 Million+'],
+        rules: ['Views from official YouTube, X, and Instagram channels only.'],
     }
 ];
 // Add placeholder stars for draft
@@ -422,6 +445,7 @@ function LiveEventView({ eventDetails }: { eventDetails: any }) {
 }
 
 function CompletedEventView({ eventDetails }: { eventDetails: any }) {
+    const isCorrect = eventDetails.result.score > 0;
     return (
         <Card>
             <CardHeader>
@@ -431,10 +455,10 @@ function CompletedEventView({ eventDetails }: { eventDetails: any }) {
             <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-4 text-center">
                     <div className="p-4 bg-white/5 rounded-lg">
-                        <p className="text-sm text-muted-foreground">Final Outcome</p>
+                        <p className="text-sm text-muted-foreground">Winning Range</p>
                         <p className="text-2xl font-bold font-code text-primary">{eventDetails.result.outcome}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-lg">
+                    <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
                         <p className="text-sm text-muted-foreground">Your Prediction</p>
                         <p className="text-2xl font-bold font-code">{eventDetails.result.userPrediction}</p>
                     </div>
@@ -492,3 +516,5 @@ export default function PredictionEventPage({ params }: { params: { id: string }
         </div>
     );
 }
+
+    

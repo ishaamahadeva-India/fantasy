@@ -17,18 +17,19 @@ const campaignDetails = {
 };
 
 const predictionEvents = [
-    { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 85, type: 'numeric_prediction' },
-    { id: 'event-2', title: 'Teaser Release Date Prediction', status: 'Completed', score: 0, type: 'date_prediction' },
-    { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours', type: 'numeric_prediction' },
+    { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 50, type: 'choice_selection' },
+    { id: 'event-2', title: 'Pre-Release Event Location', status: 'Completed', score: 0, type: 'choice_selection' },
+    { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours', type: 'choice_selection' },
+    { id: 'event-7', title: 'First Look Views (1hr)', status: 'Upcoming', type: 'choice_selection' },
     { id: 'event-4', title: 'First Song Streaming Milestone', status: 'Upcoming', type: 'choice_selection' },
-    { id: 'event-5', title: 'Opening Day Box Office Prediction', status: 'Upcoming', type: 'numeric_prediction' },
     { id: 'event-6', title: 'Full Team Draft (Release Week)', status: 'Upcoming', type: 'draft_selection' },
+    { id: 'event-8', title: 'First Look Views (7 Days)', status: 'Upcoming', type: 'choice_selection' },
 ];
 
 const leaderboardData = [
   { rank: 1, name: 'CinemaFanatic', score: 205 },
   { rank: 2, name: 'BoxOfficeGuru', score: 190 },
-  { rank: 3, name: 'You', score: 85 }, // Updated score
+  { rank: 3, name: 'You', score: 50 }, // Updated score
   { rank: 4, name: 'ReelTalk', score: 170 },
   { rank: 5, name: 'FirstDayFirstShow', score: 165 },
 ];
@@ -186,3 +187,5 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
     </div>
   );
 }
+
+    
