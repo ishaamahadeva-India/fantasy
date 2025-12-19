@@ -9,8 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-export default function StarProfilePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function StarProfilePage({ params: { id } }: { params: { id: string } }) {
   const star = popularStars.find((s) => s.id === id);
 
   if (!star) {
