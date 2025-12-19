@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Lock, Search, SlidersHorizontal, Flame, BarChartHorizontal } from 'lucide-react';
+import { Lock, Search, SlidersHorizontal, Flame, BarChartHorizontal, BarChart2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -269,7 +269,7 @@ function AnalystViewTab() {
       <Card>
         <CardHeader>
             <CardTitle className="font-headline">Analyst View</CardTitle>
-            <CardDescription>Compare player stats head-to-head.</CardDescription>
+            <CardDescription>Compare player stats head-to-head. A premium analytics feature.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
@@ -445,8 +445,12 @@ export default function CricketFanZonePage() {
           <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
           <TabsTrigger value="national-teams">National Teams</TabsTrigger>
           <TabsTrigger value="ip-teams">IP Teams</TabsTrigger>
-          <TabsTrigger value="trending">Trending</TabsTrigger>
+          <TabsTrigger value="trending">
+            <Flame className="w-4 h-4 mr-2" />
+            Trending
+          </TabsTrigger>
           <TabsTrigger value="analyst-view">
+            <BarChart2 className="w-4 h-4 mr-2" />
             Analyst View
           </TabsTrigger>
         </TabsList>
