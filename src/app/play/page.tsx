@@ -1,86 +1,184 @@
+
 'use client';
 import Link from 'next/link';
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Newspaper, BrainCircuit } from 'lucide-react';
-import { placeholderQuizzes } from '@/lib/placeholder-data';
-import { Badge } from '@/components/ui/badge';
+import {
+  BrainCircuit,
+  Newspaper,
+  BookCopy,
+  Lock,
+  Target,
+  FileText,
+  Lightbulb,
+  Mic,
+  Video,
+  ClipboardCheck,
+  Calendar,
+  Compass,
+  Trophy,
+  BarChart2,
+  Quote,
+  Users,
+} from 'lucide-react';
+
+const gameModes = [
+    {
+        title: 'Daily Quiz',
+        description: 'A fresh quiz on current events, generated daily.',
+        icon: Newspaper,
+        href: '/quiz/daily-news/start',
+        isLocked: false,
+    },
+    {
+        title: 'Soundstrike',
+        description: 'Listen to audio clips and answer questions.',
+        icon: Mic,
+        href: '/soundstrike/start',
+        isLocked: false,
+    },
+    {
+        title: 'Intel Briefing',
+        description: 'Read an article and summarize the key points.',
+        icon: FileText,
+        href: '/briefing/ipl-franchise-dynasties/start',
+        isLocked: false,
+    },
+    {
+        title: 'Precision Run',
+        description: 'Answer as many questions as you can in 60 seconds.',
+        icon: Target,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'Frame Lock',
+        description: 'Identify the movie from a single frame.',
+        icon: Video,
+        href: '/frame-lock/start',
+        isLocked: false,
+    },
+    {
+        title: 'Decision Room',
+        description: 'Make critical decisions in complex scenarios.',
+        icon: BrainCircuit,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'Fact or Fiction',
+        description: 'Verify statements against a source.',
+        icon: ClipboardCheck,
+        href: '/fact-or-fiction/ipl-franchise-dynasties/start',
+        isLocked: false,
+    },
+    {
+        title: 'Topic Deep Dive',
+        description: 'An in-depth quiz on a specific subject.',
+        icon: BookCopy,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'Prediction Challenge',
+        description: 'Forecast outcomes of upcoming events.',
+        icon: Lightbulb,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'Historical Hot-seat',
+        description: 'Place historical events in chronological order.',
+        icon: Calendar,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'GeoGuesser',
+        description: 'Identify locations from satellite images.',
+        icon: Compass,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'Head-to-Head',
+        description: 'Challenge another user in a live quiz.',
+        icon: Trophy,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'The Analyst',
+        description: 'Interpret data and charts to draw conclusions.',
+        icon: BarChart2,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'Quote Quest',
+        description: 'Attribute famous quotes to the right person.',
+        icon: Quote,
+        href: '#',
+        isLocked: true,
+    },
+    {
+        title: 'The Negotiator',
+        description: 'Navigate a negotiation scenario to a successful outcome.',
+        icon: Users,
+        href: '#',
+        isLocked: true,
+    },
+];
+
 
 export default function PlayPage() {
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Test Your Knowledge
+          Challenge Lobby
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Engage with our quizzes to challenge your intellect and learn
-          something new.
+          Engage with our skill-based games to challenge your intellect and learn something new.
         </p>
       </div>
 
-      <Card className="overflow-hidden bg-gradient-to-br from-primary/10 to-card">
-        <div className="flex flex-col items-center p-8 text-center md:flex-row md:text-left md:p-12">
-          <Newspaper className="w-16 h-16 mb-4 text-primary md:mb-0 md:mr-8" />
-          <div className="flex-grow">
-            <h2 className="text-2xl font-bold font-headline">
-              Daily News Quiz
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              A fresh quiz on current events, generated daily by our AI. How
-              updated are you?
-            </p>
-          </div>
-          <Button asChild className="mt-6 md:mt-0 shrink-0" size="lg">
-            <Link href="/quiz/daily-news/start">
-              Start Now <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-      </Card>
-
-      <div>
-        <h2 className="mb-4 text-2xl font-bold font-headline">
-          Featured Quizzes
-        </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {placeholderQuizzes.map((quiz) => (
-            <Link href="#" key={quiz.id} className="group">
-              <Card
-                key={quiz.title}
-                className="group relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20"
-              >
+       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {gameModes.map((mode) => (
+            <Link href={mode.isLocked ? '#' : mode.href} key={mode.title} className="group">
+            <Card
+                className={`group relative overflow-hidden transition-all duration-300 ease-in-out h-full
+                ${mode.isLocked 
+                    ? 'cursor-not-allowed bg-white/5 border-white/10' 
+                    : 'hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20'
+                }`}
+            >
                 <CardHeader>
-                  <div
-                    className="flex items-center gap-4"
-                  >
-                    <div className="rounded-md bg-secondary p-3">
-                      <BrainCircuit className="h-6 w-6 text-primary" />
+                <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="rounded-md bg-secondary p-3">
+                            <mode.icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle className="font-headline text-lg">
+                            {mode.title}
+                        </CardTitle>
                     </div>
-                    <div>
-                      <CardTitle className="font-headline text-lg">
-                        {quiz.title}
-                      </CardTitle>
-                    </div>
-                  </div>
+                    {mode.isLocked && <Lock className="h-4 w-4 text-muted-foreground" />}
+                </div>
                 </CardHeader>
                 <CardDescription
-                  className="px-8 pb-8"
+                className="px-8 pb-8"
                 >
-                  {quiz.description}
+                {mode.description}
                 </CardDescription>
-              </Card>
+            </Card>
             </Link>
-          ))}
+        ))}
         </div>
-      </div>
     </div>
   );
 }
