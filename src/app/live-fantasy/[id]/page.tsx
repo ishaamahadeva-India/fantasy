@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import { ArrowLeft, Check, Lock, Flame, Zap, HelpCircle, User, Award } from 'lucide-react';
 import Link from 'next/link';
