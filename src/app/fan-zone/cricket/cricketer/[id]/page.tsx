@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, BarChart2, MessageSquare, Star } from 'lucide-react';
+import { ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
@@ -110,18 +110,12 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
 
           <div className="space-y-4">
             <h3 className="font-headline text-xl">Fan Actions</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="flex gap-4">
                <AttributeRating
                 triggerButtonText="Rate Performance"
                 attributes={cricketerAttributes}
                 icon={Star}
               />
-               <Button variant="outline" size="lg" disabled>
-                <BarChart2 className="mr-2" /> Attribute Analysis
-              </Button>
-               <Button variant="outline" size="lg" disabled>
-                <MessageSquare className="mr-2" /> Micro Review
-              </Button>
             </div>
           </div>
         </div>
