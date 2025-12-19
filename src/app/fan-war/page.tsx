@@ -72,15 +72,15 @@ export default function FanWarPage() {
       >
         <CarouselContent className="-ml-4">
           {entities.map(entity => (
-            <CarouselItem key={entity.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4">
+            <CarouselItem key={entity.id} className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6">
                 <Card className="text-center h-full">
                 <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
                     <Avatar className="w-20 h-20">
                     <AvatarImage src={entity.avatar} alt={entity.name} />
                     <AvatarFallback>{entity.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <h3 className="font-bold font-headline">{entity.name}</h3>
-                    <Button variant="outline" size="sm" className="w-full">
+                    <h3 className="font-bold font-headline text-sm">{entity.name}</h3>
+                    <Button variant="outline" size="sm" className="w-full text-xs">
                     <Plus className="w-4 h-4 mr-2"/>
                     Follow
                     </Button>
@@ -245,4 +245,6 @@ export default function FanWarPage() {
 }
 
     
+    
+
     
