@@ -16,11 +16,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useFirestore, useCollection } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore, useCollection, useUser } from '@/firebase';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Award } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import { updateUserAdminStatus } from '@/firebase/firestore/users';
 
 function UserRowSkeleton() {
     return (
@@ -35,15 +39,45 @@ function UserRowSkeleton() {
                 </div>
             </TableCell>
             <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-10" /></TableCell>
+            <TableCell><Skeleton className="h-6 w-24" /></TableCell>
         </TableRow>
     )
 }
 
 export default function AdminUsersPage() {
   const firestore = useFirestore();
+  const { user: currentUser } = useUser();
   const usersQuery = firestore ? collection(firestore, 'users') : null;
-  const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
+  const { data: users, isLoading } = useCollection<UserProfile & { id: string }>(usersQuery);
+
+  const handleAdminToggle = async (userId: string, currentStatus: boolean) => {
+    if (!firestore || !currentUser) return;
+
+    if (userId === currentUser.uid) {
+        toast({
+            variant: 'destructive',
+            title: 'Action Forbidden',
+            description: "You cannot change your own admin status.",
+        });
+        return;
+    }
+
+    try {
+        await updateUserAdminStatus(firestore, userId, !currentStatus);
+        toast({
+            title: 'User Updated',
+            description: `The user has been ${!currentStatus ? 'granted' : 'revoked'} admin privileges.`,
+        });
+    } catch (error) {
+        console.error('Error updating user admin status:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not update the user\'s admin status.',
+        });
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -79,8 +113,8 @@ export default function AdminUsersPage() {
                     <UserRowSkeleton />
                 </>
               )}
-              {users && users.map((user, index) => (
-                <TableRow key={index}>
+              {users && users.map((user) => (
+                <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center gap-4">
                       <Avatar>
@@ -104,7 +138,17 @@ export default function AdminUsersPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {user.isAdmin ? 'Yes' : 'No'}
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id={`admin-switch-${user.id}`}
+                            checked={!!user.isAdmin}
+                            onCheckedChange={() => handleAdminToggle(user.id, !!user.isAdmin)}
+                            disabled={user.id === currentUser?.uid}
+                        />
+                        <Label htmlFor={`admin-switch-${user.id}`}>
+                            {user.isAdmin ? 'Yes' : 'No'}
+                        </Label>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

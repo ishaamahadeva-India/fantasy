@@ -1,5 +1,6 @@
 
 
+
 export type FanRating = {
   userId: string;
   entityId: string;
@@ -10,6 +11,7 @@ export type FanRating = {
 };
 
 export type UserProfile = {
+    id: string;
     displayName: string;
     email: string;
     avatarUrl?: string;

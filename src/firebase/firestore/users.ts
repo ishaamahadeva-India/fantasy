@@ -85,3 +85,25 @@ export function updateUserFantasySettings(firestore: Firestore, userId: string, 
             errorEmitter.emit('permission-error', permissionError);
         });
 }
+
+/**
+ * Updates the admin status of a user.
+ * @param firestore - The Firestore instance.
+ * @param userId - The ID of the user to update.
+ * @param isAdmin - The new admin status.
+ */
+export function updateUserAdminStatus(firestore: Firestore, userId: string, isAdmin: boolean) {
+    const userDocRef = doc(firestore, 'users', userId);
+    const updateData = { isAdmin };
+
+    return updateDoc(userDocRef, updateData)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw serverError; // Re-throw to be caught by the caller
+        });
+}
