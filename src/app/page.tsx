@@ -2,11 +2,16 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { placeholderArticles } from '@/lib/placeholder-data';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where, type Query } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useMemo } from 'react';
+import type { Article } from '@/lib/types';
+
 
 function AdBanner() {
     return (
@@ -25,31 +30,50 @@ function AdBanner() {
     )
 }
 
-export default function ExplorePage() {
-  const categories = ['Politics', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
-  const articlesByCategory = (category: string) => {
-    if (category.toLowerCase() === 'latest') return placeholderArticles;
-    return placeholderArticles.filter(
-      (article) => article.category.toLowerCase() === category.toLowerCase()
-    );
-  };
-  
-  const gossipArticles = [
-    { title: "Special Reason Behind Pawan's Gift to Sujeeth", href: '#' },
-    { title: 'Why Prabhas Travels Only in Private Jets?', href: '#' },
-    { title: "Why Magic Is Missing In Thaman's Music?", href: '#' },
-    { title: 'Pawan Signs Two Films for People Media Factory?', href: '#' },
-    { title: 'Akhanda 2... Lokesh\'s Timely Intervention!', href: '#' },
-  ];
+type ArticleWithId = Article & { id: string; };
 
-  const renderArticleList = (articles: typeof placeholderArticles) => {
-    if (articles.length === 0) {
+function ArticleList({ category }: { category: string }) {
+    const firestore = useFirestore();
+
+    const articlesQuery = useMemo(() => {
+        if (!firestore) return null;
+        const articlesCollection = collection(firestore, 'articles');
+        if (category.toLowerCase() === 'latest') {
+            return query(articlesCollection);
+        }
+        return query(articlesCollection, where('category', '==', category));
+    }, [firestore, category]);
+
+    const { data: articles, isLoading } = useCollection<ArticleWithId>(articlesQuery as Query<ArticleWithId>);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col gap-6">
+                {[...Array(3)].map((_, index) => (
+                    <div key={index}>
+                        <div className="flex items-start gap-4">
+                            <Skeleton className="w-24 h-24 shrink-0" />
+                            <div className="flex-grow space-y-2">
+                                <Skeleton className="h-6 w-3/4" />
+                                <Skeleton className="h-4 w-1/4" />
+                                <Skeleton className="h-8 w-full" />
+                            </div>
+                        </div>
+                        <Separator className="mt-6" />
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    if (articles === null || articles.length === 0) {
       return (
         <div className="py-12 text-center text-muted-foreground">
           No articles found in this category yet.
         </div>
       );
     }
+    
     return (
       <div className="flex flex-col gap-6">
         {articles.map((article, index) => {
@@ -64,7 +88,7 @@ export default function ExplorePage() {
                       alt={article.title}
                       fill
                       className="object-cover rounded-md"
-                      data-ai-hint={article.image.imageHint}
+                      data-ai-hint="news article"
                     />
                   </div>
                   <div className="flex-grow">
@@ -96,6 +120,17 @@ export default function ExplorePage() {
     );
   };
 
+export default function ExplorePage() {
+  const categories = ['Cricket', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
+  
+  const gossipArticles = [
+    { title: "Special Reason Behind Pawan's Gift to Sujeeth", href: '#' },
+    { title: 'Why Prabhas Travels Only in Private Jets?', href: '#' },
+    { title: "Why Magic Is Missing In Thaman's Music?", href: '#' },
+    { title: 'Pawan Signs Two Films for People Media Factory?', href: '#' },
+    { title: 'Akhanda 2... Lokesh\'s Timely Intervention!', href: '#' },
+  ];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
@@ -112,19 +147,19 @@ export default function ExplorePage() {
           <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-6">
             <TabsTrigger value="latest">Latest</TabsTrigger>
             {categories.map((category) => (
-              <TabsTrigger key={category} value={category.toLowerCase()}>
+              <TabsTrigger key={category} value={category}>
                 {category}
               </TabsTrigger>
             ))}
           </TabsList>
 
           <TabsContent value="latest">
-            {renderArticleList(articlesByCategory('latest'))}
+            <ArticleList category="latest" />
           </TabsContent>
 
           {categories.map((category) => (
-            <TabsContent key={category} value={category.toLowerCase()}>
-              {renderArticleList(articlesByCategory(category))}
+            <TabsContent key={category} value={category}>
+              <ArticleList category={category} />
             </TabsContent>
           ))}
         </Tabs>
