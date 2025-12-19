@@ -2,7 +2,7 @@
 'use client';
 import { summarizeArticle, type SummarizeArticleOutput } from '@/ai/flows/summarize-article';
 import { placeholderArticles } from '@/lib/placeholder-data';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BriefingPage({ params: { slug } }: { params: { slug: string } }) {
+  const router = useRouter();
   const article = placeholderArticles.find((a) => a.slug === slug);
   const [summary, setSummary] = useState<SummarizeArticleOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +34,19 @@ export default function BriefingPage({ params: { slug } }: { params: { slug: str
 
     getSummary();
   }, [article]);
+
+  const handleSubmit = () => {
+    if (!userSummary || !summary || !article) return;
+
+    // Store data in sessionStorage to pass to the results page
+    sessionStorage.setItem('briefingData', JSON.stringify({
+        articleText: article.content,
+        aiSummary: summary.summary,
+        userSummary: userSummary
+    }));
+
+    router.push(`/briefing/${slug}/results`);
+  }
 
   if (!article) {
     return notFound();
@@ -90,7 +104,7 @@ export default function BriefingPage({ params: { slug } }: { params: { slug: str
                             value={userSummary}
                             onChange={(e) => setUserSummary(e.target.value)}
                         />
-                         <Button className="w-full mt-4" disabled={!userSummary}>
+                         <Button className="w-full mt-4" disabled={!userSummary || isLoading} onClick={handleSubmit}>
                             Submit & Compare
                         </Button>
                     </CardContent>
