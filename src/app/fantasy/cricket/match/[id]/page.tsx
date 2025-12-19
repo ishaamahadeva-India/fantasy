@@ -44,17 +44,28 @@ const players = {
 
 
 const microPredictions = [
-    { id: 'pred-1', question: 'Total score after 1st Over: Over 6.5 runs?', outcome: true },
-    { id: 'pred-2', question: 'Will a wicket fall in the first 3 overs?', outcome: true },
-    { id: 'pred-3', question: 'Powerplay (1-6 overs) total score: Over 48.5 runs?', outcome: false },
-    { id: 'pred-4', question: 'Will the Powerplay King (your pick) hit a boundary in the next over?', outcome: true },
-    { id: 'pred-5', question: 'Total 4s in the Powerplay: Over 5.5?', outcome: true },
-    { id: 'pred-6', question: 'Will a spinner be introduced before the 8th over?', outcome: true },
-    { id: 'pred-7', question: 'Total score at 10 over mark: Over 75.5?', outcome: false },
-    { id: 'pred-8', question: 'Will the New Ball Striker (your pick) take a wicket in their spell?', outcome: true },
-    { id: 'pred-9', question: 'Total 6s in the match: Over 12.5?', outcome: true },
-    { id: 'pred-10', question: 'Final score of the 1st Innings: Under 170.5 runs?', outcome: false }
-]
+    { id: 'pred-1', question: 'Total score after 1st Over: Over 6.5 runs?', outcome: true, phase: 'Powerplay' },
+    { id: 'pred-2', question: 'Will a wicket fall in the first 3 overs?', outcome: false, phase: 'Powerplay' },
+    { id: 'pred-3', question: 'Powerplay (1-6 overs) total score: Over 48.5 runs?', outcome: true, phase: 'Powerplay' },
+    { id: 'pred-4', question: 'Will the Powerplay King (your pick) hit a boundary in the next over?', outcome: true, phase: 'Powerplay' },
+    { id: 'pred-5', question: 'Total 4s in the Powerplay: Over 5.5?', outcome: true, phase: 'Powerplay' },
+    { id: 'pred-6', question: 'Will a spinner be introduced before the 8th over?', outcome: true, phase: 'Middle Overs' },
+    { id: 'pred-7', question: 'Total score at 10 over mark: Over 75.5?', outcome: false, phase: 'Middle Overs' },
+    { id: 'pred-8', question: 'Will the New Ball Striker (your pick) take a wicket in their spell?', outcome: true, phase: 'Middle Overs' },
+    { id: 'pred-9', question: 'Highest partnership to be over 50.5 runs?', outcome: true, phase: 'Middle Overs' },
+    { id: 'pred-10', question: 'Will there be a maiden over in the innings?', outcome: false, phase: 'Middle Overs' },
+    { id: 'pred-11', question: 'Total 6s in the match: Over 12.5?', outcome: true, phase: 'Death Overs' },
+    { id: 'pred-12', question: 'Final score of the 1st Innings: Under 170.5 runs?', outcome: false, phase: 'Death Overs' },
+    { id: 'pred-13', question: 'Will a yorker claim a wicket in the death overs?', outcome: true, phase: 'Death Overs' },
+    { id_path: 'pred-14', question: 'Runs scored in the 19th over: Over 10.5?', outcome: true, phase: 'Death Overs' },
+    { id_path: 'pred-15', question: 'Will the Death Overs Finisher (your pick) be not out?', outcome: false, phase: 'Death Overs' },
+    { id_path: 'pred-16', question: 'Max 6s in one over: > 1.5?', outcome: true, phase: 'Any' },
+    { id_path: 'pred-17', question: 'Max 4s in one over: > 2.5?', outcome: true, phase: 'Any' },
+    { id_path: 'pred-18', question: 'Highest individual score: Over 60.5?', outcome: true, phase: 'Any' },
+    { id_path: 'pred-19', question: 'Total extras conceded: Over 8.5?', outcome: false, phase: 'Any' },
+    { id_path: 'pred-20', question: 'Will there be a run-out in the innings?', outcome: true, phase: 'Any' }
+];
+
 
 const leaderboardData = [
   { rank: 1, name: 'CricketFan1', score: 120 },
@@ -112,13 +123,39 @@ function ScoringRulesCard() {
                                 <TableCell>Scores 15–24</TableCell>
                                 <TableCell className="text-right font-code text-primary font-bold">+20</TableCell>
                             </TableRow>
-                            <TableRow>
+                             <TableRow>
                                 <TableCell>Scores &lt; 15</TableCell>
                                 <TableCell className="text-right font-code text-primary font-bold">+5</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell className="border-b-0">Strike rate ≥ 140 bonus</TableCell>
-                                <TableCell className="text-right font-code text-primary font-bold border-b-0">+10</TableCell>
+                                <TableCell>Strike rate ≥ 140 bonus</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+10</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                     <Table className='mt-4'>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Death Overs Specialist (Bowling)</TableHead>
+                                <TableHead className="text-right">Points</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>2+ wickets</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+30</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>1 wicket</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+20</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Economy ≤ 8</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+10</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell className="border-b-0 text-red-400">Economy &gt; 10</TableCell>
+                                <TableCell className="text-right font-code text-red-400 font-bold border-b-0">-10</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -211,7 +248,7 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
                         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                             {[...players.IND, ...players.AUS].map(player => (
                                 <PlayerSelectionCard
-                                    key={player.id}
+                                    key={`${role.id}-${player.id}`}
                                     player={player}
                                     isSelected={selections[role.id] === player.id}
                                     isDisabled={isLocked || (!!selections[role.id] && selections[role.id] !== player.id)}
@@ -236,9 +273,10 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
 }
 
 function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
+    type PredictionStatus = 'predicting' | 'waiting' | 'result';
     const [currentPredIndex, setCurrentPredIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<number, boolean>>({});
-    const [showResult, setShowResult] = useState<boolean>(false);
+    const [status, setStatus] = useState<PredictionStatus>('predicting');
     
     const currentPrediction = microPredictions[currentPredIndex];
     const hasAnswered = answers[currentPredIndex] !== undefined;
@@ -246,15 +284,20 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
     const handlePrediction = (answer: boolean) => {
         if(hasAnswered) return;
         setAnswers(prev => ({...prev, [currentPredIndex]: answer}));
-        setShowResult(true);
+        setStatus('waiting');
 
+        // Simulate waiting for outcome
         setTimeout(() => {
-            setShowResult(false);
-            if (currentPredIndex < microPredictions.length - 1) {
-                setCurrentPredIndex(prev => prev + 1);
-            } else {
-                onInningsEnd();
-            }
+            setStatus('result');
+            // Then wait a bit more to show result before moving on
+            setTimeout(() => {
+                if (currentPredIndex < microPredictions.length - 1) {
+                    setCurrentPredIndex(prev => prev + 1);
+                    setStatus('predicting');
+                } else {
+                    onInningsEnd();
+                }
+            }, 2500);
         }, 2000);
     }
 
@@ -262,7 +305,7 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
         return <p>Loading predictions...</p>
     }
 
-    const isCorrect = hasAnswered && answers[currentPredIndex] === currentPrediction.outcome;
+    const isCorrect = status === 'result' && answers[currentPredIndex] === currentPrediction.outcome;
 
     return (
         <div className="space-y-8">
@@ -292,22 +335,19 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
                                 <Button onClick={() => handlePrediction(true)} disabled={hasAnswered} className="h-20 text-xl">Yes</Button>
                                 <Button onClick={() => handlePrediction(false)} disabled={hasAnswered} variant="outline" className="h-20 text-xl">No</Button>
                             </div>
-                        </CardContent>
-                        {showResult && (
-                             <CardFooter>
-                                <motion.div 
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="w-full text-center"
-                                >
-                                    {isCorrect ? (
-                                        <p className="font-bold text-green-400">Correct! +10 Points</p>
-                                    ) : (
-                                        <p className="font-bold text-red-400">Incorrect!</p>
+                            {hasAnswered && (
+                                <div className='mt-4'>
+                                    {status === 'waiting' && <p className='font-semibold text-muted-foreground animate-pulse'>Waiting for outcome...</p>}
+                                    {status === 'result' && (
+                                        isCorrect ? (
+                                            <p className="font-bold text-green-400">Correct! +10 Points</p>
+                                        ) : (
+                                            <p className="font-bold text-red-400">Incorrect! The outcome was '{currentPrediction.outcome ? 'Yes' : 'No'}'</p>
+                                        )
                                     )}
-                                </motion.div>
-                            </CardFooter>
-                        )}
+                                </div>
+                            )}
+                        </CardContent>
                     </Card>
                 </motion.div>
             </AnimatePresence>
@@ -457,5 +497,6 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
 
     
