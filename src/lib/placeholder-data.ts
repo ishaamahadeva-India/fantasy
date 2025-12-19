@@ -1,3 +1,4 @@
+
 import type { ImagePlaceholder } from './placeholder-images';
 import { placeholderImages } from './placeholder-images';
 
@@ -156,6 +157,23 @@ export const popularStars = [
     { id: 's13', name: 'Vijay', avatar: 'https://picsum.photos/seed/vijay/400/400', popularityIndex: 92.5, trendingRank: 4, genre: ['Action', 'Mass'] },
     { id: 's14', name: 'Ajith Kumar', avatar: 'https://picsum.photos/seed/ajith/400/400', popularityIndex: 87.8, trendingRank: 14, genre: ['Action', 'Racing'] },
     { id: 's15', name: 'Kamal Haasan', avatar: 'https://picsum.photos/seed/kamal/400/400', popularityIndex: 96.8, trendingRank: 15, genre: ['Versatile', 'Legend'] },
+];
+
+export type Performance = {
+  id: string;
+  starId: string;
+  movieId: string;
+  performanceScore: number;
+  description: string;
+};
+
+export const topPerformances: Performance[] = [
+    { id: 'p1', starId: 's2', movieId: 'm2', performanceScore: 9.8, description: 'As Pushpa Raj, a red sanders smuggler who rises through the ranks.' },
+    { id: 'p2', starId: 's1', movieId: 'm3', performanceScore: 9.5, description: 'In the dual role of Amarendra Baahubali and Mahendra Baahubali.' },
+    { id: 'p3', starId: 's4', movieId: 'm4', performanceScore: 9.4, description: 'As the Gondi tribal leader Komaram Bheem.' },
+    { id: 'p4', starId: 's5', movieId: 'm4', performanceScore: 9.3, description: 'As the fiery revolutionary Alluri Sitarama Raju.' },
+    { id: 'p5', starId: 's11', movieId: 'm5', performanceScore: 9.1, description: 'As the ambitious and ruthless kingpin Rocky.' },
+    { id: 'p6', starId: 's12', movieId: 'm6', performanceScore: 8.9, description: 'In a dual role as a father-son duo fighting against corruption.'},
 ];
 
     

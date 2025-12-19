@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
@@ -8,6 +9,7 @@ import { StarsTab } from '@/components/fan-zone/stars-tab';
 import { MoviesTab } from '@/components/fan-zone/movies-tab';
 import { TopRatedTab } from '@/components/fan-zone/top-rated-tab';
 import { TrendingTab } from '@/components/fan-zone/trending-tab';
+import { PerformancesTab } from '@/components/fan-zone/performances-tab';
 
 export default function FanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,9 +56,7 @@ export default function FanZonePage() {
           <StarsTab searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="performances">
-          <div className="py-12 text-center text-muted-foreground">
-            Performances coming soon.
-          </div>
+          <PerformancesTab />
         </TabsContent>
         <TabsContent value="top-rated">
           <TopRatedTab />
@@ -68,3 +68,5 @@ export default function FanZonePage() {
     </div>
   );
 }
+
+    
