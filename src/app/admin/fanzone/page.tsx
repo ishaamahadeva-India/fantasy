@@ -34,10 +34,20 @@ type CricketerProfile = {
     country: string;
 }
 
+type TeamProfile = {
+    id: string;
+    name: string;
+    type: 'ip' | 'national';
+}
+
 export default function AdminFanZonePage() {
     const firestore = useFirestore();
     const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
     const { data: cricketers, isLoading: cricketersLoading } = useCollection<CricketerProfile>(cricketersQuery);
+
+    const teamsQuery = firestore ? collection(firestore, 'teams') : null;
+    const { data: teams, isLoading: teamsLoading } = useCollection<TeamProfile>(teamsQuery);
+
 
     const handleAction = (action: string, title: string) => {
         toast({
@@ -123,16 +133,31 @@ export default function AdminFanZonePage() {
         <TabsContent value="teams" className="mt-4">
              <Card>
                 <CardHeader>
-                    <CardTitle>Teams (IP & National)</CardTitle>
+                    <div className='flex justify-between items-center'>
+                        <CardTitle>Teams (IP & National)</CardTitle>
+                        <Button variant="outline" size="sm" onClick={() => handleAction('Create', 'New Team')}>
+                            <PlusCircle className="w-4 h-4 mr-2" />
+                            Add Team
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
-                            {[...placeholderIpTeams, ...placeholderNationalTeams].map((team) => (
+                             {teamsLoading && (
+                                <>
+                                    <TableRow>
+                                        <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                        <TableCell><Skeleton className="h-8 w-20" /></TableCell>
+                                    </TableRow>
+                                </>
+                            )}
+                            {teams && teams.map((team) => (
                                 <TableRow key={team.id}>
                                     <TableCell>{team.name}</TableCell>
-                                    <TableCell>{'league' in team ? 'IP' : 'National'}</TableCell>
+                                    <TableCell className="capitalize">{team.type}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', team.name)}><Edit className="w-4 h-4" /></Button>
@@ -141,6 +166,13 @@ export default function AdminFanZonePage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {!teamsLoading && teams?.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-24 text-center">
+                                        No teams found. Add one to get started.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
