@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, ArrowRight, Check, X } from 'lucide-react';
+import { Loader2, AlertTriangle, ArrowRight, Check, X, Award } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Progress } from '@/components/ui/progress';
@@ -102,16 +102,30 @@ export default function FactOrFictionPage({ params: { slug } }: { params: { slug
   
   if (isFinished) {
     const totalQuestions = gameData?.statements.length || 0;
+    const percentage = totalQuestions > 0 ? Math.round((score/totalQuestions) * 100) : 0;
+    const pointsEarned = percentage;
     return (
         <Card className="w-full max-w-2xl text-center">
             <CardHeader>
                 <CardTitle className='font-headline text-3xl'>Challenge Complete!</CardTitle>
                 <CardDescription>You scored {score} out of {totalQuestions}.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <p className="text-6xl font-bold font-code text-primary mb-6">
-                    {totalQuestions > 0 ? Math.round((score/totalQuestions) * 100) : 0}%
-                </p>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <p className="text-muted-foreground">Accuracy</p>
+                        <p className="text-6xl font-bold font-code text-primary">
+                            {percentage}%
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Intel Points Earned</p>
+                        <p className="text-6xl font-bold font-code text-primary flex items-center justify-center gap-2">
+                            <Award className="w-12 h-12 text-amber-400" />
+                            {pointsEarned}
+                        </p>
+                    </div>
+                </div>
                 <Button asChild>
                     <Link href="/play">Play another game</Link>
                 </Button>

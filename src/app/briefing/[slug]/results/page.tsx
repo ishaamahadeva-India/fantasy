@@ -3,7 +3,7 @@
 import { compareSummaries, type CompareSummariesOutput } from '@/ai/flows/compare-summaries';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
@@ -83,6 +83,8 @@ export default function BriefingResultsPage({ params: { slug } }: { params: { sl
     return <div className="text-center">No results to display.</div>;
   }
 
+  const pointsEarned = Math.round(results.overallScore);
+
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12 w-full space-y-8">
        <div>
@@ -99,9 +101,18 @@ export default function BriefingResultsPage({ params: { slug } }: { params: { sl
           <CardDescription>Here's the breakdown of your summary performance.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className='mb-8'>
-                <p className="text-7xl font-bold font-code text-primary mb-2">{results.overallScore}</p>
-                <p className="text-lg font-semibold text-muted-foreground">Overall Score</p>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className='text-center'>
+                    <p className="text-muted-foreground">Overall Score</p>
+                    <p className="text-7xl font-bold font-code text-primary mb-2">{results.overallScore}</p>
+                </div>
+                 <div className='text-center'>
+                    <p className="text-muted-foreground">Intel Points Earned</p>
+                    <p className="text-7xl font-bold font-code text-primary flex items-center justify-center gap-2">
+                        <Award className="w-16 h-16 text-amber-400" />
+                        {pointsEarned}
+                    </p>
+                </div>
             </div>
             <div className="grid grid-cols-3 gap-4 mb-8">
                 <ScoreDisplay score={results.accuracyScore} label="Accuracy" />

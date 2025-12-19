@@ -55,6 +55,11 @@ export function PulseCheck({ question, options, entityId, entityType }: PulseChe
         review: selectedValue,
     }, user.uid);
 
+    toast({
+        title: "Vote Recorded!",
+        description: "Thanks for your input. You've earned 25 Intel Points!",
+    });
+
     setHasVoted(true);
     setTimeout(() => {
         setIsOpen(false);
