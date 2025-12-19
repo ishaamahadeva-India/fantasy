@@ -47,7 +47,7 @@ const generateImageForMoviePrompt = ai.definePrompt({
     
     The image should be cinematic, well-composed, and evocative of the film's mood and style, but it should NOT contain any text, logos, or titles. Focus on a key moment, character pose, or setting that a fan of the movie would recognize.
     `,
-    model: 'googleai/gemini-2.5-flash-image-preview',
+    model: 'googleai/gemini-1.5-flash',
     config: {
         responseModalities: ['IMAGE']
     }
@@ -80,4 +80,3 @@ export async function generateFrameLockQuiz(): Promise<FrameLockQuizOutput> {
         explanation: `This scene is from "${correctMovie.title}". ${correctMovie.description}`,
     };
 }
-
