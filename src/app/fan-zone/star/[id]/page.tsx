@@ -16,6 +16,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { FanRating } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PulseCheck } from '@/components/fan-zone/pulse-check';
 
 function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
     const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
@@ -165,7 +166,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <AttributeRating triggerButtonText="Rate Performance" attributes={starAttributes} icon={Star} entityId={star.id} entityType="star" />
                         <Button variant="outline" size="lg"><BrainCircuit className="mr-2"/> Compare Eras</Button>
-                        <Button variant="outline" size="lg"><Gamepad2 className="mr-2"/> Pulse Check</Button>
+                        <PulseCheck question={`How do you rate ${star.name}'s recent script selections?`} options={["Excellent", "Average", "Poor"]} entityId={star.id} entityType='star' />
                     </div>
                 </div>
             </div>
