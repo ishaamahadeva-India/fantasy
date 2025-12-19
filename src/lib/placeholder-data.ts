@@ -183,3 +183,16 @@ export const fanWarData = [
     },
   },
 ];
+
+export const popularEntities = [
+    { id: 'p1', name: 'Prabhas', category: 'Movie Stars', avatar: 'https://picsum.photos/seed/prabhas/200/200' },
+    { id: 'p2', name: 'Allu Arjun', category: 'Movie Stars', avatar: 'https://picsum.photos/seed/alluarjun/200/200' },
+    { id: 'p3', name: 'Mahesh Babu', category: 'Movie Stars', avatar: 'https://picsum.photos/seed/maheshbabu/200/200' },
+    { id: 'p4', name: 'NTR Jr.', category: 'Movie Stars', avatar: 'https://picsum.photos/seed/ntr/200/200' },
+    { id: 'p5', name: 'Ram Charan', category: 'Movie Stars', avatar: 'https://picsum.photos/seed/ramcharan/200/200' },
+    { id: 'c1', name: 'Virat Kohli', category: 'Cricketers', avatar: 'https://picsum.photos/seed/kohli/200/200' },
+    { id: 'c2', name: 'MS Dhoni', category: 'Cricketers', avatar: 'https://picsum.photos/seed/dhoni/200/200' },
+    { id: 'c3', name: 'Rohit Sharma', category: 'Cricketers', avatar: 'https://picsum.photos/seed/rohit/200/200' },
+    { id: 'c4', name: 'Hardik Pandya', category: 'Cricketers', avatar: 'https://picsum.photos/seed/hardik/200/200' },
+    { id: 'c5', name: 'KL Rahul', category: 'Cricketers', avatar: 'https://picsum.photos/seed/rahul/200/200' },
+];

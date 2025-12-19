@@ -1,14 +1,15 @@
 
 'use client';
 import { useState } from 'react';
-import { fanWarData } from '@/lib/placeholder-data';
+import { fanWarData, popularEntities } from '@/lib/placeholder-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Flame, ShieldCheck } from 'lucide-react';
+import { Flame, ShieldCheck, Plus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function FanWarPage() {
   const [battles, setBattles] = useState(fanWarData);
@@ -32,8 +33,11 @@ export default function FanWarPage() {
     );
   };
 
+  const movieStars = popularEntities.filter(e => e.category === 'Movie Stars');
+  const cricketers = popularEntities.filter(e => e.category === 'Cricketers');
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <div>
         <h1 className="text-3xl font-bold md:text-4xl font-headline flex items-center gap-2">
             <Flame className="w-8 h-8 text-primary"/>
@@ -134,6 +138,59 @@ export default function FanWarPage() {
             </Card>
           );
         })}
+      </div>
+
+      <Separator />
+
+      {/* Hall of Fame Section */}
+      <div>
+        <h2 className="text-2xl font-bold font-headline text-center mb-2">Hall of Fame</h2>
+        <p className="text-muted-foreground text-center mb-6">Follow your favorite stars and teams.</p>
+        
+        <Tabs defaultValue="movie-stars" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="movie-stars">Movie Stars</TabsTrigger>
+            <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
+          </TabsList>
+          <TabsContent value="movie-stars">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {movieStars.map(star => (
+                <Card key={star.id} className="text-center">
+                  <CardContent className="p-4 flex flex-col items-center gap-3">
+                    <Avatar className="w-20 h-20">
+                      <AvatarImage src={star.avatar} alt={star.name} />
+                      <AvatarFallback>{star.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-bold font-headline">{star.name}</h3>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Plus className="w-4 h-4 mr-2"/>
+                      Follow
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="cricketers">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {cricketers.map(star => (
+                  <Card key={star.id} className="text-center">
+                    <CardContent className="p-4 flex flex-col items-center gap-3">
+                      <Avatar className="w-20 h-20">
+                        <AvatarImage src={star.avatar} alt={star.name} />
+                        <AvatarFallback>{star.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <h3 className="font-bold font-headline">{star.name}</h3>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Plus className="w-4 h-4 mr-2"/>
+                        Follow
+                      </Button>
+                    </CardContent>
+                  </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
