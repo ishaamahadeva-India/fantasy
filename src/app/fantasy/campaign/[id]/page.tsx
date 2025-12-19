@@ -106,8 +106,8 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
 
   return (
     <div className="space-y-8">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div>
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
+            <div className='flex-1'>
                  <Button variant="ghost" asChild className='mb-2 -ml-4'>
                     <Link href="/fantasy">
                         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -125,7 +125,7 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
                     <span className="font-semibold">{campaignDetails.prizePool}</span>
                 </div>
             </div>
-            <div className='grid grid-cols-2 lg:grid-cols-3 gap-4'>
+            <div className='grid grid-cols-2 gap-4'>
                 <Card className="text-center p-4">
                     <CardDescription>Total Points</CardDescription>
                     <CardTitle className="font-code text-4xl text-primary">{totalPoints}</CardTitle>
@@ -134,14 +134,15 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
                     <CardDescription>Your Rank</CardDescription>
                     <CardTitle className="font-code text-4xl text-primary">#{currentUserRank || 'N/A'}</CardTitle>
                 </Card>
-                <Card className="text-center p-4 col-span-2 lg:col-span-1">
-                    <CardDescription>Sponsored By</CardDescription>
-                    <CardTitle className="flex items-center justify-center gap-2 text-2xl text-primary">
-                        <Building className='w-6 h-6'/> {campaignDetails.sponsor.name}
-                    </CardTitle>
-                </Card>
             </div>
         </div>
+
+        <Card className="p-4 bg-white/10">
+            <CardDescription className='text-center'>Sponsored By</CardDescription>
+            <CardTitle className="flex items-center justify-center gap-2 text-2xl text-primary">
+                <Building className='w-6 h-6'/> {campaignDetails.sponsor.name}
+            </CardTitle>
+        </Card>
 
         <Tabs defaultValue="events" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -182,7 +183,7 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline">Campaign Leaderboard</CardTitle>
-                        <CardDescription>Top predictors for the {campaignDetails.movie.title} campaign.</CardDescription>
+                        <CardDescription>Top predictors for the {campaignDetails.movie.title} campaign, powered by {campaignDetails.sponsor.name}.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
