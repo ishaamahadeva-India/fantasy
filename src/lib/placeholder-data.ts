@@ -130,3 +130,56 @@ export const placeholderQuizzes = [
     questions: 10,
   },
 ];
+
+export const fanWarData = [
+  {
+    id: 'movie-star-1',
+    title: 'Tollywood King: Who Reigns Supreme?',
+    category: 'Movies',
+    entityOne: {
+      name: 'Prabhas',
+      avatar: `https://picsum.photos/seed/prabhas/200/200`,
+      stats: [
+        { label: 'Recent Hits', value: '3' },
+        { label: 'Upcoming Projects', value: '5' },
+        { label: 'Fan Following', value: '9.2/10' },
+      ],
+      votes: 55,
+    },
+    entityTwo: {
+      name: 'Allu Arjun',
+      avatar: `https://picsum.photos/seed/alluarjun/200/200`,
+      stats: [
+        { label: 'Recent Hits', value: '4' },
+        { label: 'Upcoming Projects', value: '3' },
+        { label: 'Fan Following', value: '9.5/10' },
+      ],
+      votes: 45,
+    },
+  },
+  {
+    id: 'cricket-captain-1',
+    title: 'Best IPL Captain: Dhoni vs Rohit',
+    category: 'Cricket',
+    entityOne: {
+      name: 'MS Dhoni',
+      avatar: `https://picsum.photos/seed/dhoni/200/200`,
+      stats: [
+        { label: 'IPL Titles', value: '5' },
+        { label: 'Win %', value: '58.9' },
+        { label: 'Matches', value: '226' },
+      ],
+      votes: 60,
+    },
+    entityTwo: {
+      name: 'Rohit Sharma',
+      avatar: `https://picsum.photos/seed/rohit/200/200`,
+      stats: [
+        { label: 'IPL Titles', value: '5' },
+        { label: 'Win %', value: '56.6' },
+        { label: 'Matches', value: '158' },
+      ],
+      votes: 40,
+    },
+  },
+];
