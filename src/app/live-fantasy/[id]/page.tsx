@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, use } from 'react';
 import { notFound } from 'next/navigation';
@@ -10,13 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Check, Lock, Flame } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Flame, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { placeholderCricketers } from '@/lib/cricket-data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 // --- MOCK DATA ---
 const matchDetails = {
@@ -42,14 +43,49 @@ const roles = {
 };
 
 const players = {
-    IND: placeholderCricketers.filter(p => p.country === 'IND' && p.id !== 'c2'),
-    AUS: [
-        { id: 'c4', name: 'Pat Cummins', roles: ['Bowler', 'Captain'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [8,7,9,8,9], careerPhase: 'Peak' },
-        { id: 'c5', name: 'David Warner', roles: ['Batsman', 'Opener'], country: 'AUS', avatar: 'https://picsum.photos/seed/warner/400/400', consistencyIndex: 8.2, impactScore: 9.0, recentForm: [70, 20, 90, 45, 30], careerPhase: 'Late' },
-        { id: 'c6', name: 'Mitchell Starc', roles: ['Bowler', 'Pacer'], country: 'AUS', avatar: 'https://picsum.photos/seed/starc/400/400', consistencyIndex: 8.5, impactScore: 9.4, recentForm: [9,8,7,9,8], careerPhase: 'Peak' },
-        { id: 'c2', name: 'Jasprit Bumrah', roles: ['Bowler', 'Pacer'], country: 'IND', avatar: 'https://picsum.photos/seed/bumrah/400/400', consistencyIndex: 8.8, impactScore: 9.7, recentForm: [9, 10, 8, 9, 9], careerPhase: 'Peak', trendingRank: 1},
-    ]
+  IND: placeholderCricketers.filter((p) => p.country === 'IND'),
+  AUS: [
+    {
+      id: 'c4',
+      name: 'Pat Cummins',
+      roles: ['Bowler', 'Captain'],
+      country: 'AUS',
+      avatar: 'https://picsum.photos/seed/cummins/400/400',
+      consistencyIndex: 8.9,
+      impactScore: 9.1,
+      recentForm: [8, 7, 9, 8, 9],
+      careerPhase: 'Peak',
+    },
+    {
+      id: 'c5',
+      name: 'David Warner',
+      roles: ['Batsman', 'Opener'],
+      country: 'AUS',
+      avatar: 'https://picsum.photos/seed/warner/400/400',
+      consistencyIndex: 8.2,
+      impactScore: 9.0,
+      recentForm: [70, 20, 90, 45, 30],
+      careerPhase: 'Late',
+    },
+    {
+      id: 'c6',
+      name: 'Mitchell Starc',
+      roles: ['Bowler', 'Pacer'],
+      country: 'AUS',
+      avatar: 'https://picsum.photos/seed/starc/400/400',
+      consistencyIndex: 8.5,
+      impactScore: 9.4,
+      recentForm: [9, 8, 7, 9, 8],
+      careerPhase: 'Peak',
+    },
+  ],
 };
+
+const livePredictions = [
+    { id: 'pred-1', type: 'yesno', question: 'Total score after 1st Over: Over 6.5 runs?', outcome: true, phase: 'Powerplay' },
+    { id: 'pred-2', type: 'yesno', question: 'Will a wicket fall in the first 3 overs?', outcome: false, phase: 'Powerplay' },
+    { id: 'pred-3', type: 'yesno', question: 'Powerplay (1-6 overs) total score: Over 48.5 runs?', outcome: true, phase: 'Powerplay' },
+];
 
 function PlayerSelectionCard({
   player,
@@ -91,7 +127,7 @@ function PlayerSelectionCard({
   );
 }
 
-function PreMatchView() {
+function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [isLocked, setIsLocked] = useState(false);
 
@@ -119,6 +155,7 @@ function PreMatchView() {
       title: 'Selections Locked for 1st Innings!',
       description: 'Good luck! The match is about to go live.',
     });
+    setTimeout(() => onLockSelections(), 1500);
   };
 
   return (
@@ -158,22 +195,146 @@ function PreMatchView() {
                     isLocked ||
                     (!!selections[role.id] && selections[role.id] !== player.id)
                   }
-                  onSelect={() => !isLocked && handleSelectPlayer(role.id, player.id)}
+                  onSelect={() =>
+                    !isLocked && handleSelectPlayer(role.id, player.id)
+                  }
                 />
               ))}
             </div>
           </div>
         ))}
-        
+
         <div className="sticky bottom-6 z-10">
-            <Button onClick={handleLock} disabled={isLocked} size="lg" className="w-full shadow-2xl shadow-primary/20">
-                <Lock className="w-5 h-5 mr-2" />
-                {isLocked ? `Selections Locked` : `Lock Selections for 1st Innings`}
-            </Button>
+          <Button
+            onClick={handleLock}
+            disabled={isLocked}
+            size="lg"
+            className="w-full shadow-2xl shadow-primary/20"
+          >
+            <Lock className="w-5 h-5 mr-2" />
+            {isLocked ? `Selections Locked` : `Lock Selections for 1st Innings`}
+          </Button>
         </div>
       </motion.div>
     </AnimatePresence>
   );
+}
+
+function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
+    type PredictionStatus = 'predicting' | 'locked' | 'waiting' | 'result';
+    const [currentPredIndex, setCurrentPredIndex] = useState(0);
+    const [userPredictions, setUserPredictions] = useState<Record<number, { answer: boolean, confidence: number }>>({});
+    const [status, setStatus] = useState<PredictionStatus>('predicting');
+    
+    const currentPrediction = livePredictions[currentPredIndex];
+    const hasAnswered = userPredictions[currentPredIndex] !== undefined;
+
+    const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
+    const [confidence, setConfidence] = useState(1); // 0=Low, 1=Medium, 2=High
+    const confidenceLabels = ["Low", "Medium", "High"];
+    const pointsMap = { 'Low': {correct: 10, incorrect: -2}, 'Medium': {correct: 15, incorrect: -5}, 'High': {correct: 20, incorrect: -10} };
+
+    const handleLockPrediction = () => {
+        if(selectedAnswer === null) {
+            toast({ variant: 'destructive', title: 'No Answer', description: 'Please select Yes or No.'});
+            return;
+        }
+        setStatus('locked');
+        setUserPredictions(prev => ({...prev, [currentPredIndex]: { answer: selectedAnswer, confidence }}));
+        
+        toast({ title: 'Prediction Locked!', description: `You predicted '${selectedAnswer ? 'Yes' : 'No'}' with ${confidenceLabels[confidence]} confidence.` });
+        
+        // Simulate waiting for outcome
+        setTimeout(() => {
+            setStatus('waiting');
+            setTimeout(() => {
+                setStatus('result');
+                // Wait to show result before moving on
+                setTimeout(() => {
+                    if (currentPredIndex < livePredictions.length - 1) {
+                        setCurrentPredIndex(prev => prev + 1);
+                        setStatus('predicting');
+                        setSelectedAnswer(null);
+                        setConfidence(1);
+                    } else {
+                        onInningsEnd();
+                    }
+                }, 3000);
+            }, 2000);
+        }, 500);
+    };
+
+    if (!currentPrediction) {
+        return <p>Loading predictions...</p>
+    }
+
+    const isCorrect = status === 'result' && userPredictions[currentPredIndex]?.answer === currentPrediction.outcome;
+    const points = isCorrect ? pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].correct : pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].incorrect;
+
+    return (
+        <div className="space-y-8">
+             <AnimatePresence mode="wait">
+                 <motion.div
+                    key={currentPredIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Card className="text-center">
+                        <CardHeader>
+                            <CardTitle className="font-headline flex items-center justify-center gap-2"><Zap className="w-6 h-6 text-primary"/> Live Prediction</CardTitle>
+                            <CardDescription>Prediction {currentPredIndex + 1} of {livePredictions.length}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <p className="text-2xl font-semibold text-balance min-h-[64px]">{currentPrediction.question}</p>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <Button onClick={() => setSelectedAnswer(true)} disabled={status !== 'predicting'} variant={selectedAnswer === true ? 'default' : 'outline'} className="h-20 text-xl">Yes</Button>
+                                <Button onClick={() => setSelectedAnswer(false)} disabled={status !== 'predicting'} variant={selectedAnswer === false ? 'default' : 'outline'} className="h-20 text-xl">No</Button>
+                            </div>
+                            
+                             <div className="space-y-3 pt-4">
+                               <Label htmlFor="confidence-slider" className="font-semibold">Confidence</Label>
+                               <Slider
+                                 id="confidence-slider"
+                                 min={0}
+                                 max={2}
+                                 step={1}
+                                 value={[confidence]}
+                                 onValueChange={(val) => setConfidence(val[0])}
+                                 disabled={status !== 'predicting'}
+                               />
+                               <div className="flex justify-between text-xs text-muted-foreground">
+                                 <span>Low</span>
+                                 <span>Medium</span>
+                                 <span>High</span>
+                               </div>
+                             </div>
+
+                             <Button onClick={handleLockPrediction} disabled={status !== 'predicting'} size="lg" className="w-full">
+                                <Lock className="w-4 h-4 mr-2"/> Lock Prediction
+                             </Button>
+
+                             {status !== 'predicting' && (
+                                <div className='mt-4 min-h-[40px]'>
+                                    {status === 'locked' && <p className='font-semibold text-primary animate-pulse'>Prediction Locked! Waiting for event...</p>}
+                                    {status === 'waiting' && <p className='font-semibold text-muted-foreground animate-pulse'>Waiting for outcome...</p>}
+                                    {status === 'result' && (
+                                        isCorrect ? (
+                                            <p className="text-lg font-bold text-green-400">Correct! +{points} Points</p>
+                                        ) : (
+                                            <p className="text-lg font-bold text-red-400">Incorrect! {points} Points. The outcome was '{currentPrediction.outcome ? 'Yes' : 'No'}'</p>
+                                        )
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </AnimatePresence>
+        </div>
+    );
 }
 
 export default function LiveFantasyMatchPage({
@@ -182,6 +343,9 @@ export default function LiveFantasyMatchPage({
   params: { id: string };
 }) {
   const { id } = use(params);
+  const [matchPhase, setMatchPhase] = useState<'pre-match' | '1st-innings'>(
+    'pre-match'
+  );
 
   if (id !== 'live-match-1') {
     return notFound();
@@ -202,8 +366,12 @@ export default function LiveFantasyMatchPage({
         <p className="mt-1 text-muted-foreground">{matchDetails.series}</p>
       </div>
 
-      <PreMatchView />
-
+      {matchPhase === 'pre-match' && (
+        <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />
+      )}
+      {matchPhase === '1st-innings' && (
+        <FirstInningsView onInningsEnd={() => alert("Innings Over!")} />
+      )}
     </div>
   );
 }
