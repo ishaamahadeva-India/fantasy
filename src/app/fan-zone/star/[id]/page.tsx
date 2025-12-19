@@ -13,7 +13,7 @@ import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 
 
 export default function StarProfilePage({ params }: { params: { id: string } }) {
-  const { id } = use(params);
+  const id = use(params.id);
   const star = popularStars.find((s) => s.id === id);
   const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
 
