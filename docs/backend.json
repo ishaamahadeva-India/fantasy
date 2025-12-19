@@ -343,7 +343,8 @@
   "auth": {
     "providers": [
       "anonymous",
-      "google.com"
+      "google.com",
+      "password"
     ]
   },
   "firestore": {
