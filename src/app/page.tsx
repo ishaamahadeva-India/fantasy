@@ -1,10 +1,29 @@
+
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { placeholderArticles } from '@/lib/placeholder-data';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+function AdBanner() {
+    return (
+        <Card className="bg-gradient-to-r from-primary/10 via-background to-background border-primary/20 my-6">
+            <CardContent className="p-4">
+                 <div className="flex items-center justify-center gap-x-4 gap-y-2 text-center">
+                    <p className="font-semibold text-sm text-foreground">
+                        Sponsored Content by <span className="text-primary font-bold">Our Partners</span>
+                    </p>
+                    <Button asChild size="sm" variant='outline' className="ml-auto shrink-0">
+                        <Link href="#" target="_blank">Learn More</Link>
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function ExplorePage() {
   const categories = ['Politics', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
@@ -34,40 +53,43 @@ export default function ExplorePage() {
     return (
       <div className="flex flex-col gap-6">
         {articles.map((article, index) => (
-          <div key={article.id}>
-            <Link href={`/article/${article.slug}`} className="group">
-              <div className="flex items-start gap-4">
-                <div className="relative w-24 h-24 shrink-0">
-                  <Image
-                    src={`https://picsum.photos/seed/${article.id}/150/150`}
-                    alt={article.title}
-                    fill
-                    className="object-cover rounded-md"
-                    data-ai-hint={article.image.imageHint}
-                  />
-                </div>
-                <div className="flex-grow">
-                  <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
-                    {article.title}
-                  </h3>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    <span>
-                      Published on{' '}
-                      {new Date().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </span>
+            <>
+              <div key={article.id}>
+                <Link href={`/article/${article.slug}`} className="group">
+                  <div className="flex items-start gap-4">
+                    <div className="relative w-24 h-24 shrink-0">
+                      <Image
+                        src={`https://picsum.photos/seed/${article.id}/150/150`}
+                        alt={article.title}
+                        fill
+                        className="object-cover rounded-md"
+                        data-ai-hint={article.image.imageHint}
+                      />
+                    </div>
+                    <div className="flex-grow">
+                      <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
+                        {article.title}
+                      </h3>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        <span>
+                          Published on{' '}
+                          {new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                    </div>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                    {article.excerpt}
-                  </p>
-                </div>
+                </Link>
               </div>
-            </Link>
-            {index < articles.length - 1 && <Separator className="mt-6" />}
-          </div>
+              {(index + 1) % 2 === 0 && index < articles.length - 1 && <AdBanner />}
+              {index < articles.length - 1 && (index + 1) % 2 !== 0 && <Separator />}
+            </>
         ))}
       </div>
     );
@@ -124,6 +146,21 @@ export default function ExplorePage() {
               ))}
             </ul>
           </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-accent/10">
+            <CardHeader>
+                <CardTitle className="font-headline">Sponsored</CardTitle>
+                <CardDescription>Exclusive offer from our partner.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+                <p className="font-bold text-lg">Play Fantasy Cricket on My11Circle!</p>
+                <p className="text-sm text-muted-foreground mt-1">Join now and get a special bonus.</p>
+            </CardContent>
+            <CardFooter>
+                 <Button asChild className="w-full">
+                    <Link href="#" target="_blank">Play Now</Link>
+                </Button>
+            </CardFooter>
         </Card>
       </aside>
     </div>
