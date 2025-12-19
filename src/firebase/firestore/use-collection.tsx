@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { onSnapshot, type Query, type DocumentData } from 'firebase/firestore';
@@ -6,7 +7,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export function useCollection<T>(query: Query<T, DocumentData> | null) {
-  const [data, setData] = useState<T[] | null>(null);
+  const [data, setData] = useState<(T & { id: string })[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const auth = useAuth(); // Using auth to re-trigger on auth state change
@@ -23,14 +24,14 @@ export function useCollection<T>(query: Query<T, DocumentData> | null) {
     const unsubscribe = onSnapshot(
       query,
       (querySnapshot) => {
-        const data = querySnapshot.docs.map((doc) => doc.data());
+        const data = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setData(data);
         setIsLoading(false);
         setError(null);
       },
       (err) => {
         const permissionError = new FirestorePermissionError({
-            path: query.path,
+            path: (query as any)._query.path.segments.join('/'),
             operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -45,3 +46,5 @@ export function useCollection<T>(query: Query<T, DocumentData> | null) {
 
   return { data, isLoading, error };
 }
+
+    

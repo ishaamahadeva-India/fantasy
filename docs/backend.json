@@ -52,6 +52,19 @@
         "email"
       ]
     },
+    "Article": {
+      "title": "Article",
+      "description": "Represents a single news article or blog post.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" }
+      },
+      "required": ["title", "slug", "category", "content"]
+    },
     "CricketerProfile": {
       "title": "Cricketer Profile",
       "description": "Stores the static profile data for a cricketer.",
@@ -354,6 +367,12 @@
       },
       "description": "Stores public profiles for users."
     },
+    "/articles/{articleId}": {
+      "schema": {
+        "$ref": "#/entities/Article"
+      },
+      "description": "Stores all articles for the Intel Hub."
+    },
     "/cricketers/{cricketerId}": {
       "schema": {
         "$ref": "#/entities/CricketerProfile"
@@ -416,3 +435,5 @@
     }
   }
 }
+
+    
