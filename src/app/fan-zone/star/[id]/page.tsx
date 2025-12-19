@@ -9,10 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { AttributeRating } from '@/components/fan-zone/attribute-rating';
+
 
 export default function StarProfilePage({ params }: { params: { id: string } }) {
   const { id } = use(params);
   const star = popularStars.find((s) => s.id === id);
+  const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
 
   if (!star) {
     notFound();
@@ -71,7 +74,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                 <div className='space-y-4'>
                     <h3 className="font-headline text-xl">Fan Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <Button variant="outline" size="lg"><Star className="mr-2"/> Rate Performance</Button>
+                        <AttributeRating triggerButtonText="Rate Performance" attributes={starAttributes} icon={Star} />
                         <Button variant="outline" size="lg"><BrainCircuit className="mr-2"/> Compare Eras</Button>
                         <Button variant="outline" size="lg"><Gamepad2 className="mr-2"/> Pulse Check</Button>
                     </div>
