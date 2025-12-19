@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, use } from 'react';
 import { notFound } from 'next/navigation';
@@ -377,9 +378,11 @@ function getPointsForResult(prediction: any, userAnswer: any) {
         case 'yesno': {
             const isCorrect = userAnswer.answer === prediction.outcome;
             const confidence = userAnswer.confidence;
-            return isCorrect ? pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].correct : pointsMap[confidenceLabels[confidence] as keyof typeof pointsMap].incorrect;
+            const confidenceLabel = confidenceLabels[confidence] as keyof typeof pointsMap;
+            return isCorrect ? pointsMap[confidenceLabel].correct : pointsMap[confidenceLabel].incorrect;
         }
         case 'range': {
+            if (!userAnswer || !userAnswer.answer) return -5;
             const isCorrect = userAnswer.answer === prediction.outcome;
             if (isCorrect) return 25;
             const options = prediction.options;
@@ -390,11 +393,12 @@ function getPointsForResult(prediction: any, userAnswer: any) {
         }
         case 'ranking': {
             let score = 0;
+            if (!userAnswer || !userAnswer.answer) return score;
             userAnswer.answer.forEach((pId: string, index: number) => {
                 if (prediction.outcome[index] === pId) score += 20; // Exact rank
-                else if (prediction.outcome.includes(pId)) score += 10; // Off by one (simplified)
+                else if (prediction.outcome.includes(pId)) score += 5; // In the ranking, but wrong spot
             });
-            return score / prediction.options.length; // Average score
+            return Math.round(score / prediction.options.length); // Average score
         }
         default: return 0;
     }
