@@ -7,12 +7,21 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Flame, ShieldCheck, Plus } from 'lucide-react';
+import { Flame, ShieldCheck, Plus, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 export default function FanWarPage() {
   const [battles, setBattles] = useState(fanWarData);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleVote = (battleId: string, entity: 'entityOne' | 'entityTwo') => {
     setBattles(currentBattles => 
@@ -33,30 +42,57 @@ export default function FanWarPage() {
     );
   };
 
-  const movieStars = popularEntities.filter(e => e.category === 'Movie Stars');
-  const cricketers = popularEntities.filter(e => e.category === 'Cricketers');
-  const iplTeams = popularEntities.filter(e => e.category === 'IPL Teams');
-  const politicians = popularEntities.filter(e => e.category === 'Politicians');
+  const getFilteredEntities = (category: string) => {
+    return popularEntities.filter(e => 
+      e.category === category && e.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-  const renderEntityList = (entities: typeof popularEntities) => (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {entities.map(entity => (
-        <Card key={entity.id} className="text-center">
-          <CardContent className="p-4 flex flex-col items-center gap-3">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={entity.avatar} alt={entity.name} />
-              <AvatarFallback>{entity.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <h3 className="font-bold font-headline">{entity.name}</h3>
-            <Button variant="outline" size="sm" className="w-full">
-              <Plus className="w-4 h-4 mr-2"/>
-              Follow
-            </Button>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  const movieStars = getFilteredEntities('Movie Stars');
+  const cricketers = getFilteredEntities('Cricketers');
+  const iplTeams = getFilteredEntities('IPL Teams');
+  const politicians = getFilteredEntities('Politicians');
+  
+
+  const renderEntityList = (entities: typeof popularEntities) => {
+     if (entities.length === 0) {
+      return (
+        <div className="text-center py-12 text-muted-foreground">
+          No results found.
+        </div>
+      );
+    }
+    return (
+    <Carousel
+        opts={{
+          align: 'start',
+          slidesToScroll: 'auto',
+        }}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-4">
+          {entities.map(entity => (
+            <CarouselItem key={entity.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                <Card className="text-center h-full">
+                <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
+                    <Avatar className="w-20 h-20">
+                    <AvatarImage src={entity.avatar} alt={entity.name} />
+                    <AvatarFallback>{entity.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-bold font-headline">{entity.name}</h3>
+                    <Button variant="outline" size="sm" className="w-full">
+                    <Plus className="w-4 h-4 mr-2"/>
+                    Follow
+                    </Button>
+                </CardContent>
+                </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="absolute left-0 -translate-x-1/2 top-1/2" />
+        <CarouselNext className="absolute right-0 translate-x-1/2 top-1/2" />
+      </Carousel>
+  )};
 
 
   return (
@@ -167,11 +203,24 @@ export default function FanWarPage() {
 
       {/* Hall of Fame Section */}
       <div>
-        <h2 className="text-2xl font-bold font-headline text-center mb-2">Hall of Fame</h2>
-        <p className="text-muted-foreground text-center mb-6">Follow your favorite stars and teams.</p>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <div className="text-center sm:text-left">
+                <h2 className="text-2xl font-bold font-headline">Hall of Fame</h2>
+                <p className="text-muted-foreground">Follow your favorite stars and teams.</p>
+            </div>
+            <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    placeholder="Search entities..." 
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+        </div>
         
         <Tabs defaultValue="movie-stars" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6">
             <TabsTrigger value="movie-stars">Movie Stars</TabsTrigger>
             <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
             <TabsTrigger value="ipl-teams">IPL Teams</TabsTrigger>
@@ -194,3 +243,5 @@ export default function FanWarPage() {
     </div>
   );
 }
+
+    
