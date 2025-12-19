@@ -35,6 +35,29 @@ export default function FanWarPage() {
 
   const movieStars = popularEntities.filter(e => e.category === 'Movie Stars');
   const cricketers = popularEntities.filter(e => e.category === 'Cricketers');
+  const iplTeams = popularEntities.filter(e => e.category === 'IPL Teams');
+  const politicians = popularEntities.filter(e => e.category === 'Politicians');
+
+  const renderEntityList = (entities: typeof popularEntities) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {entities.map(entity => (
+        <Card key={entity.id} className="text-center">
+          <CardContent className="p-4 flex flex-col items-center gap-3">
+            <Avatar className="w-20 h-20">
+              <AvatarImage src={entity.avatar} alt={entity.name} />
+              <AvatarFallback>{entity.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <h3 className="font-bold font-headline">{entity.name}</h3>
+            <Button variant="outline" size="sm" className="w-full">
+              <Plus className="w-4 h-4 mr-2"/>
+              Follow
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
 
   return (
     <div className="space-y-12">
@@ -148,47 +171,23 @@ export default function FanWarPage() {
         <p className="text-muted-foreground text-center mb-6">Follow your favorite stars and teams.</p>
         
         <Tabs defaultValue="movie-stars" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="movie-stars">Movie Stars</TabsTrigger>
             <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
+            <TabsTrigger value="ipl-teams">IPL Teams</TabsTrigger>
+            <TabsTrigger value="politicians">Politicians</TabsTrigger>
           </TabsList>
           <TabsContent value="movie-stars">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {movieStars.map(star => (
-                <Card key={star.id} className="text-center">
-                  <CardContent className="p-4 flex flex-col items-center gap-3">
-                    <Avatar className="w-20 h-20">
-                      <AvatarImage src={star.avatar} alt={star.name} />
-                      <AvatarFallback>{star.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <h3 className="font-bold font-headline">{star.name}</h3>
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Plus className="w-4 h-4 mr-2"/>
-                      Follow
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {renderEntityList(movieStars)}
           </TabsContent>
           <TabsContent value="cricketers">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {cricketers.map(star => (
-                  <Card key={star.id} className="text-center">
-                    <CardContent className="p-4 flex flex-col items-center gap-3">
-                      <Avatar className="w-20 h-20">
-                        <AvatarImage src={star.avatar} alt={star.name} />
-                        <AvatarFallback>{star.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <h3 className="font-bold font-headline">{star.name}</h3>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Plus className="w-4 h-4 mr-2"/>
-                        Follow
-                      </Button>
-                    </CardContent>
-                  </Card>
-              ))}
-            </div>
+            {renderEntityList(cricketers)}
+          </TabsContent>
+          <TabsContent value="ipl-teams">
+            {renderEntityList(iplTeams)}
+          </TabsContent>
+          <TabsContent value="politicians">
+            {renderEntityList(politicians)}
           </TabsContent>
         </Tabs>
       </div>
