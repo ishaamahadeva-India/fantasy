@@ -634,7 +634,7 @@ function InningsBreakView({ onStartNextInnings }: { onStartNextInnings: () => vo
                 <CardContent>
                     <p className="text-muted-foreground">The 2nd Innings selection will begin shortly...</p>
                 </CardContent>
-                 <CardFooter>
+                 <CardFooter className="justify-center">
                      <Button onClick={onStartNextInnings}>Start 2nd Innings Selections</Button>
                 </CardFooter>
             </Card>
