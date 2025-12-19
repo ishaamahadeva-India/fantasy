@@ -1,0 +1,146 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's public profile information.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's public display name."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        }
+      },
+      "required": [
+        "displayName"
+      ]
+    },
+    "CricketerProfile": {
+      "title": "Cricketer Profile",
+      "description": "Stores the static profile data for a cricketer.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "name",
+        "country"
+      ]
+    },
+    "TeamProfile": {
+      "title": "Team Profile",
+      "description": "Stores the static profile data for a cricket team (both IP and National).",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "ip",
+            "national"
+          ]
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ]
+    },
+    "FanRating": {
+      "title": "Fan Rating",
+      "description": "Represents a single rating submitted by a fan for a player or team.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who submitted the rating."
+        },
+        "entityId": {
+          "type": "string",
+          "description": "The ID of the cricketer or team being rated."
+        },
+        "entityType": {
+          "type": "string",
+          "enum": [
+            "cricketer",
+            "team"
+          ]
+        },
+        "ratings": {
+          "type": "object",
+          "description": "A map of attribute names to scores (e.g., {'Batting': 8.5})."
+        },
+        "review": {
+          "type": "string",
+          "description": "An optional one-line review."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "entityId",
+        "entityType",
+        "ratings"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores public profiles for users."
+    },
+    "/cricketers/{cricketerId}": {
+      "schema": {
+        "$ref": "#/entities/CricketerProfile"
+      },
+      "description": "Stores base profile information for individual cricketers."
+    },
+    "/teams/{teamId}": {
+      "schema": {
+        "$ref": "#/entities/TeamProfile"
+      },
+      "description": "Stores base profile information for teams (IP and National)."
+    },
+    "/ratings/{ratingId}": {
+      "schema": {
+        "$ref": "#/entities/FanRating"
+      },
+      "description": "Collection of all individual fan ratings for players and teams."
+    }
+  }
+}
