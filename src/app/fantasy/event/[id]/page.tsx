@@ -31,7 +31,6 @@ const allEvents = [
             'The 24-hour window starts from the exact time of the trailer release.',
             'Prediction must be a whole number.'
         ],
-        options: [],
     },
     {
         id: 'event-4',
@@ -74,7 +73,6 @@ const allEvents = [
                 's-placeholder-4': 15, // Anirudh
             }
         },
-        options: [],
     }
 ];
 // Add placeholder stars for draft
@@ -229,7 +227,9 @@ function DraftSelection({ config, prediction, setPrediction, isLocked }: { confi
 export default function PredictionEventPage({ params }: { params: { id: string } }) {
     const { id } = use(params);
     const eventDetails = allEvents.find(e => e.id === id);
-    const [prediction, setPrediction] = useState<any>('');
+    const [prediction, setPrediction] = useState<any>(
+        eventDetails?.type === 'draft_selection' ? { team: {}, captain: null } : ''
+    );
     const [isLocked, setIsLocked] = useState(false);
     
     const { user } = useUser();
@@ -250,22 +250,42 @@ export default function PredictionEventPage({ params }: { params: { id: string }
         }
 
         let predictionData;
-        if(eventDetails.type === 'numeric_prediction') {
-            predictionData = { predictedValue: Number(prediction) };
-        } else if (eventDetails.type === 'choice_selection') {
-            predictionData = { selectedChoice: prediction };
-        } else if (eventDetails.type === 'draft_selection') {
-            if (Object.keys(prediction.team).length !== eventDetails.draftConfig.roles.length) {
-                toast({ variant: 'destructive', title: 'Incomplete Team', description: 'You must select a player for each role.' });
-                return;
-            }
-            if (!prediction.captain) {
-                toast({ variant: 'destructive', title: 'No Captain Selected', description: 'You must select a captain for your team.' });
-                return;
-            }
-            predictionData = prediction;
+        let isValid = false;
+
+        switch(eventDetails.type) {
+            case 'numeric_prediction':
+                isValid = prediction && Number(prediction) > 0;
+                if (isValid) predictionData = { predictedValue: Number(prediction) };
+                else toast({ variant: 'destructive', title: 'Invalid Prediction', description: 'Please enter a valid number.' });
+                break;
+            case 'choice_selection':
+                isValid = !!prediction;
+                 if (isValid) predictionData = { selectedChoice: prediction };
+                 else toast({ variant: 'destructive', title: 'Invalid Prediction', description: 'Please select an option.' });
+                break;
+            case 'draft_selection':
+                const team = prediction.team || {};
+                const captain = prediction.captain || null;
+                const rolesFilled = Object.keys(team).length === eventDetails.draftConfig.roles.length;
+                
+                if (!rolesFilled) {
+                    toast({ variant: 'destructive', title: 'Incomplete Team', description: 'You must select a player for each role.' });
+                    isValid = false;
+                } else if (!captain) {
+                    toast({ variant: 'destructive', title: 'No Captain Selected', description: 'You must select a captain for your team.' });
+                    isValid = false;
+                } else {
+                    isValid = true;
+                    predictionData = prediction;
+                }
+                break;
+            default:
+                isValid = false;
+                toast({ variant: 'destructive', title: 'Invalid Event', description: 'This event type is not supported.' });
         }
             
+        if (!isValid) return;
+
         saveUserPrediction({
             eventId: eventDetails.id,
             campaignId: eventDetails.campaignId,
@@ -285,7 +305,7 @@ export default function PredictionEventPage({ params }: { params: { id: string }
             case 'numeric_prediction':
                 return <NumericPrediction prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
             case 'choice_selection':
-                return <ChoiceSelection options={eventDetails.options} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
+                return <ChoiceSelection options={eventDetails.options!} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
             case 'draft_selection':
                 return <DraftSelection config={eventDetails.draftConfig} prediction={prediction} setPrediction={setPrediction} isLocked={isLocked} />;
             default:
@@ -294,6 +314,7 @@ export default function PredictionEventPage({ params }: { params: { id: string }
     }
     
     const getLockedInDisplayValue = () => {
+        if (!prediction) return "N/A";
         if (eventDetails.type === 'numeric_prediction') {
             return Number(prediction).toLocaleString();
         }
@@ -346,7 +367,7 @@ export default function PredictionEventPage({ params }: { params: { id: string }
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {renderPredictionInput()}
-                    <Button onClick={handleLockPrediction} disabled={!prediction || isLocked} size="lg" className='w-full'>
+                    <Button onClick={handleLockPrediction} disabled={isLocked} size="lg" className='w-full'>
                         {isLocked ? 'Locked In' : 'Lock Prediction'}
                     </Button>
                 </CardContent>
@@ -379,3 +400,5 @@ export default function PredictionEventPage({ params }: { params: { id: string }
         </div>
     );
 }
+
+    
