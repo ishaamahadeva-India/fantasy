@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -70,8 +70,8 @@ function ChoiceSelection({ options, prediction, setPrediction, isLocked }: { opt
 
 
 export default function PredictionEventPage({ params }: { params: { id: string } }) {
-    
-    const eventDetails = allEvents.find(e => e.id === params.id);
+    const { id } = use(params);
+    const eventDetails = allEvents.find(e => e.id === id);
     const [prediction, setPrediction] = useState('');
     const [isLocked, setIsLocked] = useState(false);
 
