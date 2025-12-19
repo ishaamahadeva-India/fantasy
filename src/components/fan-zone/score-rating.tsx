@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,10 +9,39 @@ import {
 } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Star } from 'lucide-react';
+import { useRatings } from '@/firebase/firestore/ratings';
+import { useUser } from '@/firebase';
+import { toast } from '@/hooks/use-toast';
 
-export function ScoreRating() {
+export function ScoreRating({ entityId, entityType }: { entityId: string, entityType: 'movie' | 'star' }) {
   const [score, setScore] = useState(5);
   const [isOpen, setIsOpen] = useState(false);
+  const { saveFanRating } = useRatings();
+  const { user } = useUser();
+
+  const handleSubmit = () => {
+     if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "You must be logged in to submit a rating.",
+        });
+        return;
+    }
+    
+    saveFanRating({
+        entityId,
+        entityType,
+        ratings: { overallScore: score },
+    }, user.uid);
+
+    toast({
+        title: "Rating Submitted!",
+        description: `You gave a score of ${score.toFixed(1)}. You've earned 10 Intel Points!`,
+    });
+
+    setIsOpen(false);
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -40,7 +70,7 @@ export function ScoreRating() {
                     {score.toFixed(1)}
                 </span>
             </div>
-            <Button onClick={() => setIsOpen(false)}>Submit Score</Button>
+            <Button onClick={handleSubmit}>Submit Score</Button>
           </div>
         </div>
       </PopoverContent>

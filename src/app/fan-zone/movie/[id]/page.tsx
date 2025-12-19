@@ -1,8 +1,7 @@
 
 'use client';
 
-import { use, useMemo, useState, useEffect } from 'react';
-import { popularMovies } from '@/lib/placeholder-data';
+import { useMemo, useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +14,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Gamepad2, Mic, PieChart, ArrowLeft } from 'lucide-react';
+import { Gamepad2, PieChart, ArrowLeft } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
 import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import type { FanRating, UserProfile } from '@/lib/types';
+import type { FanRating, UserProfile, Movie } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WatchlistButton } from '@/components/fan-zone/watchlist-button';
 
@@ -101,23 +100,44 @@ function CommunityInsightDisplay({ ratings, isLoading }: { ratings: FanRating[] 
     );
 }
 
+function MovieProfileSkeleton() {
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="mb-6"><Skeleton className="h-8 w-48" /></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                <div className="md:col-span-1">
+                    <Skeleton className="aspect-[2/3] w-full" />
+                </div>
+                <div className="md:col-span-2 space-y-6">
+                    <Skeleton className="h-12 w-3/4" />
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-20 w-full" />
+                    <Separator />
+                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                     </div>
+                    <Card><CardContent className="p-4"><Skeleton className="h-48" /></CardContent></Card>
+                </div>
+            </div>
+        </div>
+    )
+}
 
 export default function MovieProfilePage({
   params,
 }: {
   params: { id: string };
 }) {
-  const { id } = use(params);
-  const movie = popularMovies.find((m) => m.id === id);
-  const movieAttributes = [
-    'Direction',
-    'Screenplay',
-    'Acting',
-    'Music Impact',
-  ];
+  const { id } = params;
+  const movieAttributes = ['Direction', 'Screenplay', 'Acting', 'Music Impact'];
   
   const firestore = useFirestore();
   const { user } = useUser();
+
+  const movieRef = firestore ? doc(firestore, 'movies', id) : null;
+  const { data: movie, isLoading: movieLoading } = useDoc<Movie>(movieRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -132,6 +152,10 @@ export default function MovieProfilePage({
 
   const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
   const { data: userProfile, isLoading: userProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  if (movieLoading) {
+    return <MovieProfileSkeleton />;
+  }
 
   if (!movie) {
     notFound();
@@ -152,7 +176,7 @@ export default function MovieProfilePage({
           <Card className="overflow-hidden">
             <div className="relative aspect-[2/3] w-full">
               <Image
-                src={movie.posterUrl}
+                src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/400/600`}
                 alt={movie.title}
                 fill
                 className="object-cover"
@@ -178,7 +202,7 @@ export default function MovieProfilePage({
           <div className="space-y-4">
             <h3 className="font-headline text-xl">User Actions</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <ScoreRating />
+              <ScoreRating entityId={id} entityType="movie" />
               <AttributeRating
                 triggerButtonText="Rate Attributes"
                 attributes={movieAttributes}

@@ -117,6 +117,30 @@
         "type"
       ]
     },
+    "Movie": {
+        "title": "Movie",
+        "description": "Represents a single movie.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "releaseYear": { "type": "number" },
+            "genre": { "type": "string" },
+            "posterUrl": { "type": "string", "format": "uri" },
+            "description": { "type": "string" }
+        },
+        "required": ["title", "releaseYear", "genre", "description"]
+    },
+    "Star": {
+        "title": "Star",
+        "description": "Represents a movie star.",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "avatar": { "type": "string", "format": "uri" },
+            "genre": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["name"]
+    },
     "AdPlacement": {
       "title": "Ad Placement",
       "description": "Represents a single advertisement slot in the application.",
@@ -158,7 +182,9 @@
           "type": "string",
           "enum": [
             "cricketer",
-            "team"
+            "team",
+            "movie",
+            "star"
           ]
         },
         "ratings": {
@@ -408,6 +434,18 @@
         "$ref": "#/entities/TeamProfile"
       },
       "description": "Stores base profile information for teams (IP and National)."
+    },
+    "/movies/{movieId}": {
+        "schema": {
+            "$ref": "#/entities/Movie"
+        },
+        "description": "Stores all movie profiles."
+    },
+    "/stars/{starId}": {
+        "schema": {
+            "$ref": "#/entities/Star"
+        },
+        "description": "Stores all movie star profiles."
     },
     "/ad-placements/{placementId}": {
       "schema": {

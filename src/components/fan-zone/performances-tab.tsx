@@ -1,11 +1,6 @@
 
 'use client';
 import {
-  topPerformances,
-  popularStars,
-  popularMovies,
-} from '@/lib/placeholder-data';
-import {
   Card,
   CardContent,
   CardDescription,
@@ -16,6 +11,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Movie, Star as StarType } from '@/lib/types';
+
+// NOTE: This component still uses placeholder data for performances as it's a complex relationship
+// between movies and stars that isn't modeled in the DB yet.
+import {
+  topPerformances,
+  popularStars,
+  popularMovies,
+} from '@/lib/placeholder-data';
+
 
 export function PerformancesTab() {
   const performances = topPerformances
@@ -88,5 +95,3 @@ export function PerformancesTab() {
     </Card>
   );
 }
-
-    

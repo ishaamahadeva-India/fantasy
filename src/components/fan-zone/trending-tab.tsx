@@ -1,6 +1,5 @@
 
 'use client';
-import { popularMovies, popularStars } from '@/lib/placeholder-data';
 import {
   Card,
   CardContent,
@@ -12,14 +11,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import { Separator } from '../ui/separator';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import type { Movie, Star } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function TrendingTab() {
-  const trendingMovies = [...popularMovies]
-    .sort((a, b) => (a.trendingRank || 99) - (b.trendingRank || 99))
-    .slice(0, 5);
-  const trendingStars = [...popularStars]
-    .sort((a, b) => (a.trendingRank || 99) - (b.trendingRank || 99))
-    .slice(0, 5);
+    const firestore = useFirestore();
+
+    const trendingMoviesQuery = firestore ? query(collection(firestore, 'movies'), orderBy('trendingRank'), limit(5)) : null;
+    const trendingStarsQuery = firestore ? query(collection(firestore, 'stars'), orderBy('trendingRank'), limit(5)) : null;
+
+    const { data: trendingMovies, isLoading: moviesLoading } = useCollection<Movie>(trendingMoviesQuery);
+    const { data: trendingStars, isLoading: starsLoading } = useCollection<Star>(trendingStarsQuery);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -31,7 +35,10 @@ export function TrendingTab() {
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
-            {trendingMovies.map((movie, index) => (
+            {moviesLoading && [...Array(5)].map((_, i) => (
+                <li key={i}><Skeleton className="h-20 w-full" /></li>
+            ))}
+            {trendingMovies?.map((movie, index) => (
               <li key={movie.id}>
                 <Link href={`/fan-zone/movie/${movie.id}`} className="group">
                   <div className="flex items-center gap-4">
@@ -40,7 +47,7 @@ export function TrendingTab() {
                     </span>
                     <div className="relative w-16 h-24 shrink-0">
                       <Image
-                        src={movie.posterUrl}
+                        src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/200/300`}
                         alt={movie.title}
                         fill
                         className="object-cover rounded-md"
@@ -72,7 +79,10 @@ export function TrendingTab() {
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
-            {trendingStars.map((star, index) => (
+             {starsLoading && [...Array(5)].map((_, i) => (
+                <li key={i}><Skeleton className="h-20 w-full" /></li>
+            ))}
+            {trendingStars?.map((star, index) => (
               <li key={star.id}>
                 <Link href={`/fan-zone/star/${star.id}`} className="group">
                   <div className="flex items-center gap-4">
@@ -80,7 +90,7 @@ export function TrendingTab() {
                       {index + 1}
                     </span>
                     <Avatar className="w-20 h-20">
-                      <AvatarImage src={star.avatar} alt={star.name} />
+                      <AvatarImage src={star.avatar || `https://picsum.photos/seed/${star.id}/200/200`} alt={star.name} />
                       <AvatarFallback>{star.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -88,7 +98,7 @@ export function TrendingTab() {
                         {star.name}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {star.genre.join(' · ')}
+                        {star.genre?.join(' · ')}
                       </p>
                     </div>
                   </div>

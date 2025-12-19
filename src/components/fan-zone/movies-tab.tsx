@@ -1,14 +1,41 @@
 
 'use client';
-import { popularMovies } from '@/lib/placeholder-data';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from '../ui/skeleton';
+import type { Movie } from '@/lib/types';
 
 export function MoviesTab({ searchTerm }: { searchTerm: string }) {
-  const filteredMovies = popularMovies.filter((movie) =>
-    movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const firestore = useFirestore();
+  const moviesQuery = firestore ? collection(firestore, 'movies') : null;
+  const { data: movies, isLoading } = useCollection<Movie>(moviesQuery);
+
+  const filteredMovies =
+    movies
+      ?.filter((movie) =>
+        movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [];
+      
+  if (isLoading) {
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...Array(6)].map((_, i) => (
+                <Card key={i} className="overflow-hidden">
+                    <CardContent className="p-0">
+                        <Skeleton className="aspect-[2/3] w-full" />
+                         <div className="p-3 space-y-2">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/4" />
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    )
+  }
 
   if (filteredMovies.length === 0) {
     return (
@@ -26,7 +53,7 @@ export function MoviesTab({ searchTerm }: { searchTerm: string }) {
             <CardContent className="p-0">
               <div className="relative aspect-[2/3] w-full">
                 <Image
-                  src={movie.posterUrl}
+                  src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/400/600`}
                   alt={movie.title}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -47,5 +74,3 @@ export function MoviesTab({ searchTerm }: { searchTerm: string }) {
     </div>
   );
 }
-
-    

@@ -1,8 +1,7 @@
 
 'use client';
 
-import { use, useMemo, useState, useEffect } from 'react';
-import { popularStars } from '@/lib/placeholder-data';
+import { useMemo, useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +11,9 @@ import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star, ArrowLeft } from 'luci
 import { Separator } from '@/components/ui/separator';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
-import type { FanRating } from '@/lib/types';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
+import type { FanRating, Star as StarType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
 
@@ -38,7 +37,7 @@ function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating
         });
         setAverageRatings(newAverageRatings);
 
-    }, [ratings]);
+    }, [ratings, starAttributes]);
 
 
     if (isLoading) {
@@ -72,12 +71,39 @@ function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating
     );
 }
 
+function StarProfileSkeleton() {
+     return (
+        <div className="max-w-6xl mx-auto">
+            <div className="mb-6"><Skeleton className="h-8 w-48" /></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                <div className="md:col-span-1">
+                    <Skeleton className="aspect-square w-full" />
+                </div>
+                <div className="md:col-span-2 space-y-6">
+                    <Skeleton className="h-12 w-3/4" />
+                    <Skeleton className="h-6 w-1/2" />
+                    <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
+                    <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
+                    <Separator />
+                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                     </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export default function StarProfilePage({ params }: { params: { id: string } }) {
-  const { id } = use(params);
-  const star = popularStars.find((s) => s.id === id);
+  const { id } = params;
   const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
 
   const firestore = useFirestore();
+  const starRef = firestore ? doc(firestore, 'stars', id) : null;
+  const { data: star, isLoading: starLoading } = useDoc<StarType>(starRef);
+  
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -88,6 +114,10 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
   }, [firestore, id]);
 
   const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+
+  if (starLoading) {
+    return <StarProfileSkeleton />;
+  }
 
   if (!star) {
     notFound();
@@ -108,7 +138,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                 <Card className="overflow-hidden">
                     <div className="relative aspect-square w-full">
                         <Image
-                        src={star.avatar}
+                        src={star.avatar || `https://picsum.photos/seed/${star.id}/400/400`}
                         alt={star.name}
                         fill
                         className="object-cover"
@@ -122,7 +152,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                         {star.name}
                     </h1>
                      <div className="mt-2 flex items-center gap-2">
-                        {star.genre.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
+                        {star.genre?.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
                     </div>
                 </div>
 
@@ -136,11 +166,11 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                     <CardContent className="grid grid-cols-3 gap-4 text-center">
                         <div>
                             <p className="text-sm text-muted-foreground">Popularity Index</p>
-                            <p className="text-3xl font-bold font-code">{star.popularityIndex.toFixed(1)}</p>
+                            <p className="text-3xl font-bold font-code">{star.popularityIndex?.toFixed(1) || 'N/A'}</p>
                         </div>
                          <div>
                             <p className="text-sm text-muted-foreground">Consistency Score</p>
-                            <p className="text-3xl font-bold font-code">9.1</p>
+                            <p className="text-3xl font-bold font-code">N/A</p>
                         </div>
                          <div>
                             <p className="text-sm text-muted-foreground">Trend</p>
@@ -165,7 +195,7 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                     <h3 className="font-headline text-xl">Fan Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <AttributeRating triggerButtonText="Rate Performance" attributes={starAttributes} icon={Star} entityId={star.id} entityType="star" />
-                        <Button variant="outline" size="lg"><BrainCircuit className="mr-2"/> Compare Eras</Button>
+                        <Button variant="outline" size="lg" disabled><BrainCircuit className="mr-2"/> Compare Eras</Button>
                         <PulseCheck question={`How do you rate ${star.name}'s recent script selections?`} options={["Excellent", "Average", "Poor"]} entityId={star.id} entityType='star' />
                     </div>
                 </div>

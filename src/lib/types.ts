@@ -1,5 +1,24 @@
 
 
+export type Movie = {
+    id: string;
+    title: string;
+    releaseYear: number;
+    genre: string;
+    posterUrl: string;
+    description: string;
+    communityScore?: number;
+    trendingRank?: number;
+}
+
+export type Star = {
+    id: string;
+    name: string;
+    avatar: string;
+    genre: string[];
+    popularityIndex: number;
+    trendingRank?: number;
+}
 
 export type FanRating = {
   userId: string;
