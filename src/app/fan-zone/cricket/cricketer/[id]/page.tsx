@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, BarChart2, MessageSquare, Star } from 'lucide-react';
 import Link from 'next/link';
+import { use } from 'react';
 
 function RecentFormVisualizer({ form }: { form: number[] }) {
     // Simple visualizer: height represents score, color changes based on value
@@ -34,7 +35,8 @@ function RecentFormVisualizer({ form }: { form: number[] }) {
 }
 
 export default function CricketerProfilePage({ params }: { params: { id: string } }) {
-  const cricketer = placeholderCricketers.find((c) => c.id === params.id);
+  const { id } = use(params);
+  const cricketer = placeholderCricketers.find((c) => c.id === id);
   
   if (!cricketer) {
     notFound();
