@@ -24,7 +24,6 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
   { href: '/fantasy', label: 'Fantasy', icon: Trophy },
   { href: '/live-fantasy', label: 'Live Fantasy', icon: Zap },

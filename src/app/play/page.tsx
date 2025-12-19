@@ -1,6 +1,8 @@
 
 'use client';
-import Link from 'next/link';
+import { ForYouSection } from '@/components/home/for-you-section';
+import { TrendingTopics } from '@/components/home/trending-topics';
+import { DailyBrief } from '@/components/home/daily-brief';
 import {
   Card,
   CardDescription,
@@ -8,23 +10,24 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  BrainCircuit,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+
+import {
   Newspaper,
-  BookCopy,
-  Lock,
-  Target,
-  FileText,
-  Lightbulb,
   Mic,
+  FileText,
   Video,
   ClipboardCheck,
-  Calendar,
-  Compass,
-  Trophy,
-  BarChart2,
-  Quote,
-  Users,
+  BrainCircuit,
+  Lock,
+  Target
 } from 'lucide-react';
+import Link from 'next/link';
 
 const gameModes = [
     {
@@ -49,17 +52,17 @@ const gameModes = [
         isLocked: false,
     },
     {
-        title: 'Precision Run',
-        description: 'Answer as many questions as you can in 60 seconds.',
-        icon: Target,
-        href: '#',
-        isLocked: true,
-    },
-    {
         title: 'Frame Lock',
         description: 'Identify the movie from a single frame.',
         icon: Video,
         href: '/frame-lock/start',
+        isLocked: false,
+    },
+    {
+        title: 'Fact or Fiction',
+        description: 'Verify statements against a source.',
+        icon: ClipboardCheck,
+        href: '/fact-or-fiction/ipl-franchise-dynasties/start',
         isLocked: false,
     },
     {
@@ -70,65 +73,9 @@ const gameModes = [
         isLocked: true,
     },
     {
-        title: 'Fact or Fiction',
-        description: 'Verify statements against a source.',
-        icon: ClipboardCheck,
-        href: '/fact-or-fiction/ipl-franchise-dynasties/start',
-        isLocked: false,
-    },
-    {
-        title: 'Topic Deep Dive',
-        description: 'An in-depth quiz on a specific subject.',
-        icon: BookCopy,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'Prediction Challenge',
-        description: 'Forecast outcomes of upcoming events.',
-        icon: Lightbulb,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'Historical Hot-seat',
-        description: 'Place historical events in chronological order.',
-        icon: Calendar,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'GeoGuesser',
-        description: 'Identify locations from satellite images.',
-        icon: Compass,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'Head-to-Head',
-        description: 'Challenge another user in a live quiz.',
-        icon: Trophy,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'The Analyst',
-        description: 'Interpret data and charts to draw conclusions.',
-        icon: BarChart2,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'Quote Quest',
-        description: 'Attribute famous quotes to the right person.',
-        icon: Quote,
-        href: '#',
-        isLocked: true,
-    },
-    {
-        title: 'The Negotiator',
-        description: 'Navigate a negotiation scenario to a successful outcome.',
-        icon: Users,
+        title: 'Precision Run',
+        description: 'Answer as many questions as you can in 60 seconds.',
+        icon: Target,
         href: '#',
         isLocked: true,
     },
@@ -137,17 +84,17 @@ const gameModes = [
 
 export default function PlayPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Challenge Lobby
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Engage with our skill-based games to challenge your intellect and learn something new.
-        </p>
-      </div>
-
-       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="flex flex-col gap-8 md:gap-12">
+        <div>
+            <h1 className="text-3xl font-bold md:text-4xl font-headline">
+                Challenge Lobby
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+                Engage with our skill-based games to challenge your intellect and learn something new.
+            </p>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {gameModes.map((mode) => (
             <Link href={mode.isLocked ? '#' : mode.href} key={mode.title} className="group">
             <Card
@@ -182,3 +129,4 @@ export default function PlayPage() {
     </div>
   );
 }
+
