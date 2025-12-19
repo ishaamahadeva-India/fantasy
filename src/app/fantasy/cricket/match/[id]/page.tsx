@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Check, Lock, Users, Flame, Zap } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Users, Flame, Zap, Trophy, BarChart, HelpCircle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { placeholderCricketers } from '@/lib/cricket-data';
@@ -36,8 +36,16 @@ const players = {
     IND: placeholderCricketers.filter(p => p.country === 'IND'),
     AUS: placeholderCricketers.filter(p => p.country === 'AUS'),
 };
-// Add Pat Cummins for AUS
+// Add Pat Cummins for AUS, remove duplicate Bumrah from placeholder
 players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
+players.AUS = players.AUS.filter(p => p.id !== 'c2');
+
+
+const microPredictions = [
+    { id: 'pred-1', question: 'Will the total Powerplay score be Over 45 runs?', outcome: true },
+    { id: 'pred-2', question: 'Will the Powerplay King hit a 6?', outcome: false },
+    { id: 'pred-3', question: 'Will the New Ball Striker take a wicket in their first over?', outcome: true },
+]
 
 
 function PlayerSelectionCard({ player, isSelected, isDisabled, onSelect }: { player: any, isSelected: boolean, isDisabled: boolean, onSelect: () => void }) {
@@ -60,8 +68,23 @@ function PlayerSelectionCard({ player, isSelected, isDisabled, onSelect }: { pla
     );
 }
 
+function ScoringRulesCard() {
+    return (
+         <Card>
+            <CardHeader>
+                <CardTitle className="font-headline flex items-center gap-2 text-lg"><HelpCircle className="w-5 h-5"/> Scoring Rules</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-3">
+                <div className="flex justify-between"><span>Correct Role Selection</span> <span className="font-bold font-code text-primary">+30 Pts</span></div>
+                <div className="flex justify-between"><span>Correct Micro-Prediction</span> <span className="font-bold font-code text-primary">+10 Pts</span></div>
+                <div className="flex justify-between"><span>3 Prediction Streak</span> <span className="font-bold font-code text-amber-400">+10 Pts</span></div>
+                 <div className="flex justify-between"><span>5 Prediction Streak</span> <span className="font-bold font-code text-amber-400">+25 Pts</span></div>
+            </CardContent>
+        </Card>
+    )
+}
 
-function PreMatchView() {
+function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
     const [selections, setSelections] = useState<Record<string, string>>({});
     const [isLocked, setIsLocked] = useState(false);
 
@@ -72,7 +95,7 @@ function PreMatchView() {
         }));
     };
 
-    const handleLockSelections = () => {
+    const handleLock = () => {
         if (Object.values(selections).filter(Boolean).length !== roles['1st-innings'].length) {
             toast({
                 variant: 'destructive',
@@ -84,8 +107,9 @@ function PreMatchView() {
         setIsLocked(true);
         toast({
             title: 'Selections Locked for 1st Innings!',
-            description: 'Good luck! Micro-predictions will appear as the match goes live.',
+            description: 'Good luck! The match is about to go live.',
         });
+        setTimeout(() => onLockSelections(), 1000);
     }
 
     return (
@@ -119,9 +143,11 @@ function PreMatchView() {
                         </div>
                     </div>
                 ))}
+                
+                <ScoringRulesCard />
 
                 <div className="sticky bottom-6 z-10">
-                    <Button onClick={handleLockSelections} disabled={isLocked} size="lg" className="w-full shadow-2xl shadow-primary/20">
+                    <Button onClick={handleLock} disabled={isLocked} size="lg" className="w-full shadow-2xl shadow-primary/20">
                         <Lock className="w-5 h-5 mr-2" />
                         {isLocked ? `Selections Locked` : `Lock Selections for 1st Innings`}
                     </Button>
@@ -131,9 +157,111 @@ function PreMatchView() {
     )
 }
 
+function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
+    const [currentPredIndex, setCurrentPredIndex] = useState(0);
+    const [answers, setAnswers] = useState<Record<number, boolean>>({});
+    const [showResult, setShowResult] = useState<boolean>(false);
+    
+    const currentPrediction = microPredictions[currentPredIndex];
+    const hasAnswered = answers[currentPredIndex] !== undefined;
+
+    const handlePrediction = (answer: boolean) => {
+        if(hasAnswered) return;
+        setAnswers(prev => ({...prev, [currentPredIndex]: answer}));
+        setShowResult(true);
+
+        setTimeout(() => {
+            setShowResult(false);
+            if (currentPredIndex < microPredictions.length - 1) {
+                setCurrentPredIndex(prev => prev + 1);
+            } else {
+                onInningsEnd();
+            }
+        }, 2000);
+    }
+
+    if (!currentPrediction) {
+        return <p>Loading predictions...</p>
+    }
+
+    const isCorrect = hasAnswered && answers[currentPredIndex] === currentPrediction.outcome;
+
+    return (
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl">1st Innings: LIVE</CardTitle>
+                    <CardDescription>Make your predictions as the action unfolds.</CardDescription>
+                </CardHeader>
+            </Card>
+
+            <AnimatePresence mode="wait">
+                 <motion.div
+                    key={currentPredIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Card className="text-center">
+                        <CardHeader>
+                            <CardTitle className="font-headline flex items-center justify-center gap-2"><Zap className="w-6 h-6 text-primary"/> Micro-Prediction</CardTitle>
+                            <CardDescription>Prediction {currentPredIndex + 1} of {microPredictions.length}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-2xl font-semibold text-balance min-h-[64px]">{currentPrediction.question}</p>
+                             <div className="grid grid-cols-2 gap-4">
+                                <Button onClick={() => handlePrediction(true)} disabled={hasAnswered} className="h-20 text-xl">Yes</Button>
+                                <Button onClick={() => handlePrediction(false)} disabled={hasAnswered} variant="outline" className="h-20 text-xl">No</Button>
+                            </div>
+                        </CardContent>
+                        {showResult && (
+                             <CardFooter>
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="w-full text-center"
+                                >
+                                    {isCorrect ? (
+                                        <p className="font-bold text-green-400">Correct! +10 Points</p>
+                                    ) : (
+                                        <p className="font-bold text-red-400">Incorrect!</p>
+                                    )}
+                                </motion.div>
+                            </CardFooter>
+                        )}
+                    </Card>
+                </motion.div>
+            </AnimatePresence>
+            
+            <ScoringRulesCard />
+        </div>
+    )
+}
+
+function InningsBreakView({ onStartNextInnings }: { onStartNextInnings: () => void }) {
+    return (
+        <div className="text-center space-y-4">
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Innings Break</CardTitle>
+                    <CardDescription>Review the 1st innings and prepare your roles for the 2nd innings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">The 2nd Innings selection will begin shortly...</p>
+                </CardContent>
+                 <CardFooter>
+                     <Button onClick={onStartNextInnings}>Start 2nd Innings Selections</Button>
+                </CardFooter>
+            </Card>
+        </div>
+    )
+}
+
 
 export default function CricketMatchPage({ params }: { params: { id: string } }) {
   const { id } = use(params);
+  const [matchPhase, setMatchPhase] = useState('pre-match'); // 'pre-match', '1st-innings', 'break', '2nd-innings'
 
   if (!matchDetails) {
     return notFound();
@@ -156,17 +284,25 @@ export default function CricketMatchPage({ params }: { params: { id: string } })
             </p>
         </div>
 
-        <Tabs defaultValue="pre-match" className="w-full">
+        <Tabs value={matchPhase} onValueChange={setMatchPhase} className="w-full">
             <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="pre-match">Pre-Match</TabsTrigger>
-                <TabsTrigger value="1st-innings" disabled>1st Innings</TabsTrigger>
+                <TabsTrigger value="1st-innings" disabled={matchPhase === 'pre-match'}>1st Innings</TabsTrigger>
+                <TabsTrigger value="break" disabled={matchPhase !== 'break'}>Innings Break</TabsTrigger>
                 <TabsTrigger value="2nd-innings" disabled>2nd Innings</TabsTrigger>
-                <TabsTrigger value="leaderboard" disabled>Leaderboard</TabsTrigger>
             </TabsList>
             <TabsContent value="pre-match" className="mt-6">
-                <PreMatchView />
+                <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')}/>
             </TabsContent>
-            {/* Other TabsContent will be built in later phases */}
+            <TabsContent value="1st-innings" className="mt-6">
+                <FirstInningsView onInningsEnd={() => setMatchPhase('break')} />
+            </TabsContent>
+             <TabsContent value="break" className="mt-6">
+                <InningsBreakView onStartNextInnings={() => alert('2nd Innings feature coming in Phase 3!')} />
+            </TabsContent>
+             <TabsContent value="2nd-innings" className="mt-6">
+                <p>2nd Innings content will go here.</p>
+            </TabsContent>
         </Tabs>
     </div>
   );
