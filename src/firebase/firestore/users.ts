@@ -54,3 +54,34 @@ export function updateWatchlist(firestore: Firestore, userId: string, movieId: s
             errorEmitter.emit('permission-error', permissionError);
         });
 }
+
+
+/**
+ * Updates a user's fantasy-related settings in their profile.
+ * @param firestore - The Firestore instance.
+ * @param userId - The ID of the user to update.
+ * @param settings - The settings to update.
+ */
+export function updateUserFantasySettings(firestore: Firestore, userId: string, settings: { ageVerified?: boolean; fantasyEnabled?: boolean; }) {
+    const userDocRef = doc(firestore, 'users', userId);
+
+    const updateData: Record<string, any> = {};
+    if (settings.ageVerified !== undefined) {
+        updateData.ageVerified = settings.ageVerified;
+    }
+    if (settings.fantasyEnabled !== undefined) {
+        updateData.fantasyEnabled = settings.fantasyEnabled;
+    }
+
+    if(Object.keys(updateData).length === 0) return;
+
+    updateDoc(userDocRef, updateData, { merge: true })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
+}
