@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -115,96 +116,96 @@
         "ratings"
       ]
     },
-    "MovieContest": {
-      "title": "Movie Contest",
-      "description": "Represents an upcoming fantasy movie contest.",
+    "FantasyCampaign": {
+      "title": "Fantasy Campaign",
+      "description": "Represents a long-running fantasy game for a single movie's entire lifecycle.",
       "type": "object",
       "properties": {
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "The title of the fantasy campaign (e.g., 'Devara: Part 1 - The Full Campaign')."
         },
-        "movieIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "movieId": {
+          "type": "string",
+          "description": "The ID of the movie this campaign is for."
         },
-        "startTime": {
+        "startDate": {
           "type": "string",
           "format": "date-time"
         },
-        "endTime": {
+        "endDate": {
           "type": "string",
           "format": "date-time"
         },
         "status": {
           "type": "string",
-          "enum": [
-            "upcoming",
-            "live",
-            "completed"
-          ]
+          "enum": ["upcoming", "active", "completed"]
         }
       },
-      "required": [
-        "title",
-        "movieIds",
-        "startTime",
-        "endTime",
-        "status"
-      ]
+      "required": ["title", "movieId", "startDate", "status"]
     },
-    "FantasyTeam": {
-      "title": "Fantasy Team",
-      "description": "A user's drafted team for a specific movie contest.",
+    "PredictionEvent": {
+      "title": "Prediction Event",
+      "description": "A specific, time-bound prediction challenge within a Fantasy Campaign.",
+      "type": "object",
+      "properties": {
+        "campaignId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "description": "e.g., '24-Hour Trailer Views Prediction' or 'Opening Day Box Office'."
+        },
+        "description": {
+          "type": "string",
+          "description": "Details about the prediction required."
+        },
+        "eventType": {
+          "type": "string",
+          "enum": ["numeric_prediction", "draft_selection", "choice_selection"],
+          "description": "The type of prediction the user needs to make."
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the prediction window opens."
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The deadline for users to lock in their predictions."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["upcoming", "live", "completed"]
+        }
+      },
+      "required": ["campaignId", "title", "eventType", "endTime", "status"]
+    },
+    "UserPrediction": {
+      "title": "User Prediction",
+      "description": "A user's specific entry for a Prediction Event.",
       "type": "object",
       "properties": {
         "userId": {
           "type": "string"
         },
-        "contestId": {
+        "eventId": {
           "type": "string"
         },
-        "heroId": {
+        "campaignId": {
           "type": "string"
         },
-        "heroineId": {
-          "type": "string"
+        "predictionData": {
+          "type": "object",
+          "description": "Flexible field to store the user's prediction (e.g., {'predictedViews': 25000000} or {'draftedPlayerId': 's1'})."
         },
-        "directorId": {
-          "type": "string"
-        },
-        "musicDirectorId": {
-          "type": "string"
-        },
-        "supportingActorId": {
-          "type": "string"
-        },
-        "movieId": {
-          "type": "string"
-        },
-        "captainId": {
-          "type": "string",
-          "description": "The ID of the star chosen as captain (2x points)."
-        },
-        "totalCredits": {
-          "type": "number"
-        },
-        "finalScore": {
-          "type": "number"
+        "score": {
+          "type": "number",
+          "description": "The points awarded for this specific prediction after the event is completed."
         }
       },
-      "required": [
-        "userId",
-        "contestId",
-        "heroId",
-        "heroineId",
-        "directorId",
-        "musicDirectorId",
-        "supportingActorId",
-        "movieId",
-        "captainId"
-      ]
+      "required": ["userId", "eventId", "campaignId", "predictionData"]
     }
   },
   "auth": {
@@ -237,17 +238,23 @@
       },
       "description": "Collection of all individual fan ratings for players and teams."
     },
-    "/contests/{contestId}": {
-        "schema": {
-            "$ref": "#/entities/MovieContest"
-        },
-        "description": "Stores all available fantasy movie contests."
+    "/fantasy-campaigns/{campaignId}": {
+      "schema": {
+        "$ref": "#/entities/FantasyCampaign"
+      },
+      "description": "Stores all available fantasy movie campaigns."
     },
-    "/fantasy-teams/{teamId}": {
-        "schema": {
-            "$ref": "#/entities/FantasyTeam"
-        },
-        "description": "Stores all user-submitted fantasy teams."
+    "/prediction-events/{eventId}": {
+      "schema": {
+        "$ref": "#/entities/PredictionEvent"
+      },
+      "description": "Stores all prediction events tied to fantasy campaigns."
+    },
+    "/user-predictions/{predictionId}": {
+      "schema": {
+        "$ref": "#/entities/UserPrediction"
+      },
+      "description": "Stores all user-submitted predictions for events."
     }
   }
 }
