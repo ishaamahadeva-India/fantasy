@@ -11,13 +11,6 @@ import { Flame, ShieldCheck, Plus, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 
 export default function FanWarPage() {
   const [battles, setBattles] = useState(fanWarData);
@@ -63,35 +56,23 @@ export default function FanWarPage() {
       );
     }
     return (
-    <Carousel
-        opts={{
-          align: 'start',
-          slidesToScroll: 'auto',
-        }}
-        className="w-full"
-      >
-        <CarouselContent className="-ml-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {entities.map(entity => (
-            <CarouselItem key={entity.id} className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6">
-                <Card className="text-center h-full">
-                <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
-                    <Avatar className="w-20 h-20">
-                    <AvatarImage src={entity.avatar} alt={entity.name} />
-                    <AvatarFallback>{entity.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <h3 className="font-bold font-headline text-sm">{entity.name}</h3>
-                    <Button variant="outline" size="sm" className="w-full text-xs">
-                    <Plus className="w-4 h-4 mr-2"/>
-                    Follow
-                    </Button>
-                </CardContent>
-                </Card>
-            </CarouselItem>
+            <Card key={entity.id} className="text-center h-full">
+            <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
+                <Avatar className="w-20 h-20">
+                <AvatarImage src={entity.avatar} alt={entity.name} />
+                <AvatarFallback>{entity.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <h3 className="font-bold font-headline text-sm">{entity.name}</h3>
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                <Plus className="w-4 h-4 mr-2"/>
+                Follow
+                </Button>
+            </CardContent>
+            </Card>
           ))}
-        </CarouselContent>
-        <CarouselPrevious className="absolute left-0 -translate-x-1/2 top-1/2" />
-        <CarouselNext className="absolute right-0 translate-x-1/2 top-1/2" />
-      </Carousel>
+        </div>
   )};
 
 
@@ -243,8 +224,3 @@ export default function FanWarPage() {
     </div>
   );
 }
-
-    
-    
-
-    
