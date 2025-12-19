@@ -56,7 +56,7 @@ const gameModes = [
         description: 'Answer as many questions as you can in 60 seconds.',
         icon: Target,
         href: '#',
-        isLocked: false,
+        isLocked: true,
     },
     {
         title: 'Frame Lock',
@@ -70,7 +70,7 @@ const gameModes = [
         description: 'Make critical decisions in complex scenarios.',
         icon: BrainCircuit,
         href: '#',
-isLocked: true,
+        isLocked: true,
     },
     {
         title: 'Fact or Fiction',
@@ -84,7 +84,7 @@ isLocked: true,
         description: 'An in-depth quiz on a specific subject.',
         icon: BookCopy,
         href: '#',
-        isLocked: false,
+        isLocked: true,
     },
     {
         title: 'Prediction Challenge',
