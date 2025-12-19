@@ -72,7 +72,7 @@ export default function FanWarPage() {
       >
         <CarouselContent className="-ml-4">
           {entities.map(entity => (
-            <CarouselItem key={entity.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+            <CarouselItem key={entity.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4">
                 <Card className="text-center h-full">
                 <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
                     <Avatar className="w-20 h-20">
@@ -244,4 +244,5 @@ export default function FanWarPage() {
   );
 }
 
+    
     
