@@ -12,6 +12,7 @@ import { placeholderCricketers } from '@/lib/cricket-data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 // --- MOCK DATA ---
 const matchDetails = {
@@ -36,10 +37,19 @@ const players = {
     IND: placeholderCricketers.filter(p => p.country === 'IND'),
     AUS: placeholderCricketers.filter(p => p.country === 'AUS'),
 };
-// Add Pat Cummins for AUS, remove duplicate Bumrah from placeholder
+// Add Pat Cummins for AUS and clean up data
 if (!players.AUS.find(p => p.id === 'c4')) {
     players.AUS.push({ id: 'c4', name: 'Pat Cummins', roles: ['Bowler'], country: 'AUS', avatar: 'https://picsum.photos/seed/cummins/400/400', consistencyIndex: 8.9, impactScore: 9.1, recentForm: [], careerPhase: 'Peak' });
 }
+const uniquePlayerIds = new Set();
+const allPlayers = [...players.IND, ...players.AUS].filter(player => {
+    if (uniquePlayerIds.has(player.id)) {
+        return false;
+    } else {
+        uniquePlayerIds.add(player.id);
+        return true;
+    }
+});
 
 
 const microPredictions = [
@@ -81,17 +91,68 @@ function ScoringRulesCard() {
     return (
          <Card>
             <CardHeader>
-                <CardTitle className="font-headline flex items-center gap-2 text-lg"><HelpCircle className="w-5 h-5"/> Scoring Rules</CardTitle>
+                <CardTitle className="font-headline flex items-center gap-2 text-xl"><HelpCircle className="w-6 h-6"/> Points Engine</CardTitle>
+                <CardDescription>Points are awarded based on role performance, predictions, and streaks.</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm space-y-3">
-                <div className="flex justify-between"><span>Correct Role Selection</span> <span className="font-bold font-code text-primary">+30 Pts</span></div>
-                <div className="flex justify-between"><span>Correct Micro-Prediction</span> <span className="font-bold font-code text-primary">+10 Pts</span></div>
-                <div className="flex justify-between"><span>3 Prediction Streak</span> <span className="font-bold font-code text-amber-400">+10 Pts</span></div>
-                 <div className="flex justify-between"><span>5 Prediction Streak</span> <span className="font-bold font-code text-amber-400">+25 Pts</span></div>
+            <CardContent className="text-sm space-y-6">
+                
+                <div>
+                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Trophy className="w-5 h-5 text-primary"/> Role Performance Points</h4>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className="font-semibold">Powerplay King scores ≥ 25 runs</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+30</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Powerplay King scores 15-24</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold">+20</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell className='border-b-0'>Death Overs Specialist takes 2+ wickets</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold border-b-0">+30</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div>
+                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Zap className="w-5 h-5 text-primary"/> Micro-Prediction Points</h4>
+                     <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className='border-b-0'>Correct Prediction</TableCell>
+                                <TableCell className="text-right font-code text-primary font-bold border-b-0">+10</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div>
+                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Flame className="w-5 h-5 text-amber-400"/> Skill Streak Bonuses</h4>
+                     <Table>
+                        <TableBody>
+                             <TableRow>
+                                <TableCell>3 Correct Predictions</TableCell>
+                                <TableCell className="text-right font-code text-amber-400 font-bold">+10</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>5 Correct Predictions</TableCell>
+                                <TableCell className="text-right font-code text-amber-400 font-bold">+25</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className='border-b-0'>7 Correct Predictions</TableCell>
+                                <TableCell className="text-right font-code text-amber-400 font-bold border-b-0">+40</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
             </CardContent>
         </Card>
     )
 }
+
 
 function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
     const [selections, setSelections] = useState<Record<string, string>>({});
@@ -140,7 +201,7 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
                         <h3 className="text-xl font-bold font-headline mb-1 flex items-center gap-2"><Flame className="w-5 h-5 text-primary" /> {role.title}</h3>
                         <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
                         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {[...players.IND, ...players.AUS].map(player => (
+                            {allPlayers.map(player => (
                                 <PlayerSelectionCard
                                     key={player.id}
                                     player={player}
