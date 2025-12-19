@@ -1,4 +1,3 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,12 +16,12 @@ const campaignDetails = {
 };
 
 const predictionEvents = [
-    { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 85 },
-    { id: 'event-2', title: 'Teaser Release Date Prediction', status: 'Completed', score: 120 },
-    { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours' },
-    { id: 'event-4', title: 'First Song Streaming Milestone', status: 'Upcoming' },
-    { id: 'event-5', title: 'Opening Day Box Office Prediction', status: 'Upcoming' },
-    { id: 'event-6', title: 'Full Team Draft (Release Week)', status: 'Upcoming' },
+    { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 85, type: 'numeric_prediction' },
+    { id: 'event-2', title: 'Teaser Release Date Prediction', status: 'Completed', score: 120, type: 'date_prediction' },
+    { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours', type: 'numeric_prediction' },
+    { id: 'event-4', title: 'First Song Streaming Milestone', status: 'Upcoming', type: 'choice_selection' },
+    { id: 'event-5', title: 'Opening Day Box Office Prediction', status: 'Upcoming', type: 'numeric_prediction' },
+    { id: 'event-6', title: 'Full Team Draft (Release Week)', status: 'Upcoming', type: 'draft_selection' },
 ];
 
 function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
@@ -61,10 +60,12 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
                 )}
             </CardContent>
             <CardContent>
-                <Button className="w-full" disabled={isUpcoming}>
-                    {isLive && 'Make Prediction'}
-                    {isCompleted && 'View Results'}
-                    {isUpcoming && 'Prediction Opens Soon'}
+                <Button asChild className="w-full" disabled={isUpcoming}>
+                    <Link href={isLive ? `/fantasy/event/${event.id}` : '#'}>
+                        {isLive && 'Make Prediction'}
+                        {isCompleted && 'View Results'}
+                        {isUpcoming && 'Prediction Opens Soon'}
+                    </Link>
                 </Button>
             </CardContent>
         </Card>
