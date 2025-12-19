@@ -7,7 +7,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Flame } from 'lucide-react';
+import { Flame, ShieldCheck } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function FanWarPage() {
   const [battles, setBattles] = useState(fanWarData);
@@ -39,7 +40,7 @@ export default function FanWarPage() {
             Fan War
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Vote for your favorite, compare stats, and settle the debate.
+          Analyze the stats, vote for your favorite, and settle the debate.
         </p>
       </div>
 
@@ -55,14 +56,14 @@ export default function FanWarPage() {
                 <CardDescription>{battle.category}</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-4 items-center relative">
+                <div className="grid grid-cols-2 gap-4 items-center relative mb-6">
                   {/* Divider */}
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
-                     <div className="w-px h-24 bg-border"/>
-                     <div className="bg-background border rounded-full p-2 text-primary">
-                        <Flame className="w-6 h-6"/>
+                     <div className="w-px h-16 bg-border"/>
+                     <div className="bg-background border rounded-full p-2 text-primary font-code text-lg font-bold">
+                        VS
                      </div>
-                     <div className="w-px h-24 bg-border"/>
+                     <div className="w-px h-16 bg-border"/>
                   </div>
                   
                   {/* Entity One */}
@@ -72,12 +73,6 @@ export default function FanWarPage() {
                       <AvatarFallback>{battle.entityOne.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <h3 className="text-xl font-bold font-headline">{battle.entityOne.name}</h3>
-                    <div className="text-sm space-y-1 text-muted-foreground">
-                        {battle.entityOne.stats.map(stat => (
-                            <p key={stat.label}>{stat.label}: <span className="font-semibold text-foreground">{stat.value}</span></p>
-                        ))}
-                    </div>
-                    <Button onClick={() => handleVote(battle.id, 'entityOne')}>Vote</Button>
                   </div>
 
                   {/* Entity Two */}
@@ -87,14 +82,39 @@ export default function FanWarPage() {
                       <AvatarFallback>{battle.entityTwo.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <h3 className="text-xl font-bold font-headline">{battle.entityTwo.name}</h3>
-                     <div className="text-sm space-y-1 text-muted-foreground">
-                        {battle.entityTwo.stats.map(stat => (
-                            <p key={stat.label}>{stat.label}: <span className="font-semibold text-foreground">{stat.value}</span></p>
-                        ))}
-                    </div>
-                    <Button onClick={() => handleVote(battle.id, 'entityTwo')}>Vote</Button>
                   </div>
                 </div>
+
+                {/* Stats Comparison */}
+                <Card className='mb-6'>
+                    <CardHeader className='p-4'>
+                        <CardTitle className='text-lg font-headline flex items-center gap-2'>
+                            <ShieldCheck className='w-5 h-5 text-primary' />
+                            Head-to-Head Stats
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className='p-4 pt-0 text-sm'>
+                        <div className='space-y-3'>
+                            {battle.entityOne.stats.map((stat, index) => (
+                                <div key={stat.label}>
+                                    <div className='flex justify-between items-center mb-1 text-muted-foreground'>
+                                        <span className='font-bold text-foreground'>{battle.entityOne.stats[index].value}</span>
+                                        <span className='text-xs uppercase'>{stat.label}</span>
+                                        <span className='font-bold text-foreground'>{battle.entityTwo.stats[index].value}</span>
+                                    </div>
+                                    <Separator />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Voting Buttons */}
+                <div className='grid grid-cols-2 gap-4 mb-6'>
+                    <Button onClick={() => handleVote(battle.id, 'entityOne')}>Vote for {battle.entityOne.name}</Button>
+                    <Button onClick={() => handleVote(battle.id, 'entityTwo')}>Vote for {battle.entityTwo.name}</Button>
+                </div>
+
 
                 {/* Progress Bar & Vote Count */}
                 <div className="mt-6 space-y-2">
