@@ -1,3 +1,4 @@
+
 'use client';
 import { popularStars } from '@/lib/placeholder-data';
 import { Card, CardContent } from '@/components/ui/card';
