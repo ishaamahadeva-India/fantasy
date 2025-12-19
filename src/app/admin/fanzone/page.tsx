@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -17,15 +18,27 @@ import {
 } from '@/components/ui/table';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import {
-  placeholderCricketers,
   placeholderIpTeams,
   placeholderNationalTeams,
 } from '@/lib/cricket-data';
 import { popularMovies, popularStars } from '@/lib/placeholder-data';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type CricketerProfile = {
+    id: string;
+    name: string;
+    country: string;
+}
 
 export default function AdminFanZonePage() {
+    const firestore = useFirestore();
+    const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
+    const { data: cricketers, isLoading: cricketersLoading } = useCollection<CricketerProfile>(cricketersQuery);
+
     const handleAction = (action: string, title: string) => {
         toast({
             title: `Action: ${action}`,
@@ -56,11 +69,13 @@ export default function AdminFanZonePage() {
         <TabsContent value="cricketers" className="mt-4">
           <Card>
             <CardHeader>
-                <CardTitle>Cricketers</CardTitle>
-                <Button variant="outline" size="sm" className="ml-auto" onClick={() => handleAction('Create', 'New Cricketer')}>
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    Add Cricketer
-                </Button>
+                <div className='flex justify-between items-center'>
+                    <CardTitle>Cricketers</CardTitle>
+                    <Button variant="outline" size="sm" onClick={() => handleAction('Create', 'New Cricketer')}>
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Add Cricketer
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -72,7 +87,16 @@ export default function AdminFanZonePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {placeholderCricketers.map((cricketer) => (
+                  {cricketersLoading && (
+                    <>
+                        <TableRow>
+                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-20" /></TableCell>
+                        </TableRow>
+                    </>
+                  )}
+                  {cricketers && cricketers.map((cricketer) => (
                     <TableRow key={cricketer.id}>
                       <TableCell>{cricketer.name}</TableCell>
                       <TableCell>{cricketer.country}</TableCell>
@@ -84,6 +108,13 @@ export default function AdminFanZonePage() {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {!cricketersLoading && cricketers?.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={3} className="h-24 text-center">
+                            No cricketers found. Add one to get started.
+                        </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

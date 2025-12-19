@@ -276,7 +276,7 @@
         "predictionData"
       ]
     },
-    "FantasyMatch": {
+     "FantasyMatch": {
         "title": "Fantasy Match",
         "description": "Represents a single, live fantasy cricket match event.",
         "type": "object",
@@ -435,5 +435,3 @@
     }
   }
 }
-
-    
