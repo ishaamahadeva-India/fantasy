@@ -531,5 +531,3 @@ export default function PredictionEventPage({ params }: { params: { id: string }
         </div>
     );
 }
-
-    

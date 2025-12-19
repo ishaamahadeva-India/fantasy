@@ -17,21 +17,20 @@ const campaignDetails = {
 };
 
 const predictionEvents = [
-    { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 50, type: 'choice_selection' },
-    { id: 'event-2', title: 'Pre-Release Event Location', status: 'Completed', score: 0, type: 'choice_selection' },
-    { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours', type: 'choice_selection' },
-    { id: 'event-7', title: 'First Look Views (1hr)', status: 'Upcoming', type: 'choice_selection' },
-    { id: 'event-4', title: 'First Song Streaming Milestone', status: 'Upcoming', type: 'choice_selection' },
-    { id: 'event-6', title: 'Full Team Draft (Release Week)', status: 'Upcoming', type: 'draft_selection' },
-    { id: 'event-8', title: 'First Look Views (7 Days)', status: 'Upcoming', type: 'choice_selection' },
+    { id: 'event-1', title: 'First Look Views (24h)', status: 'Completed', score: 50, type: 'choice_selection', points: 50 },
+    { id: 'event-2', title: 'Pre-Release Event Location', status: 'Completed', score: 0, type: 'choice_selection', points: 25 },
+    { id: 'event-3', title: 'Trailer Views (24h)', status: 'Live', endsIn: '2 hours', type: 'choice_selection', points: 75 },
+    { id: 'event-7', title: 'First Look Views (1hr)', status: 'Upcoming', type: 'choice_selection', points: 20 },
+    { id: 'event-4', title: 'First Song Streaming Milestone', status: 'Upcoming', type: 'choice_selection', points: 40 },
+    { id: 'event-6', title: 'Full Team Draft (Release Week)', status: 'Upcoming', type: 'draft_selection', points: 200 },
+    { id: 'event-8', title: 'First Look Views (7 Days)', status: 'Upcoming', type: 'choice_selection', points: 100 },
 ];
 
-const leaderboardData = [
-  { rank: 1, name: 'CinemaFanatic', score: 205 },
-  { rank: 2, name: 'BoxOfficeGuru', score: 190 },
-  { rank: 3, name: 'You', score: 50 }, // Updated score
-  { rank: 4, name: 'ReelTalk', score: 170 },
-  { rank: 5, name: 'FirstDayFirstShow', score: 165 },
+const otherPlayersData = [
+  { name: 'CinemaFanatic', score: 205 },
+  { name: 'BoxOfficeGuru', score: 190 },
+  { name: 'ReelTalk', score: 170 },
+  { name: 'FirstDayFirstShow', score: 165 },
 ];
 
 
@@ -66,8 +65,13 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
-                {isCompleted && event.score !== undefined && (
+                 {isCompleted && event.score !== undefined ? (
                     <p>Your Score: <span className="font-bold text-primary font-code">{event.score}</span></p>
+                ) : (
+                    <div className="flex items-center gap-2 text-amber-400">
+                        <Trophy className="w-4 h-4" />
+                        <span className="font-semibold">{event.points} Points</span>
+                    </div>
                 )}
             </CardContent>
             <CardContent>
@@ -86,7 +90,13 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
 export default function FantasyCampaignPage({ params }: { params: { id: string } }) {
 
   const completedEvents = predictionEvents.filter(e => e.status === 'Completed');
-  const totalPoints = leaderboardData.find(p => p.name === 'You')?.score || 0;
+  const totalPoints = completedEvents.reduce((acc, event) => acc + (event.score || 0), 0);
+  
+  const leaderboardData = [
+    ...otherPlayersData,
+    { name: 'You', score: totalPoints }
+  ].sort((a, b) => b.score - a.score).map((player, index) => ({ ...player, rank: index + 1 }));
+
   const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank;
 
 
@@ -187,5 +197,3 @@ export default function FantasyCampaignPage({ params }: { params: { id: string }
     </div>
   );
 }
-
-    
