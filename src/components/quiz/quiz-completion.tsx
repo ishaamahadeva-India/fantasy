@@ -173,9 +173,9 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
                         </p>
                         )}
                     </div>
-                    <p className="mt-4 font-serif text-base text-muted-foreground">
+                    {question.explanation && (<p className="mt-4 font-serif text-base text-muted-foreground">
                         {question.explanation}
-                    </p>
+                    </p>)}
                     </div>
                 </AccordionContent>
                 </AccordionItem>

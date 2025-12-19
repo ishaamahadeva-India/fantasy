@@ -535,7 +535,7 @@ function getPointsForResult(prediction: any, userAnswer: any) {
 }
 
 
-function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
+function FirstInningsView({ onInningsEnd, currentStreak, setStreak, onScoreUpdate }: { onInningsEnd: () => void, currentStreak: number, setStreak: (streak: number) => void, onScoreUpdate: (points: number) => void }) {
     type PredictionStatus = 'predicting' | 'locked' | 'waiting' | 'result';
     const [currentPredIndex, setCurrentPredIndex] = useState(0);
     const [userPredictions, setUserPredictions] = useState<Record<number, any>>({});
@@ -554,6 +554,15 @@ function FirstInningsView({ onInningsEnd }: { onInningsEnd: () => void }) {
             setStatus('waiting');
             setTimeout(() => {
                 setStatus('result');
+
+                const points = getPointsForResult(currentPrediction, predictionData);
+                onScoreUpdate(points);
+                if (points > 0) {
+                    setStreak(currentStreak + 1);
+                } else {
+                    setStreak(0);
+                }
+
                 // Wait to show result before moving on
                 setTimeout(() => {
                     if (currentPredIndex < livePredictions.length - 1) {
@@ -779,10 +788,18 @@ export default function LiveFantasyMatchPage({
   const { id } = use(params);
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('pre-match');
   const [activeTab, setActiveTab] = useState('game');
+  const [currentScore, setCurrentScore] = useState(110);
+  const [currentStreak, setCurrentStreak] = useState(0);
 
 
   if (id !== 'live-match-1') {
     return notFound();
+  }
+
+  const handleScoreUpdate = (points: number) => {
+    setCurrentScore(prev => prev + points);
+    const updatedLeaderboard = leaderboardData.map(p => p.name === 'You' ? {...p, score: currentScore + points} : p).sort((a,b) => b.score - a.score);
+    // In a real app, this would be a state update for the leaderboard component
   }
 
   const renderGameContent = () => {
@@ -790,13 +807,13 @@ export default function LiveFantasyMatchPage({
       case 'pre-match':
         return <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />;
       case '1st-innings':
-        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} />;
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate}/>;
       case 'innings-break':
         return <InningsBreakView onStartNextInnings={() => setMatchPhase('2nd-innings-selection')} />;
       case '2nd-innings-selection':
         return <SecondInningsSelectionView onLockSelections={() => setMatchPhase('2nd-innings-live')} />;
       case '2nd-innings-live':
-        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} />; // Re-use for simulation
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate}/>; // Re-use for simulation
       case 'match-over':
         return <Card><CardHeader><CardTitle>Match Over!</CardTitle><CardContent><p>Final leaderboard is now available.</p></CardContent></CardHeader></Card>;
       default:
@@ -807,18 +824,35 @@ export default function LiveFantasyMatchPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <Button variant="ghost" asChild className="mb-2 -ml-4">
-          <Link href="/live-fantasy">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to All Matches
-          </Link>
-        </Button>
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          {matchDetails.title}
-        </h1>
-        <p className="mt-1 text-muted-foreground">{matchDetails.series}</p>
-      </div>
+       <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
+            <div>
+                <Button variant="ghost" asChild className='mb-2 -ml-4'>
+                    <Link href="/live-fantasy">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to All Matches
+                    </Link>
+                </Button>
+                 <h1 className="text-3xl font-bold md:text-4xl font-headline">
+                    {matchDetails.title}
+                </h1>
+                <p className="mt-1 text-muted-foreground">
+                    {matchDetails.series}
+                </p>
+            </div>
+             <div className='grid grid-cols-2 gap-4'>
+                <Card className="text-center p-4">
+                    <CardDescription>Total Score</CardDescription>
+                    <CardTitle className="font-code text-4xl text-primary">{currentScore}</CardTitle>
+                </Card>
+                 <Card className="text-center p-4">
+                    <CardDescription>Current Streak</CardDescription>
+                    <CardTitle className="font-code text-4xl text-amber-400 flex items-center justify-center gap-1">
+                        <Flame className='w-8 h-8' />
+                        {currentStreak}
+                    </CardTitle>
+                </Card>
+            </div>
+        </div>
 
        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">

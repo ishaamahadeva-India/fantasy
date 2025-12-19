@@ -38,7 +38,9 @@ export function useRatings() {
     addDoc(ratingsCollection, docToSave)
       .then(() => {
         // Award points for submitting a rating
-        updateUserPoints(firestore, userId, 25);
+        if (firestore) {
+            updateUserPoints(firestore, userId, 25);
+        }
       })
       .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
