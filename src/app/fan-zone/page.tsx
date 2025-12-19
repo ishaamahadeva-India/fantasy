@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { StarsTab } from '@/components/fan-zone/stars-tab';
 import { MoviesTab } from '@/components/fan-zone/movies-tab';
 import { TopRatedTab } from '@/components/fan-zone/top-rated-tab';
+import { TrendingTab } from '@/components/fan-zone/trending-tab';
 
 export default function FanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,9 +62,7 @@ export default function FanZonePage() {
           <TopRatedTab />
         </TabsContent>
         <TabsContent value="trending">
-          <div className="py-12 text-center text-muted-foreground">
-            Trending coming soon.
-          </div>
+          <TrendingTab />
         </TabsContent>
       </Tabs>
     </div>
