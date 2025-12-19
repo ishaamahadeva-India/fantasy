@@ -7,8 +7,8 @@ import { AudioPlayer } from '@/components/article/audio-player';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
-export default function ArticlePage({ params }: { params: { slug: string } }) {
-  const article = placeholderArticles.find((a) => a.slug === params.slug);
+export default function ArticlePage({ params: { slug } }: { params: { slug: string } }) {
+  const article = placeholderArticles.find((a) => a.slug === slug);
 
   if (!article) {
     notFound();

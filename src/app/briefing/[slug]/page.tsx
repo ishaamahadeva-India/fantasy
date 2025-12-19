@@ -10,8 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function BriefingPage({ params }: { params: { slug: string } }) {
-  const article = placeholderArticles.find((a) => a.slug === params.slug);
+export default function BriefingPage({ params: { slug } }: { params: { slug: string } }) {
+  const article = placeholderArticles.find((a) => a.slug === slug);
   const [summary, setSummary] = useState<SummarizeArticleOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userSummary, setUserSummary] = useState('');

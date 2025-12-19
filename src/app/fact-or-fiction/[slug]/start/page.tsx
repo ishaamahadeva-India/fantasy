@@ -7,8 +7,8 @@ import { placeholderArticles } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 
-export default function PreFactOrFictionPage({ params }: { params: { slug: string } }) {
-  const article = placeholderArticles.find((a) => a.slug === params.slug);
+export default function PreFactOrFictionPage({ params: { slug } }: { params: { slug: string } }) {
+  const article = placeholderArticles.find((a) => a.slug === slug);
 
   if (!article) {
     notFound();

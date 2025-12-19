@@ -11,8 +11,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Progress } from '@/components/ui/progress';
 
 
-export default function FactOrFictionPage({ params }: { params: { slug: string } }) {
-  const article = placeholderArticles.find((a) => a.slug === params.slug);
+export default function FactOrFictionPage({ params: { slug } }: { params: { slug: string } }) {
+  const article = placeholderArticles.find((a) => a.slug === slug);
   const [gameData, setGameData] = useState<FactOrFictionOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
