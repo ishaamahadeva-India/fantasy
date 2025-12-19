@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import Link from 'next/link';
 
 // Define a type for the article that includes its Firestore ID
 type ArticleWithId = {
@@ -44,8 +45,6 @@ type ArticleWithId = {
 export default function AdminContentPage() {
   const firestore = useFirestore();
   const articlesQuery = firestore ? collection(firestore, 'articles') : null;
-  // We need to adjust the useCollection hook to include the document ID.
-  // For now, let's assume `useCollection` can be adapted or we can handle it.
   const { data: articles, isLoading } = useCollection<ArticleWithId>(articlesQuery);
 
 
@@ -67,13 +66,6 @@ export default function AdminContentPage() {
     }
   };
 
-  const handleAction = (action: string, title: string) => {
-    toast({
-      title: `Action: ${action}`,
-      description: `"${title}" would be ${action.toLowerCase()}ed. This is a placeholder.`,
-    });
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -85,9 +77,11 @@ export default function AdminContentPage() {
             Create, edit, and manage articles and blog posts.
           </p>
         </div>
-        <Button onClick={() => handleAction('Create', 'New Article')}>
-          <PlusCircle className="w-4 h-4 mr-2" />
-          Create New Article
+        <Button asChild>
+          <Link href="/admin/content/new">
+            <PlusCircle className="w-4 h-4 mr-2" />
+            Create New Article
+          </Link>
         </Button>
       </div>
       <Card>
@@ -113,7 +107,7 @@ export default function AdminContentPage() {
                     <TableCell><Skeleton className="h-8 w-20" /></TableCell>
                   </TableRow>
                    <TableRow>
-                    <TableCell><Skeleton className="h-5 w-64" /></TableCell>
+                    <TableCell><Skeleton className="h-64 w-full" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-8 w-20" /></TableCell>
                   </TableRow>
@@ -128,9 +122,11 @@ export default function AdminContentPage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => handleAction('Edit', article.title)}
+                        asChild
                       >
-                        <Edit className="w-4 h-4" />
+                        <Link href={`/admin/content/edit/${article.id}`}>
+                           <Edit className="w-4 h-4" />
+                        </Link>
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -172,5 +168,3 @@ export default function AdminContentPage() {
     </div>
   );
 }
-
-    
