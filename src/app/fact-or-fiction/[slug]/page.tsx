@@ -110,7 +110,7 @@ export default function FactOrFictionPage({ params: { slug } }: { params: { slug
             </CardHeader>
             <CardContent>
                 <p className="text-6xl font-bold font-code text-primary mb-6">
-                    {Math.round((score/totalQuestions) * 100)}%
+                    {totalQuestions > 0 ? Math.round((score/totalQuestions) * 100) : 0}%
                 </p>
                 <Button asChild>
                     <Link href="/play">Play another game</Link>
