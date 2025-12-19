@@ -15,14 +15,15 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bookmark, Gamepad2, Mic, PieChart, ArrowLeft } from 'lucide-react';
+import { Gamepad2, Mic, PieChart, ArrowLeft } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
-import type { FanRating } from '@/lib/types';
+import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
+import type { FanRating, UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WatchlistButton } from '@/components/fan-zone/watchlist-button';
 
 function CommunityInsightDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
     const movieAttributes = ['Direction', 'Screenplay', 'Acting', 'Music Impact'];
@@ -116,6 +117,8 @@ export default function MovieProfilePage({
   ];
   
   const firestore = useFirestore();
+  const { user } = useUser();
+
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -125,8 +128,10 @@ export default function MovieProfilePage({
     );
   }, [firestore, id]);
 
-  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
 
+  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+  const { data: userProfile, isLoading: userProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   if (!movie) {
     notFound();
@@ -180,9 +185,7 @@ export default function MovieProfilePage({
                 entityId={movie.id}
                 entityType="movie"
               />
-              <Button variant="outline" size="lg">
-                <Bookmark className="mr-2" /> Save to Watchlist
-              </Button>
+              <WatchlistButton movieId={movie.id} userProfile={userProfile} />
               <Button variant="outline" size="lg" asChild>
                 <Link href={`/fan-zone/movie/${movie.id}/quiz/start`}>
                   <Gamepad2 className="mr-2" /> Activate Quiz

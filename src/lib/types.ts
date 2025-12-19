@@ -12,6 +12,7 @@ export type UserProfile = {
     displayName: string;
     avatarUrl?: string;
     points: number;
+    watchlist?: string[];
 };
 
 export type UserPrediction = {

@@ -30,6 +30,13 @@
         "totalFantasyScore": {
             "type": "number",
             "description": "The user's aggregate score across all fantasy games."
+        },
+        "watchlist": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "An array of movie IDs the user has saved."
         }
       },
       "required": [
