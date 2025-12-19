@@ -72,13 +72,13 @@ const gameModes = [
         description: 'Make critical decisions in complex scenarios.',
         icon: BrainCircuit,
         href: '#',
-        isLocked: true,
+isLocked: true,
     },
     {
         title: 'Fact or Fiction',
         description: 'Verify statements against a source.',
         icon: ClipboardCheck,
-        href: '#',
+        href: '/fact-or-fiction/ipl-franchise-dynasties/start',
         isLocked: false,
     },
     {
