@@ -17,6 +17,7 @@ import {
   Gift,
   Trophy,
   Users,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/explore', label: 'Intel Hub', icon: Newspaper },
   { href: '/play', label: 'Play', icon: Play },
   { href: '/fantasy', label: 'Fantasy', icon: Trophy },
+  { href: '/live-fantasy', label: 'Live Fantasy', icon: Zap },
   { href: '/fan-zone', label: 'Fan Zone', icon: Users },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/redeem', label: 'Redemption Center', icon: Gift },

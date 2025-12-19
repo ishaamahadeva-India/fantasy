@@ -18,6 +18,18 @@
         "points": {
           "type": "number",
           "description": "The user's total accumulated intel points."
+        },
+        "ageVerified": {
+            "type": "boolean",
+            "description": "Indicates if the user has verified they are over 18."
+        },
+        "fantasyEnabled": {
+            "type": "boolean",
+            "description": "Indicates if the user has accepted the fantasy disclaimer."
+        },
+        "totalFantasyScore": {
+            "type": "number",
+            "description": "The user's aggregate score across all fantasy games."
         }
       },
       "required": [
@@ -234,6 +246,82 @@
         "campaignId",
         "predictionData"
       ]
+    },
+    "FantasyMatch": {
+        "title": "Fantasy Match",
+        "description": "Represents a single, live fantasy cricket match event.",
+        "type": "object",
+        "properties": {
+            "matchName": { "type": "string" },
+            "format": { "type": "string", "enum": ["T20", "ODI", "Test"] },
+            "teams": { "type": "array", "items": { "type": "string" } },
+            "startTime": { "type": "string", "format": "date-time" },
+            "status": { "type": "string", "enum": ["upcoming", "live", "completed"] }
+        }
+    },
+    "FantasyRoleSelection": {
+        "title": "Fantasy Role Selection",
+        "description": "Stores a user's selected roles for a specific innings of a match.",
+        "type": "object",
+        "properties": {
+            "userId": { "type": "string" },
+            "matchId": { "type": "string" },
+            "innings": { "type": "number", "enum": [1, 2] },
+            "selectedRoles": { "type": "array", "items": { "type": "string" } },
+            "lockedAt": { "type": "string", "format": "date-time" }
+        }
+    },
+    "LivePrediction": {
+        "title": "Live Prediction",
+        "description": "A single live prediction question within a fantasy match.",
+        "type": "object",
+        "properties": {
+            "matchId": { "type": "string" },
+            "phase": { "type": "string" },
+            "type": { "type": "string", "enum": ["range", "yesno", "ranking", "conditional"] },
+            "options": { "type": "array", "items": { "type": "string" } },
+            "startTime": { "type": "string", "format": "date-time" },
+            "lockTime": { "type": "string", "format": "date-time" }
+        }
+    },
+    "UserLivePrediction": {
+        "title": "User Live Prediction",
+        "description": "A user's answer to a live prediction question.",
+        "type": "object",
+        "properties": {
+            "userId": { "type": "string" },
+            "predictionId": { "type": "string" },
+            "selectedOption": { "type": "string" },
+            "confidenceLevel": { "type": "string", "enum": ["Low", "Medium", "High"] },
+            "answeredAt": { "type": "string", "format": "date-time" }
+        }
+    },
+    "FantasyStreak": {
+        "title": "Fantasy Streak",
+        "description": "Tracks a user's correct prediction streak for a match.",
+        "type": "object",
+        "properties": {
+            "currentStreak": { "type": "number" },
+            "maxStreak": { "type": "number" }
+        }
+    },
+    "FantasyLeaderboard": {
+        "title": "Fantasy Leaderboard",
+        "description": "Stores the rankings for a specific fantasy match.",
+        "type": "object",
+        "properties": {
+            "rankings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "userId": { "type": "string" },
+                        "score": { "type": "number" },
+                        "rank": { "type": "number" }
+                    }
+                }
+            }
+        }
     }
   },
   "auth": {
@@ -283,8 +371,30 @@
         "$ref": "#/entities/UserPrediction"
       },
       "description": "Stores all user-submitted predictions for events."
+    },
+     "/fantasy_matches/{matchId}": {
+      "schema": { "$ref": "#/entities/FantasyMatch" },
+      "description": "Stores all available live fantasy cricket matches."
+    },
+    "/fantasy_roles/{selectionId}": {
+      "schema": { "$ref": "#/entities/FantasyRoleSelection" },
+      "description": "Stores users' role selections for each innings."
+    },
+    "/fantasy_predictions/{predictionId}": {
+      "schema": { "$ref": "#/entities/LivePrediction" },
+      "description": "Collection of all live prediction questions for matches."
+    },
+    "/fantasy_user_predictions/{answerId}": {
+      "schema": { "$ref": "#/entities/UserLivePrediction" },
+      "description": "Stores user answers to live prediction questions."
+    },
+    "/fantasy_streaks/{userId}_{matchId}": {
+      "schema": { "$ref": "#/entities/FantasyStreak" },
+      "description": "Tracks individual user streaks per match."
+    },
+    "/fantasy_leaderboards/{matchId}": {
+      "schema": { "$ref": "#/entities/FantasyLeaderboard" },
+      "description": "Stores the leaderboard for each fantasy match."
     }
   }
 }
-
-    
