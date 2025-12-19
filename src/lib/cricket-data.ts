@@ -9,6 +9,7 @@ export type Cricketer = {
   impactScore: number;
   recentForm: number[]; // 5 numbers representing scores or an indicator
   careerPhase: 'Early' | 'Peak' | 'Late';
+  trendingRank?: number;
 };
 
 export const placeholderCricketers: Cricketer[] = [
@@ -22,6 +23,7 @@ export const placeholderCricketers: Cricketer[] = [
     impactScore: 9.5,
     recentForm: [88, 92, 10, 75, 60],
     careerPhase: 'Peak',
+    trendingRank: 2,
   },
   {
     id: 'c2',
@@ -33,6 +35,7 @@ export const placeholderCricketers: Cricketer[] = [
     impactScore: 9.7,
     recentForm: [9, 10, 8, 9, 9], // Representing wickets or eco
     careerPhase: 'Peak',
+    trendingRank: 1,
   },
   {
     id: 'c3',
@@ -44,6 +47,7 @@ export const placeholderCricketers: Cricketer[] = [
     impactScore: 9.3,
     recentForm: [102, 15, 80, 55, 40],
     careerPhase: 'Late',
+    trendingRank: 3,
   },
 ];
 

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Lock, Search, SlidersHorizontal } from 'lucide-react';
+import { Lock, Search, SlidersHorizontal, Flame } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -162,6 +162,60 @@ function IpTeamsTab({ searchTerm }: { searchTerm: string }) {
   );
 }
 
+function TrendingTab() {
+  const trendingCricketers = [...placeholderCricketers]
+    .filter(c => c.trendingRank)
+    .sort((a, b) => (a.trendingRank || 99) - (b.trendingRank || 99));
+
+  if (trendingCricketers.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        Trending content coming soon.
+      </div>
+    );
+  }
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-headline text-2xl flex items-center gap-2">
+          <Flame className="text-primary" /> Trending Cricketers
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-4">
+          {trendingCricketers.map((cricketer, index) => (
+            <li key={cricketer.id}>
+              <Link href={`/fan-zone/cricket/cricketer/${cricketer.id}`} className="group">
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl font-bold font-code text-muted-foreground w-8 text-center">
+                    {index + 1}
+                  </span>
+                  <Avatar className="w-16 h-16">
+                    <AvatarImage src={cricketer.avatar} alt={cricketer.name} />
+                    <AvatarFallback>{cricketer.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-bold font-headline text-lg leading-tight group-hover:text-primary">
+                      {cricketer.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {cricketer.country}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              {index < trendingCricketers.length - 1 && (
+                <Separator className="mt-4" />
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function CricketFanZonePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<{ roles: string[], countries: string[] }>({ roles: [], countries: [] });
@@ -283,9 +337,7 @@ export default function CricketFanZonePage() {
           <IpTeamsTab searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="trending">
-          <div className="py-12 text-center text-muted-foreground">
-            Trending content coming soon.
-          </div>
+          <TrendingTab />
         </TabsContent>
         <TabsContent value="analyst-view">
           <Card>
