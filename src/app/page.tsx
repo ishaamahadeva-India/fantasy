@@ -1,5 +1,4 @@
 'use client';
-import { FeaturedCarousel } from '@/components/home/featured-carousel';
 import { ForYouSection } from '@/components/home/for-you-section';
 import { Greeting } from '@/components/home/greeting';
 import { TrendingTopics } from '@/components/home/trending-topics';
@@ -144,7 +143,6 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8 md:gap-12">
       <Greeting />
-      <FeaturedCarousel />
 
       <div className="space-y-12">
         <div>
