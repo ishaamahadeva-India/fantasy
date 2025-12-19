@@ -29,7 +29,7 @@ export default function AdminDashboardPage() {
   const firestore = useFirestore();
   
   const usersQuery = firestore ? collection(firestore, 'users') : null;
-  const articlesQuery = firestore ? collection(firestore, 'articles') : null; // Assuming 'articles' collection
+  const articlesQuery = firestore ? collection(firestore, 'articles') : null;
   const ratingsQuery = firestore ? collection(firestore, 'ratings') : null;
   const predictionsQuery = firestore ? collection(firestore, 'user-predictions') : null;
 
