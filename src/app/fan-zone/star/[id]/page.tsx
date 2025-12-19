@@ -1,22 +1,92 @@
+
 'use client';
 
-import { use, useMemo } from 'react';
+import { use, useMemo, useState, useEffect } from 'react';
 import { popularStars } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { FanRating } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
+function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
+    const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
+    const [averageRatings, setAverageRatings] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        if (!ratings || ratings.length === 0) {
+            setAverageRatings({});
+            return;
+        }
+
+        const newAverageRatings: Record<string, number> = {};
+        starAttributes.forEach(attr => {
+            const relevantRatings = ratings.map(r => r.ratings[attr]).filter(v => v !== undefined);
+            if(relevantRatings.length > 0) {
+                const sum = relevantRatings.reduce((acc, curr) => acc + curr, 0);
+                newAverageRatings[attr] = sum / relevantRatings.length;
+            }
+        });
+        setAverageRatings(newAverageRatings);
+
+    }, [ratings]);
+
+
+    if (isLoading) {
+        return (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {starAttributes.map(attr => (
+                    <div key={attr} className="text-center space-y-1">
+                        <Skeleton className="h-5 w-24 mx-auto" />
+                        <Skeleton className="h-10 w-16 mx-auto" />
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    if (ratings === null || ratings.length === 0) {
+        return <p className="text-center text-muted-foreground">Be the first to rate this star's attributes!</p>
+    }
+
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {starAttributes.map(attr => (
+                 <div key={attr} className="text-center">
+                    <p className="text-sm text-muted-foreground">{attr}</p>
+                    <p className="text-4xl font-bold font-code text-primary">
+                        {averageRatings[attr] ? averageRatings[attr].toFixed(1) : '-'}
+                    </p>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function StarProfilePage({ params }: { params: { id: string } }) {
   const { id } = use(params);
   const star = popularStars.find((s) => s.id === id);
   const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
+
+  const firestore = useFirestore();
+  const ratingsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'ratings'),
+      where('entityId', '==', id),
+      where('entityType', '==', 'star')
+    );
+  }, [firestore, id]);
+
+  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
 
   if (!star) {
     notFound();
@@ -75,6 +145,16 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                             <p className="text-sm text-muted-foreground">Trend</p>
                             <p className="text-3xl font-bold font-code flex items-center justify-center text-green-400"><ArrowUp /></p>
                         </div>
+                    </CardContent>
+                </Card>
+
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Community Ratings</CardTitle>
+                        <CardDescription>Average scores from the community.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <CommunityStarRatingDisplay ratings={ratings} isLoading={ratingsLoading} />
                     </CardContent>
                 </Card>
 
