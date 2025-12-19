@@ -14,9 +14,10 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, BrainCircuit, Gamepad2, Mic } from 'lucide-react';
+import { ArrowLeft, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
+import { PulseCheck } from '@/components/fan-zone/pulse-check';
 
 function MomentumVisualizer({ momentum }: { momentum: number[] }) {
     return (
@@ -121,15 +122,16 @@ export default function IpTeamProfilePage({ params }: { params: { id: string } }
 
           <div className="space-y-4">
             <h3 className="font-headline text-xl">Fan Actions</h3>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
               <AttributeRating
                 triggerButtonText="Rate Team Attributes"
                 attributes={teamAttributes}
                 icon={BrainCircuit}
               />
-               <Button variant="outline" size="lg" disabled>
-                <Gamepad2 className="mr-2" /> Pulse Check
-              </Button>
+               <PulseCheck 
+                 question="How confident are you in the team's chances this season?"
+                 options={['Very Confident', 'Neutral', 'Not Confident']}
+               />
             </div>
           </div>
         </div>
