@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Card,
@@ -12,9 +11,22 @@ import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, deleteDoc, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FantasyCampaign, FantasyMatch } from '@/lib/types';
+import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 // Extend types to include Firestore document ID
 type FantasyCampaignWithId = FantasyCampaign & { id: string };
@@ -29,12 +41,26 @@ export default function AdminFantasyPage() {
   const { data: campaigns, isLoading: campaignsLoading } = useCollection<FantasyCampaignWithId>(campaignsQuery);
   const { data: matches, isLoading: matchesLoading } = useCollection<FantasyMatchWithId>(matchesQuery);
 
-  const handleAction = (action: string, title: string) => {
-    toast({
-      title: `Action: ${action}`,
-      description: `"${title}" would be ${action.toLowerCase()}ed. This is a placeholder.`,
-    });
+  const handleDeleteCampaign = async (id: string) => {
+    if (!firestore) return;
+    try {
+      await deleteDoc(doc(firestore, 'fantasy-campaigns', id));
+      toast({ title: 'Campaign Deleted' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error deleting campaign' });
+    }
   };
+
+  const handleDeleteMatch = async (id: string) => {
+    if (!firestore) return;
+    try {
+      await deleteDoc(doc(firestore, 'fantasy_matches', id));
+      toast({ title: 'Match Deleted' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error deleting match' });
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -51,9 +77,11 @@ export default function AdminFantasyPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Movie Fantasy Campaigns</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => handleAction('Create', 'New Movie Campaign')}>
-              <PlusCircle className="w-4 h-4 mr-2" />
-              New Campaign
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/fantasy/campaign/new">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                New Campaign
+              </Link>
             </Button>
           </div>
           <CardDescription>
@@ -81,10 +109,30 @@ export default function AdminFantasyPage() {
                     <p className="font-semibold">{campaign.title}</p>
                     <p className="text-sm text-muted-foreground">{campaign.movieId}</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                     <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
-                    <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', campaign.title)}><Edit className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', campaign.title)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/fantasy/campaign/edit/${campaign.id}`}>
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the campaign "{campaign.title}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteCampaign(campaign.id)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
           ))}
@@ -98,9 +146,11 @@ export default function AdminFantasyPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Live Cricket Matches</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => handleAction('Create', 'New Cricket Match')}>
-              <PlusCircle className="w-4 h-4 mr-2" />
-              New Match
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/fantasy/match/new">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                New Match
+              </Link>
             </Button>
           </div>
           <CardDescription>
@@ -124,10 +174,30 @@ export default function AdminFantasyPage() {
                 <div>
                     <p className="font-semibold">{match.matchName}</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                     <Badge variant={match.status === 'live' ? 'destructive' : 'secondary'}>{match.status}</Badge>
-                    <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', match.matchName)}><Edit className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', match.matchName)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                     <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/fantasy/match/edit/${match.id}`}>
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                     <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                             This will permanently delete the match "{match.matchName}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteMatch(match.id)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
           ))}
