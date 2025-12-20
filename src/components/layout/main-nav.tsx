@@ -52,7 +52,7 @@ export function MainNav() {
            if (item.href === '/fan-zone') {
                 isActive = pathname.startsWith('/fan-zone');
            } else if (item.href === '/fantasy') {
-                isActive = pathname.startsWith('/fantasy');
+                isActive = pathname.startsWith('/fantasy') || pathname.startsWith('/live-fantasy');
            }
             else if (item.href !== '/') {
                 isActive = pathname.startsWith(item.href);
