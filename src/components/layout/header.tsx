@@ -18,7 +18,7 @@ import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';
-import { handleGoogleSignIn, handleLogout } from '@/firebase/auth/auth-service';
+import { handleLogout } from '@/firebase/auth/auth-service';
 
 function Greeting() {
   const { user, isLoading } = useUser();
@@ -105,10 +105,12 @@ export function Header() {
                     </DropdownMenuItem>
                 </>
             ): (
-                 <DropdownMenuItem onClick={handleGoogleSignIn}>
-                    <LogIn className='mr-2' />
-                    Login with Google
-                 </DropdownMenuItem>
+                <Link href="/login">
+                    <DropdownMenuItem>
+                        <LogIn className='mr-2' />
+                        Login / Sign Up
+                    </DropdownMenuItem>
+                </Link>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

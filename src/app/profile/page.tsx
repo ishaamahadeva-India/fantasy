@@ -25,7 +25,8 @@ import {
   LogIn,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { handleGoogleSignIn } from '@/firebase/auth/auth-service';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const tiers = [
   {
@@ -70,6 +71,8 @@ const historyItems = [
 ];
 
 function ProfileHeader({ user, isLoading }: { user: any, isLoading: boolean}) {
+    const router = useRouter();
+
     if (isLoading) {
         return (
              <div className="flex items-center gap-6">
@@ -95,9 +98,11 @@ function ProfileHeader({ user, isLoading }: { user: any, isLoading: boolean}) {
                         Welcome, Guest
                     </h1>
                     <p className="mt-1 text-muted-foreground">Log in to view your profile and save your progress.</p>
-                     <Button className="mt-4" onClick={handleGoogleSignIn}>
-                        <LogIn className='mr-2'/>
-                        Login with Google
+                     <Button className="mt-4" asChild>
+                        <Link href="/login">
+                           <LogIn className='mr-2'/>
+                           Login or Sign Up
+                        </Link>
                     </Button>
                 </div>
             </div>
