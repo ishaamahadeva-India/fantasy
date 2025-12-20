@@ -1,19 +1,17 @@
+
 'use client';
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { FirebaseProvider } from './provider';
+import { I18nProviderClient } from '@/lib/i18n/client';
 
-// This provider is necessary to ensure that Firebase is only initialized on the client.
-export function FirebaseClientProvider({ children }: { children: ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null; // Or a loading spinner
-  }
-
-  return <FirebaseProvider>{children}</FirebaseProvider>;
+export function FirebaseClientProvider({ children, locale }: { children: ReactNode, locale: string }) {
+  return (
+    <I18nProviderClient locale={locale}>
+      <FirebaseProvider>
+        {children}
+      </FirebaseProvider>
+    </I18nProviderClient>
+  );
 }

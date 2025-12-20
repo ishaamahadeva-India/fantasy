@@ -1,8 +1,7 @@
-'use client';
+
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
-import { I18nProviderClient } from '@/lib/i18n/client';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export default function LocaleLayout({
   children,
@@ -12,10 +11,8 @@ export default function LocaleLayout({
   params: { locale: string };
 }) {
   return (
-    <I18nProviderClient locale={locale}>
-      <FirebaseClientProvider>
+    <FirebaseClientProvider locale={locale}>
         <AppShell>{children}</AppShell>
-      </FirebaseClientProvider>
-    </I18nProviderClient>
+    </FirebaseClientProvider>
   );
 }
