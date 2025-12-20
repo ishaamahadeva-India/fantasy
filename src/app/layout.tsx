@@ -3,8 +3,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from '@/components/layout/app-shell';
-import { FirebaseClientProvider } from '@/firebase';
-import { I18nProviderClient } from '@/lib/i18n/client';
 import { getStaticParams } from '@/lib/i18n/server';
 
 export const metadata: Metadata = {
@@ -45,19 +43,15 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
           rel="stylesheet"
         />
-        <link
+         <link
           href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
           rel="stylesheet"
         />
         <meta name="theme-color" content="#E6C87A" />
       </head>
       <body className="font-sans antialiased min-h-screen">
-        <I18nProviderClient locale={locale}>
-          <FirebaseClientProvider>
-            <AppShell>{children}</AppShell>
-          </FirebaseClientProvider>
-        </I18nProviderClient>
-        <Toaster />
+          <AppShell locale={locale}>{children}</AppShell>
+          <Toaster />
       </body>
     </html>
   );
