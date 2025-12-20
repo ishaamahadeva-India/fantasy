@@ -53,8 +53,8 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!auth) return;
-    const error = await handleEmailSignIn(auth, values.email, values.password);
+    if (!auth || !firestore) return;
+    const error = await handleEmailSignIn(auth, firestore, values.email, values.password);
     if (error) {
       toast({
         variant: 'destructive',

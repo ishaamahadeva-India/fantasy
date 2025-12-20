@@ -74,9 +74,13 @@ export const handleEmailSignUp = async (auth: Auth, firestore: Firestore, email:
     }
 };
 
-export const handleEmailSignIn = async (auth: Auth, email: string, password: string) => {
+export const handleEmailSignIn = async (auth: Auth, firestore: Firestore, email: string, password: string) => {
     try {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // After successful sign-in, ensure the admin role is set if it's the super admin
+        if (userCredential.user.email === SUPER_ADMIN_EMAIL) {
+            saveUserToFirestore(firestore, userCredential.user);
+        }
         return null;
     } catch (error: any) {
         return error.message;

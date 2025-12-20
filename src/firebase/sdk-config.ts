@@ -4,10 +4,10 @@
 // find the "SDK setup and configuration" section and click "Config".
 
 export const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY_HERE",
-  authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
-  projectId: "PASTE_YOUR_PROJECT_ID_HERE",
-  storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
-  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
-  appId: "PASTE_YOUR_APP_ID_HERE",
+  apiKey: "AIzaSyCjMSpm8FbBxUZ9ZRjt_7nDbAHlnw8g0QI",
+  authDomain: "studio-4972782117-39fa2.firebaseapp.com",
+  projectId: "studio-4972782117-39fa2",
+  storageBucket: "studio-4972782117-39fa2.firebasestorage.app",
+  messagingSenderId: "601096056382",
+  appId: "1:601096056382:web:05389fdcbcf3ab2e7deb6f",
 };
