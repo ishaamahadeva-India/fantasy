@@ -79,20 +79,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
   const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+  
+  const isLoading = userLoading || profileLoading;
+  const isAuthorized = userProfile?.isAdmin === true;
 
   useEffect(() => {
-    // Wait until both user and profile loading states are resolved
-    if (!userLoading && !profileLoading) {
-      // If there is no authenticated user, or if the user profile exists but they are not an admin
-      if (!user || (user && !userProfile?.isAdmin)) {
-        router.replace('/');
-      }
+    // If loading is finished and the user is not authorized, redirect them.
+    if (!isLoading && !isAuthorized) {
+      router.replace('/');
     }
-  }, [user, userLoading, userProfile, profileLoading, router]);
+  }, [isLoading, isAuthorized, router]);
 
 
-  // Show loading spinner while we verify auth state and admin role
-  if (userLoading || profileLoading) {
+  // While we are verifying the user's authentication state and admin role,
+  // show a loading screen.
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -101,9 +102,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // If, after loading, the user is still not an admin, show access denied.
-  // This covers the case where the user is logged in but not an admin.
-  if (!userProfile?.isAdmin) {
+  // After loading, if the user is still not authorized, show an access denied message.
+  // This handles the case where the user is logged in but is not an admin,
+  // or is not logged in at all.
+  if (!isAuthorized) {
     return (
        <div className="flex items-center justify-center h-screen">
         <div className='text-center'>
@@ -116,7 +118,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // If all checks pass, render the admin layout
+  // If all checks pass, render the admin layout with its content.
   return (
     <div className="min-h-screen w-full">
       <AdminSidebar />
