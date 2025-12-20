@@ -17,11 +17,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { popularMovies, popularStars } from '@/lib/placeholder-data';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import {
@@ -37,6 +36,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { deleteCricketer } from '@/firebase/firestore/cricketers';
 import { deleteTeam } from '@/firebase/firestore/teams';
+import { deleteMovie } from '@/firebase/firestore/movies';
+import { deleteStar } from '@/firebase/firestore/stars';
+import type { Movie, Star as StarType } from '@/lib/types';
 
 type CricketerProfile = {
     id: string;
@@ -53,20 +55,20 @@ type TeamProfile = {
 
 export default function AdminFanZonePage() {
     const firestore = useFirestore();
+    
     const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
     const { data: cricketers, isLoading: cricketersLoading } = useCollection<CricketerProfile>(cricketersQuery);
 
     const teamsQuery = firestore ? collection(firestore, 'teams') : null;
     const { data: teams, isLoading: teamsLoading } = useCollection<TeamProfile>(teamsQuery);
-
-
-    const handleAction = (action: string, title: string) => {
-        toast({
-            title: `Action: ${action}`,
-            description: `Entity "${title}" would be ${action.toLowerCase()}ed. This is a placeholder.`
-        })
-    }
     
+    const moviesQuery = firestore ? collection(firestore, 'movies') : null;
+    const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
+
+    const starsQuery = firestore ? collection(firestore, 'stars') : null;
+    const { data: stars, isLoading: starsLoading } = useCollection<StarType>(starsQuery);
+
+
      const handleDeleteCricketer = async (cricketerId: string) => {
         if (!firestore) return;
         try {
@@ -99,6 +101,42 @@ export default function AdminFanZonePage() {
                 variant: 'destructive',
                 title: 'Error',
                 description: 'Could not delete the team. Please try again.',
+            });
+        }
+    };
+    
+    const handleDeleteMovie = async (movieId: string) => {
+        if (!firestore) return;
+        try {
+            await deleteMovie(firestore, movieId);
+            toast({
+                title: 'Movie Deleted',
+                description: 'The movie has been successfully deleted.',
+            });
+        } catch (error) {
+            console.error('Error deleting movie: ', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not delete the movie. Please try again.',
+            });
+        }
+    };
+
+    const handleDeleteStar = async (starId: string) => {
+        if (!firestore) return;
+        try {
+            await deleteStar(firestore, starId);
+            toast({
+                title: 'Star Deleted',
+                description: 'The star has been successfully deleted.',
+            });
+        } catch (error) {
+            console.error('Error deleting star: ', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not delete the star. Please try again.',
             });
         }
     };
@@ -283,23 +321,53 @@ export default function AdminFanZonePage() {
         </TabsContent>
          <TabsContent value="movies" className="mt-4">
              <Card>
-                <CardHeader><CardTitle>Movies</CardTitle></CardHeader>
+                <CardHeader>
+                    <div className='flex justify-between items-center'>
+                        <CardTitle>Movies</CardTitle>
+                        <Button variant="outline" size="sm" asChild>
+                           <Link href="/admin/fanzone/movies/new">
+                            <PlusCircle className="w-4 h-4 mr-2" />
+                            Add Movie
+                           </Link>
+                        </Button>
+                    </div>
+                </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Year</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
-                            {popularMovies.map((movie) => (
+                             {moviesLoading && (
+                                <TableRow><TableCell colSpan={3}><Skeleton className="h-20" /></TableCell></TableRow>
+                            )}
+                            {movies && movies.map((movie) => (
                                 <TableRow key={movie.id}>
                                     <TableCell>{movie.title}</TableCell>
                                     <TableCell>{movie.releaseYear}</TableCell>
                                     <TableCell>
                                          <div className="flex gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', movie.title)}><Edit className="w-4 h-4" /></Button>
-                                        <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', movie.title)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                                            <Button variant="ghost" size="icon" asChild>
+                                                <Link href={`/admin/fanzone/movies/edit/${movie.id}`}>
+                                                    <Edit className="w-4 h-4" />
+                                                </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="w-4 h-4" /></Button></AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete "{movie.title}".</AlertDialogDescription></AlertDialogHeader>
+                                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteMovie(movie.id)}>Delete</AlertDialogAction></AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
+                             {!moviesLoading && movies?.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-24 text-center">
+                                        No movies found. Add one to get started.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -307,22 +375,53 @@ export default function AdminFanZonePage() {
         </TabsContent>
          <TabsContent value="stars" className="mt-4">
              <Card>
-                <CardHeader><CardTitle>Stars</CardTitle></CardHeader>
+                <CardHeader>
+                     <div className='flex justify-between items-center'>
+                        <CardTitle>Stars</CardTitle>
+                        <Button variant="outline" size="sm" asChild>
+                           <Link href="/admin/fanzone/stars/new">
+                            <PlusCircle className="w-4 h-4 mr-2" />
+                            Add Star
+                           </Link>
+                        </Button>
+                    </div>
+                </CardHeader>
                 <CardContent>
                     <Table>
-                        <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Genre</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
-                            {popularStars.map((star) => (
+                             {starsLoading && (
+                                <TableRow><TableCell colSpan={3}><Skeleton className="h-20" /></TableCell></TableRow>
+                            )}
+                            {stars && stars.map((star) => (
                                 <TableRow key={star.id}>
                                     <TableCell>{star.name}</TableCell>
+                                    <TableCell>{star.genre.join(', ')}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => handleAction('Edit', star.name)}><Edit className="w-4 h-4" /></Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleAction('Delete', star.name)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                                            <Button variant="ghost" size="icon" asChild>
+                                                 <Link href={`/admin/fanzone/stars/edit/${star.id}`}>
+                                                    <Edit className="w-4 h-4" />
+                                                 </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="w-4 h-4" /></Button></AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete "{star.name}".</AlertDialogDescription></AlertDialogHeader>
+                                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteStar(star.id)}>Delete</AlertDialogAction></AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {!starsLoading && stars?.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-24 text-center">
+                                        No stars found. Add one to get started.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
