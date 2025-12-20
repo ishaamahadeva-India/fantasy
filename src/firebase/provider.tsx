@@ -10,7 +10,7 @@ import {
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
-import { firebaseConfig } from './config';
+import { firebaseConfig } from './sdk-config'; // UPDATED_IMPORT
 
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
