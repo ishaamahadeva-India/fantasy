@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {},
 };
 
 export default withPWA(nextConfig);

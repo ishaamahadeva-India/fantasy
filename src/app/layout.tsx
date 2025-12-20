@@ -4,6 +4,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from '@/components/layout/app-shell';
 import { FirebaseClientProvider } from '@/firebase';
+import { I18nProviderClient } from '@/lib/i18n/client';
+import { getStaticParams } from '@/lib/i18n/server';
 
 export const metadata: Metadata = {
   title: 'Ultra-Posh',
@@ -11,13 +13,19 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
+export function generateStaticParams() {
+  return getStaticParams();
+}
+
 export default function RootLayout({
   children,
+  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale: string };
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang={locale} className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -44,9 +52,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#E6C87A" />
       </head>
       <body className="font-sans antialiased min-h-screen">
-        <FirebaseClientProvider>
-          <AppShell>{children}</AppShell>
-        </FirebaseClientProvider>
+        <I18nProviderClient locale={locale}>
+          <FirebaseClientProvider>
+            <AppShell>{children}</AppShell>
+          </FirebaseClientProvider>
+        </I18nProviderClient>
         <Toaster />
       </body>
     </html>
