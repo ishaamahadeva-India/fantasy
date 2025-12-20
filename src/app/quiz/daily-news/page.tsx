@@ -3,14 +3,10 @@ import { QuizClient } from '@/components/quiz/quiz-client';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { AlertTriangle, Newspaper, Clock, BrainCircuit } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 export default async function DailyNewsQuizPage() {
   let quizData;

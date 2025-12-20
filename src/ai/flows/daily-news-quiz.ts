@@ -49,35 +49,16 @@ const generateQuizPrompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: DailyNewsQuizInputSchema},
   output: {schema: DailyNewsQuizOutputSchema},
-  prompt: `You are an expert quiz generator, tasked with creating engaging and informative daily news quizzes.
+  prompt: `You are an expert quiz generator, tasked with creating engaging and informative daily news quizzes based on global events from the last 24-48 hours.
 
-  Generate a quiz with {{numQuestions}} questions based on recent news headlines.
+  Generate a quiz with {{numQuestions}} questions.
   {{#if topic}}
   Focus the quiz on the topic of {{topic}}.
   {{/if}}
-  Each question should have 4 options, one of which is the correct answer.
-  Provide a short explanation for each correct answer.
-  The response should be formatted as a JSON object conforming to the schema:
-  ${JSON.stringify(DailyNewsQuizOutputSchema.shape, null, 2)}
-
-  Make sure to include the "explanation" field.
-  Here's an example quiz:
-  {
-    "quiz": [
-      {
-        "question": "What country recently launched a new lunar mission?",
-        "options": ["United States", "China", "India", "Russia"],
-        "correctAnswerIndex": 2,
-        "explanation": "India launched its third lunar exploration mission, Chandrayaan-3, on July 14, 2023."
-      },
-      {
-        "question": "Which city is hosting the next Olympic Games in 2028?",
-        "options": ["Paris", "Los Angeles", "Tokyo", "Beijing"],
-        "correctAnswerIndex": 1,
-        "explanation": "Los Angeles will host the 2028 Summer Olympics, marking the city's third time hosting the Games."
-      }
-    ]
-  }`,
+  Each question should have 4 plausible options, one of which is the correct answer.
+  Provide a short, insightful explanation for each correct answer.
+  
+  Ensure the questions are current and relevant.`,
 });
 
 const generateDailyNewsQuizFlow = ai.defineFlow(
