@@ -79,3 +79,45 @@ export type FantasyMatch = {
     startTime: Date;
     status: "upcoming" | "live" | "completed";
 }
+
+export type CricketerProfile = {
+    id: string;
+    name: string;
+    country: string;
+    roles: string[];
+    avatarUrl?: string;
+}
+
+export type FantasyRoleSelection = {
+    userId: string;
+    matchId: string;
+    innings: number;
+    selectedRoles: Record<string, string>; // e.g., { "powerplay-king": "player-id-1" }
+    lockedAt: Date;
+};
+
+export type LivePrediction = {
+    matchId: string;
+    phase: string; // e.g., "Powerplay", "Middle Overs", "Death Overs"
+    type: 'range' | 'yesno' | 'ranking' | 'conditional';
+    question: string;
+    options?: string[]; // For range or conditional
+    startTime: Date;
+    lockTime: Date;
+};
+
+export type UserLivePrediction = {
+    userId: string;
+    predictionId: string;
+    selectedOption: string;
+    confidenceLevel?: 'Low' | 'Medium' | 'High';
+    answeredAt: Date;
+};
+
+export type FantasyLeaderboard = {
+    rankings: {
+        userId: string;
+        score: number;
+        rank: number;
+    }[];
+};
