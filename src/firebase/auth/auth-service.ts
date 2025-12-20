@@ -16,14 +16,26 @@ import { initializeFirebase } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '../errors';
 
+const SUPER_ADMIN_EMAIL = 'admin@fantasy.com';
+
 const saveUserToFirestore = (user: { uid: string, displayName: string | null, email: string | null, photoURL: string | null }) => {
     const { firestore } = initializeFirebase();
     const userDocRef = doc(firestore, 'users', user.uid);
-    const userData = {
+    const userData: {
+        displayName: string | null;
+        email: string | null;
+        avatarUrl: string | null;
+        isAdmin?: boolean;
+    } = {
         displayName: user.displayName,
         email: user.email,
         avatarUrl: user.photoURL,
     };
+
+    // Check if the user is the designated super admin
+    if (user.email === SUPER_ADMIN_EMAIL) {
+        userData.isAdmin = true;
+    }
 
     setDoc(userDocRef, userData, { merge: true })
         .catch(async (serverError) => {
