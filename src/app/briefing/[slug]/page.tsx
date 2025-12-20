@@ -1,39 +1,55 @@
-
 'use client';
 import { summarizeArticle, type SummarizeArticleOutput } from '@/ai/flows/summarize-article';
-import { placeholderArticles } from '@/lib/placeholder-data';
 import { notFound, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useFirestore } from '@/firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import type { Article } from '@/lib/types';
 
 export default function BriefingPage({ params: { slug } }: { params: { slug: string } }) {
   const router = useRouter();
-  const article = placeholderArticles.find((a) => a.slug === slug);
+  const firestore = useFirestore();
+  const [article, setArticle] = useState<(Article & {id: string}) | null>(null);
   const [summary, setSummary] = useState<SummarizeArticleOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userSummary, setUserSummary] = useState('');
 
   useEffect(() => {
-    if (!article) return;
-
-    const getSummary = async () => {
+    async function fetchArticleAndSummary() {
+      if (!firestore) return;
+      
       setIsLoading(true);
+      const articlesRef = collection(firestore, 'articles');
+      const q = query(articlesRef, where('slug', '==', slug), limit(1));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setArticle(null);
+        setIsLoading(false);
+        return;
+      }
+      
+      const doc = querySnapshot.docs[0];
+      const articleData = { id: doc.id, ...doc.data() } as Article & {id: string};
+      setArticle(articleData);
+
       try {
-        const result = await summarizeArticle({ articleText: article.content });
+        const result = await summarizeArticle({ articleText: articleData.content });
         setSummary(result);
       } catch (error) {
         console.error("Failed to get summary", error);
       } finally {
         setIsLoading(false);
       }
-    };
+    }
 
-    getSummary();
-  }, [article]);
+    fetchArticleAndSummary();
+  }, [firestore, slug]);
 
   const handleSubmit = () => {
     if (!userSummary || !summary || !article) return;
@@ -46,6 +62,10 @@ export default function BriefingPage({ params: { slug } }: { params: { slug: str
     }));
 
     router.push(`/briefing/${slug}/results`);
+  }
+
+  if (isLoading && !article) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="w-8 h-8 animate-spin" /></div>
   }
 
   if (!article) {

@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, use } from 'react';
-import { placeholderNationalTeams } from '@/lib/cricket-data';
+import { useState } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -15,19 +14,54 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Note: This component is still partially using placeholder data for "eras"
+// as this is a complex data structure not modeled in the DB.
+// The main team data is fetched live.
+const placeholderEras = {
+    "2000s": {
+        winRate: 65,
+        iccTrophies: 2,
+        keyPlayers: ["Sachin Tendulkar", "Sourav Ganguly", "Anil Kumble"],
+        definingMoment: "The 2007 T20 World Cup victory under a young MS Dhoni, which heralded a new era in Indian cricket and sparked the IPL revolution."
+    },
+    "2010s": {
+        winRate: 72,
+        iccTrophies: 3,
+        keyPlayers: ["MS Dhoni", "Virat Kohli", "Yuvraj Singh"],
+        definingMoment: "Lifting the 2011 ODI World Cup on home soil after 28 years, a moment etched in the memory of a billion fans as Sachin Tendulkar's dream came true."
+    }
+};
+
+type TeamProfile = {
+    id: string;
+    name: string;
+    type: 'ip' | 'national';
+    logoUrl?: string;
+};
 
 export default function NationalTeamProfilePage({ params }: { params: { id: string } }) {
-  const { id } = use(params);
-  const team = placeholderNationalTeams.find((t) => t.id === id);
+  const { id } = params;
+  const firestore = useFirestore();
+  const teamRef = firestore ? doc(firestore, 'teams', id) : null;
+  const { data: team, isLoading } = useDoc<TeamProfile>(teamRef);
 
-  if (!team) {
+  const eras = placeholderEras; // Using placeholder for now
+  const defaultEra = Object.keys(eras)[0];
+  const [selectedEra, setSelectedEra] = useState(defaultEra);
+  const eraData = eras[selectedEra as keyof typeof eras];
+
+  if (isLoading) {
+    return <Skeleton className="h-screen w-full" />;
+  }
+
+  if (!team || team.type !== 'national') {
     notFound();
   }
-    
-  const defaultEra = Object.keys(team.eras)[0];
-  const [selectedEra, setSelectedEra] = useState(defaultEra);
-  const eraData = team.eras[selectedEra];
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -44,7 +78,7 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
           <Card className="overflow-hidden">
             <div className="relative aspect-square w-full bg-white/10 flex items-center justify-center p-4">
               <Image
-                src={team.crest}
+                src={team.logoUrl || `https://picsum.photos/seed/${team.id}/400/400`}
                 alt={team.name}
                 width={200}
                 height={200}
@@ -70,7 +104,7 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
                         <SelectValue placeholder="Select Era" />
                     </SelectTrigger>
                     <SelectContent>
-                        {Object.keys(team.eras).map(era => (
+                        {Object.keys(eras).map(era => (
                              <SelectItem key={era} value={era}>{era}</SelectItem>
                         ))}
                     </SelectContent>

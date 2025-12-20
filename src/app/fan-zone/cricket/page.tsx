@@ -15,10 +15,6 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  placeholderIpTeams,
-  placeholderNationalTeams,
-} from '@/lib/cricket-data';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -39,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Cricketer = {
@@ -51,6 +47,13 @@ type Cricketer = {
     trendingRank?: number;
     consistencyIndex: number;
     impactScore: number;
+}
+
+type TeamProfile = {
+    id: string;
+    name: string;
+    type: 'ip' | 'national';
+    logoUrl?: string;
 }
 
 
@@ -72,7 +75,7 @@ function CricketersTab({
       )
       .filter((cricketer) => {
         if (filters.roles.length > 0) {
-          if (!filters.roles.some((role) => cricketer.roles.includes(role))) {
+          if (!cricketer.roles || !filters.roles.some((role) => cricketer.roles.includes(role))) {
             return false;
           }
         }
@@ -135,31 +138,51 @@ function CricketersTab({
   );
 }
 
-function NationalTeamsTab({ searchTerm }: { searchTerm: string }) {
-  const filteredTeams = placeholderNationalTeams.filter((team) =>
-    team.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+function TeamsTab({ type, searchTerm }: { type: 'national' | 'ip', searchTerm: string }) {
+  const firestore = useFirestore();
+  const teamsQuery = firestore ? query(collection(firestore, 'teams'), where('type', '==', type)) : null;
+  const { data: teams, isLoading } = useCollection<TeamProfile>(teamsQuery);
+  
+  const filteredTeams =
+    teams?.filter((team) =>
+        team.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [];
+
+  if (isLoading) {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...Array(6)].map((_, i) => (
+                <Card key={i}>
+                    <CardContent className="p-4 flex flex-col items-center gap-3">
+                        <Skeleton className="w-24 h-24 rounded-full" />
+                        <Skeleton className="h-5 w-20" />
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    )
+  }
 
   if (filteredTeams.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        No national teams found.
+        No {type} teams found.
       </div>
     );
   }
-
+  
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {filteredTeams.map((team) => (
         <Link
-          href={`/fan-zone/cricket/national-team/${team.id}`}
+          href={`/fan-zone/cricket/${type}-team/${team.id}`}
           key={team.id}
           className="group"
         >
           <Card className="text-center h-full">
             <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={team.crest} alt={team.name} />
+                <AvatarImage src={team.logoUrl || `https://picsum.photos/seed/${team.id}/400/400`} alt={team.name} />
                 <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <h3 className="font-bold font-headline text-sm group-hover:text-primary">
@@ -173,59 +196,17 @@ function NationalTeamsTab({ searchTerm }: { searchTerm: string }) {
   );
 }
 
-function IpTeamsTab({ searchTerm }: { searchTerm: string }) {
-  const filteredTeams = placeholderIpTeams.filter((team) =>
-    team.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (filteredTeams.length === 0) {
-    return (
-      <div className="py-12 text-center text-muted-foreground">
-        No IP teams found.
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-      {filteredTeams.map((team) => (
-        <Link
-          href={`/fan-zone/cricket/ip-team/${team.id}`}
-          key={team.id}
-          className="group"
-        >
-          <Card className="text-center h-full">
-            <CardContent className="p-4 flex flex-col items-center gap-3 justify-between h-full">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={team.logo} alt={team.name} />
-                <AvatarFallback>{team.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <h3 className="font-bold font-headline text-sm group-hover:text-primary">
-                {team.name}
-              </h3>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
-    </div>
-  );
-}
 
 function TrendingTab() {
   const firestore = useFirestore();
-  const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
+  const cricketersQuery = firestore ? query(collection(firestore, 'cricketers'), where('trendingRank', '>', 0), orderBy('trendingRank'), limit(5)) : null;
   const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
-
-  const trendingCricketers =
-    cricketers
-      ?.filter((c) => c.trendingRank)
-      .sort((a, b) => (a.trendingRank || 99) - (b.trendingRank || 99)) || [];
 
   if (isLoading) {
     return <Card><CardContent><Skeleton className="h-64" /></CardContent></Card>
   }
   
-  if (trendingCricketers.length === 0) {
+  if (!cricketers || cricketers.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground">
         Trending content coming soon.
@@ -242,7 +223,7 @@ function TrendingTab() {
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
-          {trendingCricketers.map((cricketer, index) => (
+          {cricketers.map((cricketer, index) => (
             <li key={cricketer.id}>
               <Link href={`/fan-zone/cricket/cricketer/${cricketer.id}`} className="group">
                 <div className="flex items-center gap-4">
@@ -263,7 +244,7 @@ function TrendingTab() {
                   </div>
                 </div>
               </Link>
-              {index < trendingCricketers.length - 1 && (
+              {index < cricketers.length - 1 && (
                 <Separator className="mt-4" />
               )}
             </li>
@@ -410,7 +391,7 @@ export default function CricketFanZonePage() {
   const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
   const { data: cricketers } = useCollection<Cricketer>(cricketersQuery);
 
-  const allRoles = cricketers ? [...new Set(cricketers.flatMap((c) => c.roles))] : [];
+  const allRoles = cricketers ? [...new Set(cricketers.flatMap((c) => c.roles || []))] : [];
   const allCountries = cricketers ? [...new Set(cricketers.map((c) => c.country))] : [];
 
   const handleFilterChange = (type: 'roles' | 'countries', value: string, checked: boolean) => {
@@ -526,10 +507,10 @@ export default function CricketFanZonePage() {
           <CricketersTab searchTerm={searchTerm} filters={filters} />
         </TabsContent>
         <TabsContent value="national-teams">
-          <NationalTeamsTab searchTerm={searchTerm} />
+          <TeamsTab type="national" searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="ip-teams">
-          <IpTeamsTab searchTerm={searchTerm} />
+          <TeamsTab type="ip" searchTerm={searchTerm} />
         </TabsContent>
         <TabsContent value="trending">
           <TrendingTab />

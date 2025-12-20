@@ -1,6 +1,5 @@
 'use client';
 import { generateFactOrFiction, type FactOrFictionOutput } from '@/ai/flows/fact-or-fiction';
-import { placeholderArticles } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,14 @@ import { Loader2, AlertTriangle, ArrowRight, Check, X, Award } from 'lucide-reac
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Progress } from '@/components/ui/progress';
+import { useFirestore } from '@/firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import type { Article } from '@/lib/types';
 
 
 export default function FactOrFictionPage({ params: { slug } }: { params: { slug: string } }) {
-  const article = placeholderArticles.find((a) => a.slug === slug);
+  const firestore = useFirestore();
+  const [article, setArticle] = useState<(Article & {id: string}) | null>(null);
   const [gameData, setGameData] = useState<FactOrFictionOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,27 +26,42 @@ export default function FactOrFictionPage({ params: { slug } }: { params: { slug
   const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
-    if (!article) return;
+    async function fetchArticleAndGame() {
+      if (!firestore) return;
 
-    const getGameData = async () => {
       setIsLoading(true);
       setError(null);
+      
+      const articlesRef = collection(firestore, 'articles');
+      const q = query(articlesRef, where('slug', '==', slug), limit(1));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setIsLoading(false);
+        notFound();
+        return;
+      }
+      
+      const doc = querySnapshot.docs[0];
+      const articleData = { id: doc.id, ...doc.data() } as Article & {id: string};
+      setArticle(articleData);
+
       try {
-        const result = await generateFactOrFiction({ articleText: article.content, numStatements: 5 });
+        const result = await generateFactOrFiction({ articleText: articleData.content, numStatements: 5 });
         if (!result.statements || result.statements.length === 0) {
-            throw new Error("The AI failed to generate any statements.");
+            throw new Error("The AI failed to generate any statements for this article.");
         }
         setGameData(result);
       } catch (e: any) {
         console.error("Failed to get game data", e);
-        setError(e.message || "An unknown error occurred.");
+        setError(e.message || "An unknown error occurred while generating the game.");
       } finally {
         setIsLoading(false);
       }
-    };
+    }
 
-    getGameData();
-  }, [article]);
+    fetchArticleAndGame();
+  }, [firestore, slug]);
 
   const handleAnswer = (answer: boolean) => {
     if (userAnswer !== null) return; // Lock answer
@@ -63,11 +81,6 @@ export default function FactOrFictionPage({ params: { slug } }: { params: { slug
         setIsFinished(true);
     }
   };
-
-
-  if (!article) {
-    return notFound();
-  }
 
   if (isLoading) {
     return (
@@ -134,15 +147,19 @@ export default function FactOrFictionPage({ params: { slug } }: { params: { slug
     )
   }
 
-  const currentStatement = gameData!.statements[currentIndex];
+  if (!gameData) {
+      return <div>Game could not be loaded.</div>
+  }
+
+  const currentStatement = gameData.statements[currentIndex];
   const hasAnswered = userAnswer !== null;
 
   return (
     <div className="w-full max-w-2xl mx-auto h-full flex flex-col justify-between">
         <div className="py-4">
-            <Progress value={((currentIndex + 1) / gameData!.statements.length) * 100} />
+            <Progress value={((currentIndex + 1) / gameData.statements.length) * 100} />
             <p className="text-center text-sm text-muted-foreground mt-2">
-                Statement {currentIndex + 1} of {gameData!.statements.length}
+                Statement {currentIndex + 1} of {gameData.statements.length}
             </p>
         </div>
         <div className="flex-grow flex items-center">
@@ -199,7 +216,7 @@ export default function FactOrFictionPage({ params: { slug } }: { params: { slug
                     {currentStatement.explanation}
                 </p>
                 <Button onClick={handleNext} size="lg" className="w-full">
-                     {currentIndex === gameData!.statements.length - 1 ? 'Finish Challenge' : 'Next Statement'}
+                     {currentIndex === gameData.statements.length - 1 ? 'Finish Challenge' : 'Next Statement'}
                     <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
             </div>

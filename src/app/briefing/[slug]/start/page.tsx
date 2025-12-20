@@ -1,14 +1,44 @@
 
+'use client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, BrainCircuit, Clock, FileText, ArrowLeft } from 'lucide-react';
+import { ArrowRight, BrainCircuit, Clock, FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { placeholderArticles } from '@/lib/placeholder-data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import { useDoc, useFirestore } from '@/firebase';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import type { Article } from '@/lib/types';
+import { useEffect, useState } from 'react';
+
 
 export default function PreBriefingPage({ params: { slug } }: { params: { slug: string } }) {
-  const article = placeholderArticles.find((a) => a.slug === slug);
+  const firestore = useFirestore();
+  const [article, setArticle] = useState<Article & { id: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+   useEffect(() => {
+    async function fetchArticle() {
+      if (!firestore) return;
+      setIsLoading(true);
+      const articlesRef = collection(firestore, 'articles');
+      const q = query(articlesRef, where('slug', '==', slug), limit(1));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        setArticle(null);
+      } else {
+        const doc = querySnapshot.docs[0];
+        setArticle({ id: doc.id, ...doc.data() } as Article & { id: string });
+      }
+      setIsLoading(false);
+    }
+    fetchArticle();
+  }, [firestore, slug]);
+
+
+  if (isLoading) {
+      return <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin" /></div>
+  }
 
   if (!article) {
     notFound();
@@ -41,11 +71,11 @@ export default function PreBriefingPage({ params: { slug } }: { params: { slug: 
 
         <div className="relative w-full p-6 overflow-hidden rounded-2xl bg-white/5 border border-white/10 aspect-video">
              <Image 
-                src={article.image.imageUrl}
-                alt={article.image.description}
+                src={`https://picsum.photos/seed/${article.id}/800/450`}
+                alt={article.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                data-ai-hint={article.image.imageHint}
+                data-ai-hint="news article"
              />
              <div className="absolute inset-0 bg-black/50" />
              <div className="relative z-10 flex flex-col items-center justify-center h-full">
@@ -65,7 +95,7 @@ export default function PreBriefingPage({ params: { slug } }: { params: { slug: 
                 </Link>
             </Button>
             <Button asChild variant="ghost" className="w-full">
-                <Link href="/">
+                <Link href="/play">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Game Lobby
                 </Link>

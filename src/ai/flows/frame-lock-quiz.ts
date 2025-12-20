@@ -10,7 +10,13 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { popularMovies } from '@/lib/placeholder-data';
+import { initializeFirebase } from '@/firebase';
+import { collection, getDocs, query, limit } from 'firebase/firestore';
+import type { Movie } from '@/lib/types';
+
+
+const { firestore } = initializeFirebase();
+
 
 const FrameLockQuizOutputSchema = z.object({
   question: z.string().describe('The instructional text for the user, which should be "Identify the movie from the frame below."'),
@@ -22,8 +28,14 @@ const FrameLockQuizOutputSchema = z.object({
 export type FrameLockQuizOutput = z.infer<typeof FrameLockQuizOutputSchema>;
 
 // Helper to select a random movie and some distractors
-const selectMoviesForQuiz = () => {
-    const movies = [...popularMovies];
+const selectMoviesForQuiz = async () => {
+    const moviesSnapshot = await getDocs(query(collection(firestore, 'movies'), limit(50)));
+    const movies = moviesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Movie));
+
+    if (movies.length < 4) {
+        throw new Error('Not enough movies in the database to generate a quiz. Please add at least 4 movies.');
+    }
+
     const correctMovieIndex = Math.floor(Math.random() * movies.length);
     const correctMovie = movies.splice(correctMovieIndex, 1)[0];
 
@@ -52,7 +64,7 @@ const generateImageForMoviePrompt = ai.definePrompt({
 
 
 export async function generateFrameLockQuiz(): Promise<FrameLockQuizOutput> {
-    const { correctMovie, distractors } = selectMoviesForQuiz();
+    const { correctMovie, distractors } = await selectMoviesForQuiz();
 
     // Generate the image
     const imageResponse = await generateImageForMoviePrompt({

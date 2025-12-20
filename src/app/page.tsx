@@ -6,11 +6,11 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where, type Query } from 'firebase/firestore';
+import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
+import { collection, query, where, type Query, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
-import type { Article } from '@/lib/types';
+import type { Article, UserProfile, Movie } from '@/lib/types';
 
 
 function AdBanner() {
@@ -25,6 +25,57 @@ function AdBanner() {
                         <Link href="#" target="_blank">Learn More</Link>
                     </Button>
                 </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+function WatchlistSidebar() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+    const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+
+    const watchlistIds = useMemo(() => userProfile?.watchlist || [], [userProfile]);
+
+    const moviesQuery = useMemo(() => {
+        if (!firestore || watchlistIds.length === 0) return null;
+        return query(collection(firestore, 'movies'), where('__name__', 'in', watchlistIds));
+    }, [firestore, watchlistIds]);
+
+    const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
+    
+    if (!user) return null;
+
+    if (profileLoading) {
+        return <Card><CardHeader><Skeleton className="h-8 w-32" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">My Watchlist</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {moviesLoading && <Skeleton className="h-24 w-full" />}
+                {!moviesLoading && (!movies || movies.length === 0) && (
+                    <p className="text-muted-foreground text-sm">You haven't added any movies to your watchlist yet.</p>
+                )}
+                <ul className="space-y-4">
+                    {movies?.map((movie) => (
+                        <li key={movie.id}>
+                            <Link href={`/fan-zone/movie/${movie.id}`} className="flex items-center gap-4 group">
+                                <div className="relative w-12 h-16 shrink-0">
+                                    <Image src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/200/300`} alt={movie.title} fill className="object-cover rounded-sm" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold group-hover:text-primary">{movie.title}</p>
+                                    <p className="text-xs text-muted-foreground">{movie.releaseYear}</p>
+                                </div>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
             </CardContent>
         </Card>
     )
@@ -123,14 +174,6 @@ function ArticleList({ category }: { category: string }) {
 export default function ExplorePage() {
   const categories = ['Cricket', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
   
-  const gossipArticles = [
-    { title: "Special Reason Behind Pawan's Gift to Sujeeth", href: '#' },
-    { title: 'Why Prabhas Travels Only in Private Jets?', href: '#' },
-    { title: "Why Magic Is Missing In Thaman's Music?", href: '#' },
-    { title: 'Pawan Signs Two Films for People Media Factory?', href: '#' },
-    { title: 'Akhanda 2... Lokesh\'s Timely Intervention!', href: '#' },
-  ];
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
@@ -166,23 +209,7 @@ export default function ExplorePage() {
       </div>
 
       <aside className="lg:col-span-1 space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline text-2xl">Gossip</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4">
-              {gossipArticles.map((item, index) => (
-                <li key={index}>
-                   <Link href={item.href} className="hover:text-primary transition-colors duration-200">
-                      {item.title}
-                   </Link>
-                   {index < gossipArticles.length - 1 && <Separator className="mt-4" />}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <WatchlistSidebar />
         <Card className="bg-gradient-to-br from-accent/10">
             <CardHeader>
                 <CardTitle className="font-headline">Sponsored</CardTitle>

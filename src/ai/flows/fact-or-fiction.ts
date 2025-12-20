@@ -66,7 +66,7 @@ const generateFactOrFictionFlow = ai.defineFlow(
   },
   async (input) => {
     const {output} = await generateFactOrFictionPrompt(input);
-    if (!output?.statements) {
+    if (!output?.statements || output.statements.length === 0) {
         throw new Error('Failed to generate fact or fiction content.');
     }
     return output;

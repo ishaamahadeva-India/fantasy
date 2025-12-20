@@ -1,7 +1,6 @@
 
 'use client';
-import { use, useMemo, useEffect, useState } from 'react';
-import { placeholderIpTeams } from '@/lib/cricket-data';
+import { useMemo, useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +16,26 @@ import { ArrowLeft, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
 import type { FanRating } from '@/lib/types';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function MomentumVisualizer({ momentum }: { momentum: number[] }) {
+type TeamProfile = {
+    id: string;
+    name: string;
+    type: 'ip' | 'national';
+    logoUrl?: string;
+    // IP-specific fields
+    homeVenue?: string;
+    stabilityIndex?: number;
+    squadBalance?: number;
+    momentum?: number[];
+};
+
+
+function MomentumVisualizer({ momentum }: { momentum: number[] | undefined }) {
+  if (!momentum) return <div className="h-10 text-xs text-muted-foreground flex items-center justify-center">No data</div>;
   return (
     <div className="flex items-end gap-2 h-10">
       {momentum.map((score, index) => (
@@ -95,8 +108,7 @@ export default function IpTeamProfilePage({
 }: {
   params: { id: string };
 }) {
-  const { id } = use(params);
-  const team = placeholderIpTeams.find((t) => t.id === id);
+  const { id } = params;
   const teamAttributes = [
     'Auction Strategy',
     'Youth Policy',
@@ -105,6 +117,10 @@ export default function IpTeamProfilePage({
   ];
   
   const firestore = useFirestore();
+
+  const teamRef = firestore ? doc(firestore, 'teams', id) : null;
+  const { data: team, isLoading: teamLoading } = useDoc<TeamProfile>(teamRef);
+
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -116,8 +132,11 @@ export default function IpTeamProfilePage({
 
   const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
 
+  if (teamLoading) {
+    return <div><Skeleton className="h-screen w-full" /></div>
+  }
 
-  if (!team) {
+  if (!team || team.type !== 'ip') {
     notFound();
   }
 
@@ -136,7 +155,7 @@ export default function IpTeamProfilePage({
           <Card className="overflow-hidden">
             <div className="relative aspect-square w-full bg-white/10 flex items-center justify-center p-4">
               <Image
-                src={team.logo}
+                src={team.logoUrl || `https://picsum.photos/seed/${team.id}/400/400`}
                 alt={team.name}
                 width={200}
                 height={200}
@@ -145,7 +164,7 @@ export default function IpTeamProfilePage({
             </div>
           </Card>
           <div className="text-center mt-4">
-            <p className="text-sm text-muted-foreground">{team.homeVenue}</p>
+            <p className="text-sm text-muted-foreground">{team.homeVenue || 'N/A'}</p>
           </div>
         </div>
         <div className="md:col-span-2 space-y-6">
@@ -154,7 +173,7 @@ export default function IpTeamProfilePage({
               {team.name}
             </h1>
             <div className="mt-2 flex items-center gap-2">
-              <Badge variant="secondary">{team.league}</Badge>
+              <Badge variant="secondary">IP League</Badge>
             </div>
           </div>
 
@@ -170,13 +189,13 @@ export default function IpTeamProfilePage({
                   Stability Index
                 </p>
                 <p className="text-4xl font-bold font-code text-primary">
-                  {team.stabilityIndex.toFixed(1)}
+                  {team.stabilityIndex?.toFixed(1) || 'N/A'}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Squad Balance</p>
                 <p className="text-4xl font-bold font-code text-primary">
-                  {team.squadBalance.toFixed(1)}
+                  {team.squadBalance?.toFixed(1) || 'N/A'}
                 </p>
               </div>
               <FanConfidenceDisplay ratings={ratings} isLoading={ratingsLoading} />
