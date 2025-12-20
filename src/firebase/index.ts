@@ -30,20 +30,28 @@ export type FirebaseInstances = {
   firestore: Firestore;
 };
 
-let firebaseInstances: FirebaseInstances;
+let firebaseInstances: FirebaseInstances | null = null;
 
 export function initializeFirebase(): FirebaseInstances {
-  if (firebaseInstances) {
+  if (typeof window !== 'undefined') {
+    if (firebaseInstances) {
+        return firebaseInstances;
+    }
+    
+    const app =
+        getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    const auth = getAuth(app);
+    const firestore = getFirestore(app);
+
+    firebaseInstances = { app, auth, firestore };
     return firebaseInstances;
   }
-
-  const app =
-    getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  // For server-side rendering, we need to initialize a new app instance
+  // to avoid sharing instances between requests.
+  const app = initializeApp(firebaseConfig, `server-${Date.now()}`);
   const auth = getAuth(app);
   const firestore = getFirestore(app);
-
-  firebaseInstances = { app, auth, firestore };
-  return firebaseInstances;
+  return { app, auth, firestore };
 }
 
 export {

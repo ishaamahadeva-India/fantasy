@@ -3,15 +3,28 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BrainCircuit, Clock, Video, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { popularMovies } from '@/lib/placeholder-data';
+import { initializeFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Movie } from '@/lib/types';
 import { notFound } from 'next/navigation';
 
-export default function PreMovieQuizPage({
+const { firestore } = initializeFirebase();
+
+async function getMovie(id: string): Promise<Movie | null> {
+    const movieRef = doc(firestore, 'movies', id);
+    const movieSnap = await movieRef.get();
+    if (!movieSnap.exists()) {
+        return null;
+    }
+    return movieSnap.data() as Movie;
+}
+
+export default async function PreMovieQuizPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const movie = popularMovies.find((m) => m.id === params.id);
+  const movie = await getMovie(params.id);
   if (!movie) {
     notFound();
   }

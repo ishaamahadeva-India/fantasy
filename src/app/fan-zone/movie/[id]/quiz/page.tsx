@@ -7,16 +7,32 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { popularMovies } from '@/lib/placeholder-data';
+import { initializeFirebase, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Movie } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
+
+
+// We need to get a firestore instance on the server.
+const { firestore } = initializeFirebase();
+
+async function getMovie(id: string): Promise<Movie | null> {
+    const movieRef = doc(firestore, 'movies', id);
+    const movieSnap = await movieRef.get();
+    if (!movieSnap.exists()) {
+        return null;
+    }
+    return movieSnap.data() as Movie;
+}
+
 
 export default async function MovieQuizPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const movie = popularMovies.find((m) => m.id === params.id);
+  const movie = await getMovie(params.id);
   if (!movie) {
     notFound();
   }
