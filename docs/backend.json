@@ -138,7 +138,7 @@
             "industry": { 
               "type": "string",
               "description": "The film industry the movie belongs to.",
-              "enum": ["Hollywood", "Bollywood", "Tollywood", "Other"]
+              "enum": ["Hollywood", "Bollywood", "Tollywood", "Tamil", "Kannada", "Malayalam", "Punjabi", "Bhojpuri", "Other"]
             },
             "posterUrl": { "type": "string", "format": "uri" },
             "description": { "type": "string" }
@@ -524,5 +524,3 @@
     }
   }
 }
-
-    

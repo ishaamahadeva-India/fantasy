@@ -11,6 +11,7 @@ import Link from 'next/link';
 
 export default function FanZoneMoviesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const industries = ["Hollywood", "Bollywood", "Tollywood", "Tamil", "Kannada", "Malayalam", "Punjabi", "Bhojpuri"];
 
   return (
     <div className="space-y-8">
@@ -54,27 +55,21 @@ export default function FanZoneMoviesPage() {
       </div>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6 sm:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-5 lg:grid-cols-9">
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="Hollywood">Hollywood</TabsTrigger>
-          <TabsTrigger value="Bollywood">Bollywood</TabsTrigger>
-          <TabsTrigger value="Tollywood">Tollywood</TabsTrigger>
+          {industries.map((industry) => (
+            <TabsTrigger key={industry} value={industry}>{industry}</TabsTrigger>
+          ))}
         </TabsList>
         <TabsContent value="all">
             <MoviesTab searchTerm={searchTerm} />
         </TabsContent>
-        <TabsContent value="Hollywood">
-            <MoviesTab searchTerm={searchTerm} industry="Hollywood" />
-        </TabsContent>
-        <TabsContent value="Bollywood">
-            <MoviesTab searchTerm={searchTerm} industry="Bollywood" />
-        </TabsContent>
-        <TabsContent value="Tollywood">
-            <MoviesTab searchTerm={searchTerm} industry="Tollywood" />
-        </TabsContent>
+        {industries.map((industry) => (
+            <TabsContent key={industry} value={industry}>
+                <MoviesTab searchTerm={searchTerm} industry={industry as any} />
+            </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
 }
-
-    

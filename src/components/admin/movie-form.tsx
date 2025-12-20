@@ -28,7 +28,7 @@ const movieSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   releaseYear: z.coerce.number().min(1888, 'Please enter a valid year'),
   genre: z.string().min(1, 'Genre is required'),
-  industry: z.enum(['Hollywood', 'Bollywood', 'Tollywood', 'Other'], {
+  industry: z.enum(['Hollywood', 'Bollywood', 'Tollywood', 'Tamil', 'Kannada', 'Malayalam', 'Punjabi', 'Bhojpuri', 'Other'], {
     required_error: 'You need to select an industry.',
   }),
   description: z.string().min(1, 'Description is required'),
@@ -98,6 +98,11 @@ export function MovieForm({ onSubmit, defaultValues }: MovieFormProps) {
                       <SelectItem value="Hollywood">Hollywood</SelectItem>
                       <SelectItem value="Bollywood">Bollywood</SelectItem>
                       <SelectItem value="Tollywood">Tollywood</SelectItem>
+                      <SelectItem value="Tamil">Tamil</SelectItem>
+                      <SelectItem value="Kannada">Kannada</SelectItem>
+                      <SelectItem value="Malayalam">Malayalam</SelectItem>
+                      <SelectItem value="Punjabi">Punjabi</SelectItem>
+                      <SelectItem value="Bhojpuri">Bhojpuri</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -156,5 +161,3 @@ export function MovieForm({ onSubmit, defaultValues }: MovieFormProps) {
     </Form>
   );
 }
-
-    

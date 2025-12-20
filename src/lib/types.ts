@@ -1,11 +1,10 @@
 
-
 export type Movie = {
     id: string;
     title: string;
     releaseYear: number;
     genre: string;
-    industry: 'Hollywood' | 'Bollywood' | 'Tollywood' | 'Other';
+    industry: 'Hollywood' | 'Bollywood' | 'Tollywood' | 'Tamil' | 'Kannada' | 'Malayalam' | 'Punjabi' | 'Bhojpuri' | 'Other';
     posterUrl: string;
     description: string;
     communityScore?: number;
@@ -122,5 +121,3 @@ export type FantasyLeaderboard = {
         rank: number;
     }[];
 };
-
-    
