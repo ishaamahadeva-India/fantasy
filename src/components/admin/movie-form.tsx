@@ -16,11 +16,21 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const movieSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   releaseYear: z.coerce.number().min(1888, 'Please enter a valid year'),
   genre: z.string().min(1, 'Genre is required'),
+  industry: z.enum(['Hollywood', 'Bollywood', 'Tollywood', 'Other'], {
+    required_error: 'You need to select an industry.',
+  }),
   description: z.string().min(1, 'Description is required'),
   posterUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
 });
@@ -68,6 +78,29 @@ export function MovieForm({ onSubmit, defaultValues }: MovieFormProps) {
                   <FormControl>
                     <Input type="number" placeholder="e.g., 2024" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="industry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Industry</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an industry" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Hollywood">Hollywood</SelectItem>
+                      <SelectItem value="Bollywood">Bollywood</SelectItem>
+                      <SelectItem value="Tollywood">Tollywood</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -123,3 +156,5 @@ export function MovieForm({ onSubmit, defaultValues }: MovieFormProps) {
     </Form>
   );
 }
+
+    

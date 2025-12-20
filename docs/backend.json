@@ -135,10 +135,15 @@
             "title": { "type": "string" },
             "releaseYear": { "type": "number" },
             "genre": { "type": "string" },
+            "industry": { 
+              "type": "string",
+              "description": "The film industry the movie belongs to.",
+              "enum": ["Hollywood", "Bollywood", "Tollywood", "Other"]
+            },
             "posterUrl": { "type": "string", "format": "uri" },
             "description": { "type": "string" }
         },
-        "required": ["title", "releaseYear", "genre", "description"]
+        "required": ["title", "releaseYear", "genre", "industry", "description"]
     },
     "Star": {
         "title": "Star",
@@ -519,3 +524,5 @@
     }
   }
 }
+
+    

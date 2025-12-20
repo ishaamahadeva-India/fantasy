@@ -5,6 +5,7 @@ export type Movie = {
     title: string;
     releaseYear: number;
     genre: string;
+    industry: 'Hollywood' | 'Bollywood' | 'Tollywood' | 'Other';
     posterUrl: string;
     description: string;
     communityScore?: number;
@@ -121,3 +122,5 @@ export type FantasyLeaderboard = {
         rank: number;
     }[];
 };
+
+    

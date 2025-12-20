@@ -4,13 +4,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import type { Movie } from '@/lib/types';
+import { useMemo } from 'react';
 
-export function MoviesTab({ searchTerm }: { searchTerm: string }) {
+export function MoviesTab({ searchTerm, industry }: { searchTerm: string, industry?: Movie['industry'] }) {
   const firestore = useFirestore();
-  const moviesQuery = firestore ? collection(firestore, 'movies') : null;
+  
+  const moviesQuery = useMemo(() => {
+    if (!firestore) return null;
+    const moviesCollection = collection(firestore, 'movies');
+    if (industry) {
+      return query(moviesCollection, where('industry', '==', industry));
+    }
+    return collection(firestore, 'movies');
+  }, [firestore, industry]);
+
   const { data: movies, isLoading } = useCollection<Movie>(moviesQuery);
 
   const filteredMovies =
@@ -40,7 +50,7 @@ export function MoviesTab({ searchTerm }: { searchTerm: string }) {
   if (filteredMovies.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        No movies found.
+        No movies found in this category.
       </div>
     );
   }
@@ -74,3 +84,5 @@ export function MoviesTab({ searchTerm }: { searchTerm: string }) {
     </div>
   );
 }
+
+    
