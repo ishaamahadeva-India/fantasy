@@ -51,7 +51,7 @@ export default function FantasyPage() {
         </Link>
       </div>
 
-       <Card className="text-center max-w-3xl mx-auto">
+       <Card className="text-center max-w-3xl mx-auto bg-transparent border-dashed">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl">Skill Comes First</CardTitle>
             </CardHeader>
