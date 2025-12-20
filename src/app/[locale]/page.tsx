@@ -231,7 +231,7 @@ function ArticleList({ category }: { category: string }) {
     );
   };
 
-export default function ExplorePage() {
+export default function HomePage() {
   const categories = ['Cricket', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
   
   return (
