@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, use } from 'react';
+import { useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where, orderBy, limit } from 'firebase/firestore';
 import type { FantasyMatch, UserProfile, CricketerProfile, LivePrediction, FantasyRoleSelection, UserLivePrediction, FantasyLeaderboard } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { use } from 'react';
 
 // Note: This page is now connected to Firestore. The admin will need to add data for it to be populated.
 
@@ -41,49 +42,43 @@ function PlayerSelectionCard({ player, isSelected, isDisabled, onSelect }: { pla
 
 function ScoringRulesCard() {
     return (
-         <Card>
+        <Card>
             <CardHeader>
-                <CardTitle className="font-headline flex items-center gap-2 text-xl"><HelpCircle className="w-6 h-6"/> Points Engine</CardTitle>
-                <CardDescription>Points are awarded based on role performance, predictions, and streaks.</CardDescription>
+                <CardTitle className="font-headline flex items-center gap-2 text-xl"><HelpCircle className="w-6 h-6"/> Event Types by Format</CardTitle>
+                <CardDescription>Prediction events are tailored to the unique rhythm of each cricket format.</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm space-y-6">
-                
-                <div>
-                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Trophy className="w-5 h-5 text-primary"/> Role Performance Points</h4>
-                    <p className="text-xs text-muted-foreground">This is an example. Actual points are determined by live match data.</p>
-                </div>
-
-                <div>
-                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Zap className="w-5 h-5 text-primary"/> Micro-Prediction Points</h4>
-                     <Table>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell className='border-b-0'>Correct Prediction</TableCell>
-                                <TableCell className="text-right font-code text-primary font-bold border-b-0">+10</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </div>
-
-                <div>
-                    <h4 className="font-bold text-base mb-2 flex items-center gap-2"><Flame className="w-5 h-5 text-amber-400"/> Skill Streak Bonuses</h4>
-                     <Table>
-                        <TableBody>
-                             <TableRow>
-                                <TableCell>3 Correct Predictions</TableCell>
-                                <TableCell className="text-right font-code text-amber-400 font-bold">+10</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>5 Correct Predictions</TableCell>
-                                <TableCell className="text-right font-code text-amber-400 font-bold">+25</TableCell>
-                            </TableRow>
-                            <TableRow className='border-b-0'>
-                                <TableCell>7 Correct Predictions</TableCell>
-                                <TableCell className="text-right font-code text-amber-400 font-bold border-b-0">+40</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </div>
+            <CardContent>
+                <Tabs defaultValue="t20" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="t20">T20 / IPL</TabsTrigger>
+                        <TabsTrigger value="odi">ODI</TabsTrigger>
+                        <TabsTrigger value="test">Test</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="t20" className="mt-4 prose prose-sm prose-invert max-w-none">
+                        <p>High-paced action with a focus on explosive moments.</p>
+                        <ul>
+                            <li><strong>Powerplay Mayhem:</strong> Runs, boundaries, or wickets in the first 6 overs.</li>
+                            <li><strong>Mid-Game Moments:</strong> Next dismissal method, will a fifty be scored?</li>
+                            <li><strong>Death Overs Drama:</strong> Runs in final overs, end-of-innings strike rates.</li>
+                        </ul>
+                    </TabsContent>
+                    <TabsContent value="odi" className="mt-4 prose prose-sm prose-invert max-w-none">
+                        <p>Strategic ebbs and flows across three distinct phases of play.</p>
+                        <ul>
+                            <li><strong>Opening Foundation:</strong> Score at the 10-over mark, opening partnership runs.</li>
+                            <li><strong>Middle Overs Consolidation:</strong> Partnership milestones, runs against specific bowlers.</li>
+                            <li><strong>Endgame Acceleration:</strong> Final score predictions, total sixes in the innings.</li>
+                        </ul>
+                    </TabsContent>
+                    <TabsContent value="test" className="mt-4 prose prose-sm prose-invert max-w-none">
+                        <p>A session-by-session tactical battle of endurance and strategy.</p>
+                        <ul>
+                            <li><strong>Per Session:</strong> Wickets to fall, runs scored, will a player reach a milestone?</li>
+                            <li><strong>Per Day:</strong> End-of-day score, lead/deficit prediction.</li>
+                            <li><strong>Match-Level:</strong> Follow-on possibility, final match result (win/loss/draw).</li>
+                        </ul>
+                    </TabsContent>
+                </Tabs>
             </CardContent>
         </Card>
     )
