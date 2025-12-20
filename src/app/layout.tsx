@@ -8,6 +8,7 @@ import { FirebaseClientProvider } from '@/firebase';
 export const metadata: Metadata = {
   title: 'Ultra-Posh',
   description: 'The premier subscription platform for discerning learners.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -40,6 +41,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
           rel="stylesheet"
         />
+        <meta name="theme-color" content="#E6C87A" />
       </head>
       <body className="font-sans antialiased min-h-screen">
         <FirebaseClientProvider>
