@@ -2,7 +2,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { getStaticParams } from '@/lib/i18n/server';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { AppShell } from '@/components/layout/app-shell';
 
 export const metadata: Metadata = {
   title: 'Ultra-Posh',
@@ -10,19 +11,13 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export function generateStaticParams() {
-  return getStaticParams();
-}
-
 export default function RootLayout({
   children,
-  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string };
 }>) {
   return (
-    <html lang={locale} className="dark">
+    <html lang="en" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -49,8 +44,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#E6C87A" />
       </head>
       <body className="font-sans antialiased min-h-screen">
-          {children}
-          <Toaster />
+        <FirebaseClientProvider>
+          <AppShell>{children}</AppShell>
+        </FirebaseClientProvider>
+        <Toaster />
       </body>
     </html>
   );
