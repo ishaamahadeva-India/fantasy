@@ -1,17 +1,51 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowRight, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
 import type { FantasyMatch } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
 
 type FantasyMatchWithId = FantasyMatch & { id: string };
+
+// Placeholder data with examples for all formats
+const placeholderMatches: FantasyMatchWithId[] = [
+    {
+        id: 'match-1',
+        matchName: 'IND vs AUS - T20 World Cup',
+        format: 'T20',
+        teams: ['IND', 'AUS'],
+        startTime: new Date(),
+        status: 'live'
+    },
+    {
+        id: 'match-2',
+        matchName: 'CSK vs MI - IPL Final',
+        format: 'T20', // IPL is a T20 format
+        teams: ['CSK', 'MI'],
+        startTime: new Date(),
+        status: 'live'
+    },
+    {
+        id: 'match-3',
+        matchName: 'ENG vs SA - ODI Series',
+        format: 'ODI',
+        teams: ['ENG', 'SA'],
+        startTime: new Date(),
+        status: 'upcoming'
+    },
+    {
+        id: 'match-4',
+        matchName: 'NZ vs WI - Test Championship',
+        format: 'Test',
+        teams: ['NZ', 'WI'],
+        startTime: new Date(),
+        status: 'upcoming'
+    }
+];
+
 
 function MatchList({ matches, isLoading }: { matches: FantasyMatchWithId[] | null, isLoading: boolean }) {
     if (isLoading) {
@@ -68,9 +102,8 @@ function MatchList({ matches, isLoading }: { matches: FantasyMatchWithId[] | nul
 
 
 export default function LiveFantasyPage() {
-  const firestore = useFirestore();
-  const matchesQuery = firestore ? collection(firestore, 'fantasy_matches') : null;
-  const { data: allMatches, isLoading } = useCollection<FantasyMatchWithId>(matchesQuery);
+  const allMatches = placeholderMatches;
+  const isLoading = false; // Using placeholder data, so not loading.
 
   const filterMatches = (format: string | null) => {
     if (!allMatches) return [];
