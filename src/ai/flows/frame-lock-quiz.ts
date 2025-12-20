@@ -49,29 +49,38 @@ const selectMoviesForQuiz = async () => {
 };
 
 
-const generateImageForMoviePrompt = ai.definePrompt({
-    name: 'generateImageForMoviePrompt',
-    input: { schema: z.object({ movieTitle: z.string(), movieDescription: z.string() }) },
-    output: { format: 'media' },
-    prompt: `Generate a single, visually striking and recognizable image that represents an iconic scene or character from the movie "{{movieTitle}}".
+const generateImageForMovieFlow = ai.defineFlow(
+    {
+        name: 'generateImageForMovieFlow',
+        inputSchema: z.object({ movieTitle: z.string(), movieDescription: z.string() }),
+        outputSchema: z.string(),
+    },
+    async ({ movieTitle, movieDescription }) => {
+        const { media } = await ai.generate({
+            model: 'googleai/imagen-4.0-fast-generate-001',
+            prompt: `Generate a single, visually striking and recognizable image that represents an iconic scene or character from the movie "{{movieTitle}}".
     
-    Movie Description: {{movieDescription}}
-    
-    The image should be cinematic, well-composed, and evocative of the film's mood and style, but it should NOT contain any text, logos, or titles. Focus on a key moment, character pose, or setting that a fan of the movie would recognize.
-    `,
-    model: 'googleai/gemini-pro-vision',
-});
+            Movie Description: {{movieDescription}}
+            
+            The image should be cinematic, well-composed, and evocative of the film's mood and style, but it should NOT contain any text, logos, or titles. Focus on a key moment, character pose, or setting that a fan of the movie would recognize.
+            `,
+        });
+        if (!media?.url) {
+            throw new Error('Image generation failed.');
+        }
+        return media.url;
+    }
+);
 
 
 export async function generateFrameLockQuiz(): Promise<FrameLockQuizOutput> {
     const { correctMovie, distractors } = await selectMoviesForQuiz();
 
     // Generate the image
-    const imageResponse = await generateImageForMoviePrompt({
+    const imageDataUri = await generateImageForMovieFlow({
         movieTitle: correctMovie.title,
         movieDescription: correctMovie.description,
     });
-    const imageDataUri = imageResponse.output?.media?.url;
     
     if (!imageDataUri) {
         throw new Error('Failed to generate image for the quiz frame.');
