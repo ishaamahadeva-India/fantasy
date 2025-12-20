@@ -14,8 +14,9 @@ export type Movie = {
 export type Star = {
     id: string;
     name: string;
+    profession: string;
     avatar: string;
-    genre: string[];
+    specialization: string[];
     popularityIndex: number;
     trendingRank?: number;
 }
@@ -67,6 +68,7 @@ export type Gossip = {
 export type FantasyCampaign = {
     title: string;
     movieId: string;
+    movieLanguage: string;
     startDate: Date;
     endDate?: Date;
     status: 'upcoming' | 'active' | 'completed';

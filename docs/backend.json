@@ -147,14 +147,22 @@
     },
     "Star": {
         "title": "Star",
-        "description": "Represents a movie star.",
+        "description": "Represents a movie star, director, or other key film professional.",
         "type": "object",
         "properties": {
             "name": { "type": "string" },
+            "profession": {
+              "type": "string",
+              "description": "The primary role of the person (e.g., Actor, Director, Music Director)."
+            },
             "avatar": { "type": "string", "format": "uri" },
-            "genre": { "type": "array", "items": { "type": "string" } }
+            "specialization": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Areas of expertise or genres (e.g., Action, Romance, Playback Singer)."
+            }
         },
-        "required": ["name"]
+        "required": ["name", "profession"]
     },
     "AdPlacement": {
       "title": "Ad Placement",
@@ -234,6 +242,10 @@
         "movieId": {
           "type": "string",
           "description": "The ID of the movie this campaign is for."
+        },
+        "movieLanguage": {
+          "type": "string",
+          "description": "The primary language of the movie for this campaign."
         },
         "startDate": {
           "type": "string",

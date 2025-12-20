@@ -37,7 +37,7 @@ function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating
         });
         setAverageRatings(newAverageRatings);
 
-    }, [ratings, starAttributes]);
+    }, [ratings]);
 
 
     if (isLoading) {
@@ -152,7 +152,8 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                         {star.name}
                     </h1>
                      <div className="mt-2 flex items-center gap-2">
-                        {star.genre?.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
+                        <Badge variant="default">{star.profession}</Badge>
+                        {star.specialization?.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
                     </div>
                 </div>
 
