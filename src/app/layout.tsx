@@ -2,7 +2,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { AppShell } from '@/components/layout/app-shell';
 import { getStaticParams } from '@/lib/i18n/server';
 
 export const metadata: Metadata = {
@@ -50,7 +49,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#E6C87A" />
       </head>
       <body className="font-sans antialiased min-h-screen">
-          <AppShell locale={locale}>{children}</AppShell>
+          {children}
           <Toaster />
       </body>
     </html>
