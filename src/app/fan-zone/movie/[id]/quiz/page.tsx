@@ -1,4 +1,5 @@
 
+
 import { generateMovieQuiz } from '@/ai/flows/movie-quiz';
 import { QuizClient } from '@/components/quiz/quiz-client';
 import {
@@ -7,19 +8,24 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { initializeFirebase, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { firebaseConfig } from '@/firebase/config';
+
 import type { Movie } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 
 // We need to get a firestore instance on the server.
-const { firestore } = initializeFirebase();
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
+
 
 async function getMovie(id: string): Promise<Movie | null> {
     const movieRef = doc(firestore, 'movies', id);
-    const movieSnap = await movieRef.get();
+    const movieSnap = await getDoc(movieRef);
     if (!movieSnap.exists()) {
         return null;
     }

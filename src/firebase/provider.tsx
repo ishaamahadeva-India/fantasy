@@ -7,11 +7,11 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
+import { firebaseConfig } from './config';
 
-import { initializeFirebase } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
 import type { FirestorePermissionError } from './errors';
@@ -61,9 +61,12 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    // Initialize Firebase on the client
-    const { app, auth, firestore } = initializeFirebase();
-    setInstances({ app, auth, firestore });
+    if (typeof window !== 'undefined') {
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+        const firestore = getFirestore(app);
+        setInstances({ app, auth, firestore });
+    }
   }, []);
 
   return (

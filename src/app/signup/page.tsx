@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import {
   handleEmailSignUp,
 } from '@/firebase/auth/auth-service';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth, useFirestore } from '@/firebase';
 
 const formSchema = z.object({
   displayName: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -37,6 +39,9 @@ const formSchema = z.object({
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const firestore = useFirestore();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,7 +52,8 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const error = await handleEmailSignUp(values.email, values.password, values.displayName);
+    if (!auth || !firestore) return;
+    const error = await handleEmailSignUp(auth, firestore, values.email, values.password, values.displayName);
     if (error) {
       toast({
         variant: 'destructive',
@@ -125,7 +131,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button className="w-full" type="submit">
+              <Button className="w-full" type="submit" disabled={!auth || !firestore}>
                 Create Account
               </Button>
             </form>

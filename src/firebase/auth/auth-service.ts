@@ -2,24 +2,21 @@
 'use client';
 
 import { 
-    getAuth, 
+    type Auth,
     signInWithPopup, 
     GoogleAuthProvider,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     updateProfile,
     signOut,
-    onAuthStateChanged
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { type Firestore, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '../errors';
 
 const SUPER_ADMIN_EMAIL = 'admin@fantasy.com';
 
-const saveUserToFirestore = (user: { uid: string, displayName: string | null, email: string | null, photoURL: string | null }) => {
-    const { firestore } = initializeFirebase();
+const saveUserToFirestore = (firestore: Firestore, user: { uid: string, displayName: string | null, email: string | null, photoURL: string | null }) => {
     const userDocRef = doc(firestore, 'users', user.uid);
     const userData: {
         displayName: string | null;
@@ -49,19 +46,17 @@ const saveUserToFirestore = (user: { uid: string, displayName: string | null, em
 };
 
 
-export const handleGoogleSignIn = async () => {
-    const { auth } = initializeFirebase();
+export const handleGoogleSignIn = async (auth: Auth, firestore: Firestore) => {
     const provider = new GoogleAuthProvider();
     try {
         const result = await signInWithPopup(auth, provider);
-        saveUserToFirestore(result.user);
+        saveUserToFirestore(firestore, result.user);
     } catch (error) {
         console.error("Google Sign-In Error:", error);
     }
 };
 
-export const handleEmailSignUp = async (email: string, password: string, displayName: string) => {
-    const { auth } = initializeFirebase();
+export const handleEmailSignUp = async (auth: Auth, firestore: Firestore, email: string, password: string, displayName: string) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
@@ -71,7 +66,7 @@ export const handleEmailSignUp = async (email: string, password: string, display
         const updatedUser = auth.currentUser;
 
         if (updatedUser) {
-            saveUserToFirestore(updatedUser);
+            saveUserToFirestore(firestore, updatedUser);
         }
         return null;
     } catch (error: any) {
@@ -79,8 +74,7 @@ export const handleEmailSignUp = async (email: string, password: string, display
     }
 };
 
-export const handleEmailSignIn = async (email: string, password: string) => {
-    const { auth } = initializeFirebase();
+export const handleEmailSignIn = async (auth: Auth, email: string, password: string) => {
     try {
         await signInWithEmailAndPassword(auth, email, password);
         return null;
@@ -90,8 +84,7 @@ export const handleEmailSignIn = async (email: string, password: string) => {
 };
 
 
-export const handleLogout = async () => {
-    const auth = getAuth();
+export const handleLogout = async (auth: Auth) => {
     try {
         await signOut(auth);
     } catch (error) {

@@ -13,7 +13,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Award, LogIn, LogOut, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useUser, useDoc, useFirestore } from '@/firebase';
+import { useUser, useDoc, useFirestore, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
@@ -51,6 +51,7 @@ function Greeting() {
 
 export function Header() {
   const { user, isLoading: isUserLoading } = useUser();
+  const auth = useAuth();
   const firestore = useFirestore();
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
@@ -100,7 +101,7 @@ export function Header() {
                             <User className='mr-2'/> Profile
                         </DropdownMenuItem>
                     </Link>
-                    <DropdownMenuItem onClick={handleLogout}>
+                    <DropdownMenuItem onClick={() => auth && handleLogout(auth)}>
                         <LogOut className='mr-2'/> Log out
                     </DropdownMenuItem>
                 </>

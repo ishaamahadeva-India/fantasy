@@ -6,8 +6,8 @@ import { FirebaseProvider } from './provider';
 
 export function FirebaseClientProvider({ children }: { children: ReactNode }) {
   return (
-      <FirebaseProvider>
+    <FirebaseProvider>
         {children}
-      </FirebaseProvider>
+    </FirebaseProvider>
   );
 }

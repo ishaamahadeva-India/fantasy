@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ import {
   handleGoogleSignIn,
 } from '@/firebase/auth/auth-service';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth, useFirestore } from '@/firebase';
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -39,6 +41,9 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const firestore = useFirestore();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,7 +53,8 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const error = await handleEmailSignIn(values.email, values.password);
+    if (!auth) return;
+    const error = await handleEmailSignIn(auth, values.email, values.password);
     if (error) {
       toast({
         variant: 'destructive',
@@ -65,7 +71,8 @@ export default function LoginPage() {
   };
 
   const onGoogleSignIn = async () => {
-    await handleGoogleSignIn();
+    if (!auth || !firestore) return;
+    await handleGoogleSignIn(auth, firestore);
     router.push('/profile');
   };
 
@@ -115,7 +122,7 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button className="w-full" type="submit">
+              <Button className="w-full" type="submit" disabled={!auth}>
                 Sign In
               </Button>
             </form>
@@ -130,7 +137,7 @@ export default function LoginPage() {
               </span>
             </div>
           </div>
-          <Button variant="outline" className="w-full" onClick={onGoogleSignIn}>
+          <Button variant="outline" className="w-full" onClick={onGoogleSignIn} disabled={!auth || !firestore}>
             <LogIn className="mr-2 h-4 w-4" /> Google
           </Button>
         </CardContent>

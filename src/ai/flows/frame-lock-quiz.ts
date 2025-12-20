@@ -10,12 +10,15 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { initializeFirebase } from '@/firebase';
 import { collection, getDocs, query, limit } from 'firebase/firestore';
 import type { Movie } from '@/lib/types';
+import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { firebaseConfig } from '@/firebase/config';
 
-
-const { firestore } = initializeFirebase();
+// This flow runs on the server, so we need to initialize a server-side instance of Firebase.
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
 
 
 const FrameLockQuizOutputSchema = z.object({

@@ -1,18 +1,22 @@
 
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BrainCircuit, Clock, Video, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { initializeFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { firebaseConfig } from '@/firebase/config';
 import type { Movie } from '@/lib/types';
 import { notFound } from 'next/navigation';
 
-const { firestore } = initializeFirebase();
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
 
 async function getMovie(id: string): Promise<Movie | null> {
     const movieRef = doc(firestore, 'movies', id);
-    const movieSnap = await movieRef.get();
+    const movieSnap = await getDoc(movieRef);
     if (!movieSnap.exists()) {
         return null;
     }
