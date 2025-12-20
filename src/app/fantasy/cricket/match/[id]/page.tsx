@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -240,7 +240,8 @@ function LeaderboardView({ matchId, matchName }: { matchId: string, matchName: s
     );
 }
 
-export default function CricketMatchPage({ params: { id } }: { params: { id: string } }) {
+export default function CricketMatchPage({ params }: { params: { id: string } }) {
+  const { id } = use(params);
   const firestore = useFirestore();
 
   const [matchPhase, setMatchPhase] = useState('pre-match'); 
