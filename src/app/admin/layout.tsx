@@ -81,23 +81,28 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    // If loading is finished and we determine the user is not an admin, redirect them.
+    // Wait until both user and profile loading states are resolved
     if (!userLoading && !profileLoading) {
-      if (!userProfile?.isAdmin) {
+      // If there is no authenticated user, or if the user profile exists but they are not an admin
+      if (!user || (user && !userProfile?.isAdmin)) {
         router.replace('/');
       }
     }
-  }, [userLoading, profileLoading, userProfile, router]);
+  }, [user, userLoading, userProfile, profileLoading, router]);
 
 
+  // Show loading spinner while we verify auth state and admin role
   if (userLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
+        <span className="ml-4">Verifying admin access...</span>
       </div>
     );
   }
 
+  // If, after loading, the user is still not an admin, show access denied.
+  // This covers the case where the user is logged in but not an admin.
   if (!userProfile?.isAdmin) {
     return (
        <div className="flex items-center justify-center h-screen">
@@ -111,6 +116,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  // If all checks pass, render the admin layout
   return (
     <div className="min-h-screen w-full">
       <AdminSidebar />
