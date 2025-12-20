@@ -47,6 +47,11 @@ export default function FantasyPage() {
             <CardContent className="space-y-4 text-muted-foreground">
                 <p>Select a fantasy league, join a campaign or match, and make your predictions to climb the leaderboard!</p>
             </CardContent>
+             <CardFooter className='flex-col gap-2'>
+                <p className="text-xs text-muted-foreground/50">
+                    All games are skill-based challenges. This platform does not involve betting, wagering, or games of chance. Open only to users aged 18 years and above.
+                </p>
+            </CardFooter>
         </Card>
     </div>
   );

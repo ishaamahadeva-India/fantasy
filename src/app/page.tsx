@@ -105,9 +105,9 @@ function WatchlistSidebar() {
 
     const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
     
-    if (!user) return <GossipList />;
+    if (!user && !profileLoading) return <GossipList />;
 
-    if (profileLoading) {
+    if (profileLoading || !user) {
         return <Card><CardHeader><Skeleton className="h-8 w-32" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
     }
 
@@ -186,12 +186,12 @@ function ArticleList({ category }: { category: string }) {
     }
     
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col">
         {articles.map((article, index) => {
-          const showAd = (index + 1) % 2 === 0 && index < articles.length - 1;
+          const showAd = (index + 1) % 2 === 0;
           return (
             <div key={article.id}>
-              <Link href={`/article/${article.slug}`} className="group">
+              <Link href={`/article/${article.slug}`} className="group block py-6">
                 <div className="flex items-start gap-4">
                   <div className="relative w-24 h-24 shrink-0">
                     <Image
@@ -223,7 +223,7 @@ function ArticleList({ category }: { category: string }) {
                 </div>
               </Link>
               {showAd && <AdBanner />}
-              {!showAd && index < articles.length - 1 && <Separator className="mt-6" />}
+              {!showAd && index < articles.length - 1 && <Separator />}
             </div>
           );
         })}

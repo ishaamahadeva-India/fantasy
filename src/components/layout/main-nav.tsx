@@ -21,12 +21,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/play', label: 'Play', icon: Play },
   { href: '/fantasy', label: 'Fantasy', icon: Trophy },
-  { href: '/live-fantasy', label: 'Live Fantasy', icon: Zap },
   { href: '/fan-zone', label: 'Fan Zone', icon: Users },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/redeem', label: 'Redemption Center', icon: Gift },
@@ -35,8 +38,11 @@ const navItems = [
 
 export function MainNav() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
-  const isFanZoneActive = pathname.startsWith('/fan-zone/cricket') || pathname.startsWith('/fan-zone/movies');
 
   return (
     <div className="flex flex-col justify-between h-full p-2">
@@ -46,7 +52,7 @@ export function MainNav() {
            if (item.href === '/fan-zone') {
                 isActive = pathname.startsWith('/fan-zone');
            } else if (item.href === '/fantasy') {
-                isActive = pathname.startsWith('/fantasy') && !pathname.startsWith('/fantasy/cricket') && !pathname.startsWith('/fantasy/movie');
+                isActive = pathname.startsWith('/fantasy');
            }
             else if (item.href !== '/') {
                 isActive = pathname.startsWith(item.href);
@@ -67,6 +73,20 @@ export function MainNav() {
             </SidebarMenuItem>
           );
         })}
+        {userProfile?.isAdmin && (
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith('/admin')}
+                    tooltip="Admin"
+                >
+                    <Link href="/admin">
+                        <Shield />
+                        <span>Admin</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        )}
       </SidebarMenu>
       <SidebarMenu>
         <SidebarMenuItem>
