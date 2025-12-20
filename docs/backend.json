@@ -65,6 +65,16 @@
       },
       "required": ["title", "slug", "category", "content"]
     },
+    "Gossip": {
+        "title": "Gossip",
+        "description": "Represents a single gossip item.",
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "source": { "type": "string" }
+        },
+        "required": ["title", "source"]
+    },
     "CricketerProfile": {
       "title": "Cricketer Profile",
       "description": "Stores the static profile data for a cricketer.",
@@ -422,6 +432,12 @@
         "$ref": "#/entities/Article"
       },
       "description": "Stores all articles for the Intel Hub."
+    },
+    "/gossips/{gossipId}": {
+        "schema": {
+            "$ref": "#/entities/Gossip"
+        },
+        "description": "Stores all gossip items."
     },
     "/cricketers/{cricketerId}": {
       "schema": {

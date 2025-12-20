@@ -58,6 +58,12 @@ export type Article = {
   content: string;
 }
 
+export type Gossip = {
+    id: string;
+    title: string;
+    source: string;
+}
+
 export type FantasyCampaign = {
     title: string;
     movieId: string;

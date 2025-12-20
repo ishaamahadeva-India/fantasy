@@ -10,7 +10,8 @@ import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
 import { collection, query, where, type Query, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
-import type { Article, UserProfile, Movie } from '@/lib/types';
+import type { Article, UserProfile, Movie, Gossip } from '@/lib/types';
+import { MessageSquareText } from 'lucide-react';
 
 
 function AdBanner() {
@@ -25,6 +26,65 @@ function AdBanner() {
                         <Link href="#" target="_blank">Learn More</Link>
                     </Button>
                 </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+function GossipList() {
+    const firestore = useFirestore();
+    const gossipsQuery = firestore ? query(collection(firestore, 'gossips')) : null;
+    const { data: gossips, isLoading } = useCollection<Gossip>(gossipsQuery);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                   {[...Array(3)].map((_, i) => (
+                     <div key={i} className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-3 w-24" />
+                     </div>
+                   ))}
+                </CardContent>
+            </Card>
+        );
+    }
+    
+    if (!gossips || gossips.length === 0) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center text-muted-foreground py-8">
+                        <MessageSquareText className="w-12 h-12 mx-auto mb-2" />
+                        <p>No gossip yet. Check back later!</p>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-4">
+                    {gossips.map((gossip, index) => (
+                        <li key={gossip.id}>
+                            <p className="font-medium">{gossip.title}</p>
+                            <p className="text-xs text-muted-foreground">Source: {gossip.source}</p>
+                             {index < gossips.length - 1 && <Separator className="mt-4" />}
+                        </li>
+                    ))}
+                </ul>
             </CardContent>
         </Card>
     )
@@ -45,7 +105,7 @@ function WatchlistSidebar() {
 
     const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
     
-    if (!user) return null;
+    if (!user) return <GossipList />;
 
     if (profileLoading) {
         return <Card><CardHeader><Skeleton className="h-8 w-32" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
