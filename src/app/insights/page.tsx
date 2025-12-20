@@ -11,7 +11,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { userInsightsData } from '@/lib/placeholder-data';
 import {
   Area,
   AreaChart,
@@ -24,6 +23,26 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { BookUp, Clock, Target } from 'lucide-react';
+
+const userInsightsData = {
+  timeInvested: 42,
+  growthTrajectory: [
+    { month: 'Jan', 'Knowledge Index': 75 },
+    { month: 'Feb', 'Knowledge Index': 78 },
+    { month: 'Mar', 'Knowledge Index': 82 },
+    { month: 'Apr', 'Knowledge Index': 80 },
+    { month: 'May', 'Knowledge Index': 85 },
+    { month: 'Jun', 'Knowledge Index': 88 },
+  ],
+  categoryRadar: [
+    { category: 'Cricket', score: 92 },
+    { category: 'Movies', score: 85 },
+    { category: 'Politics', score: 78 },
+    { category: 'Tech', score: 81 },
+    { category: 'History', score: 75 },
+  ],
+};
+
 
 export default function InsightsPage() {
   const chartConfig = {
