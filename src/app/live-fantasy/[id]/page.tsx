@@ -1,31 +1,27 @@
 
 'use client';
 import { useState, use } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
-import { ArrowLeft, Check, Lock, Flame, Zap, HelpCircle, User, Award } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Check, Lock, Users, Flame, Zap, Trophy, BarChart, HelpCircle, User, Award } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import { placeholderCricketers } from '@/lib/cricket-data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/ui/table';
+import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
+import { doc, collection, query, where, orderBy, limit } from 'firebase/firestore';
+import type { FantasyMatch, UserProfile, CricketerProfile, LivePrediction, FantasyRoleSelection, UserLivePrediction, FantasyLeaderboard } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/ui/table';
 
 
-// --- MOCK DATA ---
+// --- MOCK DATA (to be replaced with Firestore data) ---
 const matchDetails = {
   id: 'live-match-1',
   title: 'IND vs AUS',
@@ -60,47 +56,6 @@ const roles = {
   ]
 };
 
-const players = {
-  IND: placeholderCricketers.filter((p) => p.country === 'IND'),
-  AUS: [
-    {
-      id: 'c4',
-      name: 'Pat Cummins',
-      roles: ['Bowler', 'Captain'],
-      country: 'AUS',
-      avatar: 'https://picsum.photos/seed/cummins/400/400',
-      consistencyIndex: 8.9,
-      impactScore: 9.1,
-      recentForm: [8, 7, 9, 8, 9],
-      careerPhase: 'Peak',
-      trendingRank: 0
-    },
-    {
-      id: 'c5',
-      name: 'David Warner',
-      roles: ['Batsman', 'Opener'],
-      country: 'AUS',
-      avatar: 'https://picsum.photos/seed/warner/400/400',
-      consistencyIndex: 8.2,
-      impactScore: 9.0,
-      recentForm: [70, 20, 90, 45, 30],
-      careerPhase: 'Late',
-      trendingRank: 0
-    },
-    {
-      id: 'c6',
-      name: 'Mitchell Starc',
-      roles: ['Bowler', 'Pacer'],
-      country: 'AUS',
-      avatar: 'https://picsum.photos/seed/starc/400/400',
-      consistencyIndex: 8.5,
-      impactScore: 9.4,
-      recentForm: [9, 8, 7, 9, 8],
-      careerPhase: 'Peak',
-      trendingRank: 0
-    },
-  ],
-};
 
 const livePredictions = [
     { 
@@ -122,7 +77,7 @@ const livePredictions = [
         id: 'pred-3',
         type: 'ranking' as const,
         question: 'Rank the top run-scorer in the first 10 overs.',
-        options: ['c1', 'c3', 'c5'], // Kohli, Rohit, Warner
+        options: ['c1', 'c3', 'c5'], // Example player IDs
         outcome: ['c1', 'c5', 'c3'], // Actual ranking
         phase: 'Middle Overs',
     }
@@ -135,6 +90,7 @@ const leaderboardData = [
   { rank: 4, name: 'ThePredictor', score: 95 },
   { rank: 5, name: 'LuckyGuess', score: 80 },
 ];
+
 
 function PlayerSelectionCard({
   player,
@@ -165,7 +121,7 @@ function PlayerSelectionCard({
         </motion.div>
       )}
       <Image
-        src={player.avatar}
+        src={player.avatarUrl || `https://picsum.photos/seed/${player.id}/400/400`}
         alt={player.name}
         width={80}
         height={80}
@@ -276,7 +232,7 @@ function ScoringRulesCard() {
     )
 }
 
-function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
+function PreMatchView({ onLockSelections, players }: { onLockSelections: () => void, players: (CricketerProfile & {id: string})[] }) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [isLocked, setIsLocked] = useState(false);
 
@@ -335,7 +291,7 @@ function PreMatchView({ onLockSelections }: { onLockSelections: () => void }) {
               {role.description}
             </p>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {[...players.IND, ...players.AUS].map((player) => (
+              {players.map((player) => (
                 <PlayerSelectionCard
                   key={`${role.id}-${player.id}`}
                   player={player}
@@ -438,8 +394,8 @@ function RangePrediction({ prediction, onLock, status }: { prediction: any, onLo
     );
 }
 
-function RankingPrediction({ prediction, onLock, status }: { prediction: any, onLock: (pred: any) => void, status: string }) {
-    const getPlayerById = (id: string) => [...players.IND, ...players.AUS].find(p => p.id === id);
+function RankingPrediction({ prediction, onLock, status, players }: { prediction: any, onLock: (pred: any) => void, status: string, players: (CricketerProfile & {id:string})[] }) {
+    const getPlayerById = (id: string) => players.find(p => p.id === id);
     const [rankedPlayers, setRankedPlayers] = useState<string[]>([]);
 
     const handleSelectPlayer = (playerId: string) => {
@@ -468,7 +424,7 @@ function RankingPrediction({ prediction, onLock, status }: { prediction: any, on
                         return (
                             <div key={pId} className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
                                 <span className="font-bold font-code text-lg w-6">{index + 1}.</span>
-                                <Image src={player?.avatar || ''} alt={player?.name || ''} width={32} height={32} className="rounded-full" />
+                                <Image src={player?.avatarUrl || ''} alt={player?.name || ''} width={32} height={32} className="rounded-full" />
                                 <span>{player?.name}</span>
                             </div>
                         )
@@ -484,7 +440,7 @@ function RankingPrediction({ prediction, onLock, status }: { prediction: any, on
                         const isSelected = rankedPlayers.includes(pId);
                         return (
                             <Card key={pId} onClick={() => handleSelectPlayer(pId)} className={cn('p-2 text-center cursor-pointer', isSelected && 'opacity-50')}>
-                                <Image src={player?.avatar || ''} alt={player?.name || ''} width={40} height={40} className="rounded-full mx-auto" />
+                                <Image src={player?.avatarUrl || ''} alt={player?.name || ''} width={40} height={40} className="rounded-full mx-auto" />
                                 <p className="text-xs mt-1 truncate">{player?.name}</p>
                             </Card>
                         )
@@ -535,7 +491,7 @@ function getPointsForResult(prediction: any, userAnswer: any) {
 }
 
 
-function FirstInningsView({ onInningsEnd, currentStreak, setStreak, onScoreUpdate }: { onInningsEnd: () => void, currentStreak: number, setStreak: (streak: number) => void, onScoreUpdate: (points: number) => void }) {
+function FirstInningsView({ onInningsEnd, currentStreak, setStreak, onScoreUpdate, players }: { onInningsEnd: () => void, currentStreak: number, setStreak: (streak: number) => void, onScoreUpdate: (points: number) => void, players: (CricketerProfile & {id: string})[] }) {
     type PredictionStatus = 'predicting' | 'locked' | 'waiting' | 'result';
     const [currentPredIndex, setCurrentPredIndex] = useState(0);
     const [userPredictions, setUserPredictions] = useState<Record<number, any>>({});
@@ -583,7 +539,7 @@ function FirstInningsView({ onInningsEnd, currentStreak, setStreak, onScoreUpdat
             case 'range':
                 return <RangePrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status}/>
             case 'ranking':
-                return <RankingPrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status}/>
+                return <RankingPrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status} players={players}/>
             default:
                 return <p>Unsupported prediction type</p>;
         }
@@ -652,7 +608,7 @@ function InningsBreakView({ onStartNextInnings }: { onStartNextInnings: () => vo
 }
 
 
-function SecondInningsSelectionView({ onLockSelections }: { onLockSelections: () => void }) {
+function SecondInningsSelectionView({ onLockSelections, players }: { onLockSelections: () => void, players: (CricketerProfile & {id: string})[] }) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [isLocked, setIsLocked] = useState(false);
 
@@ -710,7 +666,7 @@ function SecondInningsSelectionView({ onLockSelections }: { onLockSelections: ()
               {role.description}
             </p>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {[...players.IND, ...players.AUS].map((player) => (
+              {players.map((player) => (
                 <PlayerSelectionCard
                   key={`${role.id}-${player.id}`}
                   player={player}
@@ -780,20 +736,27 @@ function LeaderboardView() {
 type MatchPhase = 'pre-match' | '1st-innings' | 'innings-break' | '2nd-innings-selection' | '2nd-innings-live' | 'match-over';
 
 
-export default function LiveFantasyMatchPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function LiveFantasyMatchPage({ params }: { params: { id: string } }) {
   const { id } = use(params);
+  const firestore = useFirestore();
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('pre-match');
   const [activeTab, setActiveTab] = useState('game');
   const [currentScore, setCurrentScore] = useState(110);
   const [currentStreak, setCurrentStreak] = useState(0);
 
+  const playersQuery = firestore ? collection(firestore, 'cricketers') : null;
+  const { data: players, isLoading } = useCollection<CricketerProfile & {id:string}>(playersQuery);
 
   if (id !== 'live-match-1') {
     return notFound();
+  }
+
+  if (isLoading || !players) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+          <Skeleton className="h-full w-full" />
+      </div>
+    );
   }
 
   const handleScoreUpdate = (points: number) => {
@@ -805,15 +768,15 @@ export default function LiveFantasyMatchPage({
   const renderGameContent = () => {
     switch(matchPhase) {
       case 'pre-match':
-        return <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} />;
+        return <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} players={players} />;
       case '1st-innings':
-        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate}/>;
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate} players={players} />;
       case 'innings-break':
         return <InningsBreakView onStartNextInnings={() => setMatchPhase('2nd-innings-selection')} />;
       case '2nd-innings-selection':
-        return <SecondInningsSelectionView onLockSelections={() => setMatchPhase('2nd-innings-live')} />;
+        return <SecondInningsSelectionView onLockSelections={() => setMatchPhase('2nd-innings-live')} players={players} />;
       case '2nd-innings-live':
-        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate}/>; // Re-use for simulation
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate} players={players}/>; // Re-use for simulation
       case 'match-over':
         return <Card><CardHeader><CardTitle>Match Over!</CardTitle><CardContent><p>Final leaderboard is now available.</p></CardContent></CardHeader></Card>;
       default:
@@ -881,3 +844,5 @@ export default function LiveFantasyMatchPage({
     </div>
   );
 }
+
+    
