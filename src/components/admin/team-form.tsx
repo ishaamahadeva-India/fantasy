@@ -15,7 +15,9 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ImageUpload } from '@/components/admin/image-upload';
 import {
   Select,
   SelectContent,
@@ -29,7 +31,11 @@ const teamSchema = z.object({
   type: z.enum(['ip', 'national'], {
     required_error: 'You need to select a team type.',
   }),
-  logoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  logoUrl: z.string().optional(),
+  country: z.string().optional(),
+  foundedYear: z.number().optional(),
+  homeGround: z.string().optional(),
+  description: z.string().optional(),
 });
 
 type TeamFormValues = z.infer<typeof teamSchema>;
@@ -87,14 +93,84 @@ export function TeamForm({ onSubmit, defaultValues }: TeamFormProps) {
                 </FormItem>
               )}
             />
-             <FormField
+            <FormField
               control={form.control}
               name="logoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Logo URL (Optional)</FormLabel>
+                  <FormLabel>Team Logo</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="teams"
+                      label="Team Logo"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {form.watch('type') === 'national' && (
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., India" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="foundedYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Founded Year (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g., 2008"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="homeGround"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Home Ground (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Wankhede Stadium" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Team description..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

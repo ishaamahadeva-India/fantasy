@@ -39,6 +39,7 @@ import { deleteTeam } from '@/firebase/firestore/teams';
 import { deleteMovie } from '@/firebase/firestore/movies';
 import { deleteStar } from '@/firebase/firestore/stars';
 import type { Movie, Star as StarType } from '@/lib/types';
+import { BarChart3 } from 'lucide-react';
 
 type CricketerProfile = {
     id: string;
@@ -153,6 +154,12 @@ export default function AdminFanZonePage() {
             Manage all entities within the Cricket and Movie Fan Zones.
           </p>
         </div>
+        <Button variant="outline" asChild>
+          <Link href="/admin/fanzone/analytics">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </Link>
+        </Button>
       </div>
 
       <Tabs defaultValue="cricketers" className="w-full">

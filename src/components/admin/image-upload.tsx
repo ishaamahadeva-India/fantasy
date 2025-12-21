@@ -11,7 +11,7 @@ import Image from 'next/image';
 type ImageUploadProps = {
   value?: string;
   onChange: (url: string) => void;
-  folder: 'articles' | 'gossips' | 'advertisements';
+  folder: 'articles' | 'gossips' | 'advertisements' | 'cricketers' | 'movies' | 'stars' | 'teams';
   label?: string;
 };
 
