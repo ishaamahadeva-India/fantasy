@@ -102,7 +102,7 @@ export default function EditFantasyCampaignPage() {
       <h1 className="text-3xl font-bold md:text-4xl font-headline mb-8">
         Edit Fantasy Campaign
       </h1>
-      <FantasyCampaignForm onSubmit={handleUpdateCampaign} defaultValues={defaultValues} />
+      <FantasyCampaignForm onSubmit={handleUpdateCampaign} defaultValues={defaultValues as any} />
     </div>
   );
 }
