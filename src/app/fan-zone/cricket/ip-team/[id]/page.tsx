@@ -107,10 +107,10 @@ export default function IpTeamProfilePage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const teamRef = firestore ? doc(firestore, 'teams', id) : null;
-  const { data: team, isLoading: teamLoading } = useDoc<TeamProfile>(teamRef);
+  const { data: team, isLoading: teamLoading } = useDoc(teamRef);
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -121,7 +121,7 @@ export default function IpTeamProfilePage() {
     )
   }, [firestore, id]);
 
-  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+  const { data: ratings, isLoading: ratingsLoading } = useCollection(ratingsQuery);
 
   if (teamLoading) {
     return <div><Skeleton className="h-screen w-full" /></div>
