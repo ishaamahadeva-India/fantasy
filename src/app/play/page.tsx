@@ -27,7 +27,7 @@ import type { Article } from '@/lib/types';
 export default function PlayPage() {
   const firestore = useFirestore();
   const articlesQuery = firestore ? query(collection(firestore, 'articles'), limit(1)) : null;
-  const { data: articles, isLoading } = useCollection<Article & {id: string}>(articlesQuery);
+  const { data: articles, isLoading } = useCollection(articlesQuery);
   const firstArticleSlug = articles?.[0]?.slug;
 
   const gameModes = [
