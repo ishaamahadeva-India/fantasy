@@ -288,7 +288,7 @@ export default function TournamentEventPage() {
                   <div className="space-y-3">
                     <Label>Select {event.maxSelections || 'Multiple'} Option(s)</Label>
                     <div className="space-y-2">
-                      {event.options.map((option) => (
+                      {event.options.map((option: string) => (
                         <div
                           key={option}
                           className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
@@ -311,7 +311,7 @@ export default function TournamentEventPage() {
                 ) : (
                   <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
                     <div className="space-y-3">
-                      {event.options.map((option) => (
+                      {event.options.map((option: string) => (
                         <div
                           key={option}
                           className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50"
