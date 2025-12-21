@@ -131,7 +131,7 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
 
   const { fields: teamFields, append: appendTeam, remove: removeTeam } = useFieldArray({
     control: form.control,
-    name: 'teams',
+    name: 'teams' as any,
   });
 
   const selectedFormat = form.watch('format');
