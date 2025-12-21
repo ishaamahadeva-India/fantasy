@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { FantasyCampaign, FantasyMatch } from '@/lib/types';
 import { deleteFantasyCampaign } from '@/firebase/firestore/fantasy-campaigns';
 import { deleteCricketMatch } from '@/firebase/firestore/cricket-matches';
+import { deleteCricketTournament } from '@/firebase/firestore/cricket-tournaments';
 import Link from 'next/link';
 import {
   AlertDialog,
