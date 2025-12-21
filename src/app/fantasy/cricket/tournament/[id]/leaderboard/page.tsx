@@ -32,7 +32,7 @@ export default function TournamentLeaderboardPage() {
   const userIds = participations ? [...new Set(participations.map(p => p.userId))] : [];
   const userProfilesRef = firestore ? collection(firestore, 'users') : null;
   const { data: allUsers } = useCollection(userProfilesRef);
-  const userProfilesMap = allUsers?.reduce((acc, profile) => {
+  const userProfilesMap = (allUsers as any)?.reduce((acc: any, profile: any) => {
     if (userIds.includes(profile.id)) {
       acc[profile.id] = profile;
     }
