@@ -103,7 +103,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile, isLoading: profileLoading } = useDoc(userProfileRef);
   
   // Check superadmin first (from Firebase Auth, available immediately on refresh)
   const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
