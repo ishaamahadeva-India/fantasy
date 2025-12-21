@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Cricketer = {
@@ -208,9 +208,12 @@ function TrendingTab() {
   
   if (!cricketers || cricketers.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground">
-        Trending content coming soon.
-      </div>
+      <Card>
+        <CardContent className="py-12 text-center text-muted-foreground">
+          <p>No trending cricketers at the moment.</p>
+          <p className="text-sm mt-2">Cricketers with trendingRank set will appear here.</p>
+        </CardContent>
+      </Card>
     );
   }
   

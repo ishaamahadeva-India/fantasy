@@ -17,6 +17,17 @@ import type { FanRating, Star as StarType, UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
 import { FavoriteButton } from '@/components/fan-zone/favorite-button';
+import { getStarEras } from '@/firebase/firestore/star-eras';
+import type { StarEra } from '@/firebase/firestore/star-eras';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
     const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
@@ -119,6 +130,35 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
   }, [firestore, id]);
 
   const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+  
+  const [starEras, setStarEras] = useState<StarEra[]>([]);
+  const [erasLoading, setErasLoading] = useState(false);
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false);
+  const [era1, setEra1] = useState<string>('');
+  const [era2, setEra2] = useState<string>('');
+
+  // Fetch star eras
+  useEffect(() => {
+    if (!firestore || !id) return;
+
+    const fetchEras = async () => {
+      setErasLoading(true);
+      try {
+        const eras = await getStarEras(firestore, id);
+        setStarEras(eras);
+        if (eras.length >= 2) {
+          setEra1(eras[0].eraName);
+          setEra2(eras[1].eraName);
+        }
+      } catch (error) {
+        console.error('Error fetching star eras:', error);
+      } finally {
+        setErasLoading(false);
+      }
+    };
+
+    fetchEras();
+  }, [firestore, id]);
 
   if (starLoading) {
     return <StarProfileSkeleton />;
@@ -127,6 +167,9 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
   if (!star) {
     notFound();
   }
+
+  const selectedEra1 = starEras.find(e => e.eraName === era1);
+  const selectedEra2 = starEras.find(e => e.eraName === era2);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -228,6 +271,135 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                             userProfile={userProfile || null}
                         />
                         <PulseCheck question={`How do you rate ${star.name}'s recent script selections?`} options={["Excellent", "Average", "Poor"]} entityId={star.id} entityType='star' />
+                        {starEras.length >= 2 && (
+                          <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" className="w-full">
+                                <BrainCircuit className="w-4 h-4 mr-2" />
+                                Compare Eras
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Compare Eras</DialogTitle>
+                                <DialogDescription>
+                                  Compare {star.name}'s performance across different career eras.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-6 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">Era 1</label>
+                                    <Select value={era1} onValueChange={setEra1}>
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {starEras.map(era => (
+                                          <SelectItem key={era.id || era.eraName} value={era.eraName}>
+                                            {era.eraName} ({era.startYear}{era.endYear ? `-${era.endYear}` : '+'})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">Era 2</label>
+                                    <Select value={era2} onValueChange={setEra2}>
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {starEras.map(era => (
+                                          <SelectItem key={era.id || era.eraName} value={era.eraName}>
+                                            {era.eraName} ({era.startYear}{era.endYear ? `-${era.endYear}` : '+'})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                
+                                {selectedEra1 && selectedEra2 && (
+                                  <div className="grid grid-cols-2 gap-6">
+                                    <Card>
+                                      <CardHeader>
+                                        <CardTitle>{selectedEra1.eraName}</CardTitle>
+                                        <CardDescription>
+                                          {selectedEra1.startYear}{selectedEra1.endYear ? ` - ${selectedEra1.endYear}` : '+'}
+                                        </CardDescription>
+                                      </CardHeader>
+                                      <CardContent className="space-y-4">
+                                        <div>
+                                          <p className="text-sm text-muted-foreground">Average Rating</p>
+                                          <p className="text-2xl font-bold">{selectedEra1.averageRating.toFixed(1)}/10</p>
+                                        </div>
+                                        {selectedEra1.definingRole && (
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Defining Role</p>
+                                            <p className="font-semibold">{selectedEra1.definingRole}</p>
+                                          </div>
+                                        )}
+                                        {selectedEra1.notableMovies.length > 0 && (
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Notable Movies</p>
+                                            <p className="text-sm">{selectedEra1.notableMovies.length} movies</p>
+                                          </div>
+                                        )}
+                                        {selectedEra1.notes && (
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Notes</p>
+                                            <p className="text-sm">{selectedEra1.notes}</p>
+                                          </div>
+                                        )}
+                                      </CardContent>
+                                    </Card>
+                                    
+                                    <Card>
+                                      <CardHeader>
+                                        <CardTitle>{selectedEra2.eraName}</CardTitle>
+                                        <CardDescription>
+                                          {selectedEra2.startYear}{selectedEra2.endYear ? ` - ${selectedEra2.endYear}` : '+'}
+                                        </CardDescription>
+                                      </CardHeader>
+                                      <CardContent className="space-y-4">
+                                        <div>
+                                          <p className="text-sm text-muted-foreground">Average Rating</p>
+                                          <p className="text-2xl font-bold">{selectedEra2.averageRating.toFixed(1)}/10</p>
+                                        </div>
+                                        {selectedEra2.definingRole && (
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Defining Role</p>
+                                            <p className="font-semibold">{selectedEra2.definingRole}</p>
+                                          </div>
+                                        )}
+                                        {selectedEra2.notableMovies.length > 0 && (
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Notable Movies</p>
+                                            <p className="text-sm">{selectedEra2.notableMovies.length} movies</p>
+                                          </div>
+                                        )}
+                                        {selectedEra2.notes && (
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Notes</p>
+                                            <p className="text-sm">{selectedEra2.notes}</p>
+                                          </div>
+                                        )}
+                                      </CardContent>
+                                    </Card>
+                                  </div>
+                                )}
+                                
+                                {starEras.length < 2 && (
+                                  <div className="text-center py-8 text-muted-foreground">
+                                    <p>At least 2 eras are required for comparison.</p>
+                                    <p className="text-sm mt-2">Add eras in the admin panel to enable this feature.</p>
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        )}
                     </div>
                 </div>
             </div>

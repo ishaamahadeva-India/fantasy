@@ -19,25 +19,10 @@ import { useDoc, useFirestore, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FavoriteButton } from '@/components/fan-zone/favorite-button';
+import { getTeamEras } from '@/firebase/firestore/team-eras';
 import type { UserProfile, TeamProfile } from '@/lib/types';
-
-// Note: This component is still partially using placeholder data for "eras"
-// as this is a complex data structure not modeled in the DB.
-// The main team data is fetched live.
-const placeholderEras = {
-    "2000s": {
-        winRate: 65,
-        iccTrophies: 2,
-        keyPlayers: ["Sachin Tendulkar", "Sourav Ganguly", "Anil Kumble"],
-        definingMoment: "The 2007 T20 World Cup victory under a young MS Dhoni, which heralded a new era in Indian cricket and sparked the IPL revolution."
-    },
-    "2010s": {
-        winRate: 72,
-        iccTrophies: 3,
-        keyPlayers: ["MS Dhoni", "Virat Kohli", "Yuvraj Singh"],
-        definingMoment: "Lifting the 2011 ODI World Cup on home soil after 28 years, a moment etched in the memory of a billion fans as Sachin Tendulkar's dream came true."
-    }
-};
+import type { TeamEra } from '@/firebase/firestore/team-eras';
+import { useEffect } from 'react';
 
 export default function NationalTeamProfilePage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -49,18 +34,66 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
-  const eras = placeholderEras; // Using placeholder for now
-  const defaultEra = Object.keys(eras)[0];
-  const [selectedEra, setSelectedEra] = useState(defaultEra);
-  const eraData = eras[selectedEra as keyof typeof eras];
+  const [eras, setEras] = useState<TeamEra[]>([]);
+  const [erasLoading, setErasLoading] = useState(true);
+  const [selectedEra, setSelectedEra] = useState<string>('');
 
-  if (isLoading) {
+  // Fetch team eras from Firestore
+  useEffect(() => {
+    if (!firestore || !id) return;
+
+    const fetchEras = async () => {
+      setErasLoading(true);
+      try {
+        const teamEras = await getTeamEras(firestore, id);
+        setEras(teamEras);
+        if (teamEras.length > 0 && !selectedEra) {
+          setSelectedEra(teamEras[0].eraName);
+        }
+      } catch (error) {
+        console.error('Error fetching team eras:', error);
+      } finally {
+        setErasLoading(false);
+      }
+    };
+
+    fetchEras();
+  }, [firestore, id]);
+
+  const eraData = eras.find(e => e.eraName === selectedEra);
+
+  if (isLoading || erasLoading) {
     return <Skeleton className="h-screen w-full" />;
   }
 
   if (!team || team.type !== 'national') {
     notFound();
   }
+
+  // Fallback to placeholder if no eras in database
+  const hasEras = eras.length > 0;
+  const displayEras = hasEras ? eras : [
+    {
+      eraName: '2000s',
+      winRate: 65,
+      iccTrophies: 2,
+      keyPlayers: ['Sachin Tendulkar', 'Sourav Ganguly', 'Anil Kumble'],
+      definingMoment: 'The 2007 T20 World Cup victory under a young MS Dhoni, which heralded a new era in Indian cricket and sparked the IPL revolution.',
+    },
+    {
+      eraName: '2010s',
+      winRate: 72,
+      iccTrophies: 3,
+      keyPlayers: ['MS Dhoni', 'Virat Kohli', 'Yuvraj Singh'],
+      definingMoment: 'Lifting the 2011 ODI World Cup on home soil after 28 years, a moment etched in the memory of a billion fans as Sachin Tendulkar\'s dream came true.',
+    },
+  ] as any[];
+
+  if (!selectedEra && displayEras.length > 0) {
+    setSelectedEra(displayEras[0].eraName);
+  }
+
+  const currentEraData = eraData || displayEras.find((e: any) => e.eraName === selectedEra) || displayEras[0];
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -132,11 +165,18 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
                         <SelectValue placeholder="Select Era" />
                     </SelectTrigger>
                     <SelectContent>
-                        {Object.keys(eras).map(era => (
-                             <SelectItem key={era} value={era}>{era}</SelectItem>
+                        {displayEras.map((era: any) => (
+                             <SelectItem key={era.eraName || era} value={era.eraName || era}>
+                               {era.eraName || era}
+                             </SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
+                {!hasEras && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Using sample data. Add eras in admin panel to see real data.
+                  </p>
+                )}
             </CardContent>
           </Card>
 
@@ -148,17 +188,17 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
                 <div className='text-center p-4 rounded-lg bg-white/5'>
                     <Percent className="w-8 h-8 mx-auto text-primary mb-2"/>
                     <p className="text-sm text-muted-foreground">Win Rate</p>
-                    <p className="text-3xl font-bold font-code">{eraData.winRate}%</p>
+                    <p className="text-3xl font-bold font-code">{currentEraData?.winRate || 0}%</p>
                 </div>
                 <div className='text-center p-4 rounded-lg bg-white/5'>
                     <Trophy className="w-8 h-8 mx-auto text-primary mb-2"/>
                     <p className="text-sm text-muted-foreground">ICC Trophies</p>
-                    <p className="text-3xl font-bold font-code">{eraData.iccTrophies}</p>
+                    <p className="text-3xl font-bold font-code">{currentEraData?.iccTrophies || 0}</p>
                 </div>
                  <div className='text-center p-4 rounded-lg bg-white/5'>
                     <Users className="w-8 h-8 mx-auto text-primary mb-2"/>
                     <p className="text-sm text-muted-foreground">Key Players</p>
-                    <p className="text-xs font-semibold">{eraData.keyPlayers.join(' · ')}</p>
+                    <p className="text-xs font-semibold">{(currentEraData?.keyPlayers || []).join(' · ') || 'N/A'}</p>
                 </div>
             </CardContent>
           </Card>
@@ -170,7 +210,7 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
             </CardHeader>
             <CardContent>
                <div className="p-4 rounded-lg bg-white/5 prose prose-invert max-w-none prose-sm">
-                 <p className='text-muted-foreground'>{eraData.definingMoment}</p>
+                 <p className='text-muted-foreground'>{currentEraData?.definingMoment || 'No defining moment data available.'}</p>
                </div>
             </CardContent>
           </Card>
