@@ -34,7 +34,7 @@ function AdBanner() {
 function GossipList() {
     const firestore = useFirestore();
     const gossipsQuery = firestore ? query(collection(firestore, 'gossips')) : null;
-    const { data: gossips, isLoading } = useCollection<Gossip>(gossipsQuery);
+    const { data: gossips, isLoading } = useCollection(gossipsQuery);
 
     if (isLoading) {
         return (
@@ -94,7 +94,7 @@ function WatchlistSidebar() {
     const { user } = useUser();
     const firestore = useFirestore();
     const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-    const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+    const { data: userProfile, isLoading: profileLoading } = useDoc(userProfileRef);
 
     const watchlistIds = useMemo(() => userProfile?.watchlist || [], [userProfile]);
 
@@ -103,7 +103,7 @@ function WatchlistSidebar() {
         return query(collection(firestore, 'movies'), where('__name__', 'in', watchlistIds));
     }, [firestore, watchlistIds]);
 
-    const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
+    const { data: movies, isLoading: moviesLoading } = useCollection(moviesQuery);
     
     if (!user && !profileLoading) return <GossipList />;
 
@@ -155,7 +155,7 @@ function ArticleList({ category }: { category: string }) {
         return query(articlesCollection, where('category', '==', category));
     }, [firestore, category]);
 
-    const { data: articles, isLoading } = useCollection<ArticleWithId>(articlesQuery as Query<ArticleWithId>);
+    const { data: articles, isLoading } = useCollection(articlesQuery);
 
     if (isLoading) {
         return (
