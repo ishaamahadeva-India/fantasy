@@ -288,7 +288,7 @@ function AnalystViewTab() {
 
   const getPlayerById = (id: string | undefined): Cricketer | undefined => {
       if (!id || !cricketers) return undefined;
-      return cricketers.find(p => p.id === id);
+      return cricketers.find((p: any) => p.id === id) as any as Cricketer | undefined;
   }
 
   const p1Data = getPlayerById(player1);
