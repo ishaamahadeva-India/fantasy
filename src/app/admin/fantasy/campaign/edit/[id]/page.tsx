@@ -26,7 +26,7 @@ export default function EditFantasyCampaignPage() {
   const campaignId = params.id as string;
 
   const campaignRef = firestore ? doc(firestore, 'fantasy-campaigns', campaignId) : null;
-  const { data: campaign, isLoading: campaignLoading } = useDoc<FantasyCampaign>(campaignRef);
+  const { data: campaign, isLoading: campaignLoading } = useDoc(campaignRef);
 
   const eventsRef = firestore
     ? collection(firestore, 'fantasy-campaigns', campaignId, 'events')
