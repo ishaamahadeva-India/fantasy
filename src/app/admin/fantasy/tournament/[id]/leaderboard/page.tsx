@@ -259,7 +259,7 @@ export default function TournamentLeaderboardPage() {
                     <div
                       key={participation.userId}
                       className={`flex items-center justify-between p-4 rounded-lg ${
-                        participation.rank <= 3
+                        (participation.rank ?? 999) <= 3
                           ? 'bg-primary/10 border border-primary/20'
                           : 'bg-muted/50'
                       }`}
@@ -334,7 +334,7 @@ export default function TournamentLeaderboardPage() {
                               <div
                                 key={participation.userId}
                                 className={`flex items-center justify-between p-4 rounded-lg ${
-                                  participation.rank <= 3
+                                  (participation.rank ?? 999) <= 3
                                     ? 'bg-primary/10 border border-primary/20'
                                     : 'bg-muted/50'
                                 }`}
@@ -371,7 +371,7 @@ export default function TournamentLeaderboardPage() {
                           <div
                             key={participation.userId}
                             className={`flex items-center justify-between p-4 rounded-lg ${
-                              participation.rank <= 3
+                              (participation.rank ?? 999) <= 3
                                 ? 'bg-primary/10 border border-primary/20'
                                 : 'bg-muted/50'
                             }`}
@@ -435,7 +435,7 @@ export default function TournamentLeaderboardPage() {
                     <div
                       key={participation.userId}
                       className={`flex items-center justify-between p-4 rounded-lg ${
-                        participation.rank <= 3
+                        (participation.rank ?? 999) <= 3
                           ? 'bg-primary/10 border border-primary/20'
                           : 'bg-muted/50'
                       }`}
