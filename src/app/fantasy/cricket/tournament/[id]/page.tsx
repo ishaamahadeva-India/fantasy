@@ -124,7 +124,7 @@ export default function TournamentPage() {
         tournamentId,
         entryFee: tournament.entryFee?.type === 'paid' && selectedTier ? parseFloat(selectedTier) : undefined,
         entryFeeTier: tournament.entryFee?.type === 'paid' && selectedTier 
-          ? tournament.entryFee.tiers?.find(t => t.amount.toString() === selectedTier)?.label
+          ? tournament.entryFee.tiers?.find((t: any) => t.amount.toString() === selectedTier)?.label
           : undefined,
         paymentStatus: tournament.entryFee?.type === 'free' ? 'paid' as const : 'pending' as const,
         city: userProfile?.city,
