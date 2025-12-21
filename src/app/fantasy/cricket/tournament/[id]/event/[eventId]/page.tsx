@@ -262,7 +262,7 @@ export default function TournamentEventPage() {
               <div className="p-4 rounded-lg bg-muted">
                 <p className="font-semibold mb-2">Rules:</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
-                  {event.rules.map((rule, idx) => (
+                  {event.rules.map((rule: string, idx: number) => (
                     <li key={idx}>{rule}</li>
                   ))}
                 </ul>
