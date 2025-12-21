@@ -31,7 +31,7 @@ export default function CampaignResultsPage() {
   const eventsRef = firestore
     ? collection(firestore, 'fantasy-campaigns', campaignId, 'events')
     : null;
-  const { data: events, isLoading } = useCollection<FantasyEvent>(eventsRef);
+  const { data: events, isLoading } = useCollection(eventsRef);
   
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [resultData, setResultData] = useState<{ outcome: string; notes: string }>({ outcome: '', notes: '' });

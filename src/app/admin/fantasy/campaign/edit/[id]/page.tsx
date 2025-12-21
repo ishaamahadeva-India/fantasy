@@ -31,7 +31,7 @@ export default function EditFantasyCampaignPage() {
   const eventsRef = firestore
     ? collection(firestore, 'fantasy-campaigns', campaignId, 'events')
     : null;
-  const { data: events, isLoading: eventsLoading } = useCollection<FantasyEvent>(eventsRef);
+  const { data: events, isLoading: eventsLoading } = useCollection(eventsRef);
 
   const handleUpdateCampaign = async (data: any) => {
     if (!firestore) return;

@@ -23,7 +23,7 @@ export default function CampaignLeaderboardPage() {
   const participationsRef = firestore
     ? collection(firestore, 'fantasy-campaigns', campaignId, 'participations')
     : null;
-  const { data: participations, isLoading } = useCollection<UserParticipation>(participationsRef);
+  const { data: participations, isLoading } = useCollection(participationsRef);
   const [realTimeEnabled, setRealTimeEnabled] = useState(false);
   const [realTimeData, setRealTimeData] = useState<UserParticipation[]>([]);
 
@@ -37,7 +37,7 @@ export default function CampaignLeaderboardPage() {
         const updated = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        })) as UserParticipation[];
+        })) as any as UserParticipation[];
         setRealTimeData(updated);
       },
       (error) => {
@@ -48,9 +48,9 @@ export default function CampaignLeaderboardPage() {
     return () => unsubscribe();
   }, [firestore, realTimeEnabled, participationsRef]);
 
-  const displayParticipations = realTimeEnabled && realTimeData.length > 0 
+  const displayParticipations = (realTimeEnabled && realTimeData.length > 0 
     ? realTimeData 
-    : (participations || []);
+    : (participations || [])) as UserParticipation[];
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -205,7 +205,8 @@ export default function CampaignLeaderboardPage() {
   // Group by movie for movie-wise leaderboard
   const movieWiseLeaderboards: Record<string, typeof rankedParticipations> = {};
   rankedParticipations.forEach((participation) => {
-    Object.keys(participation.movieWisePoints || {}).forEach((movieId) => {
+    const participationTyped = participation as UserParticipation;
+    Object.keys(participationTyped.movieWisePoints || {}).forEach((movieId) => {
       if (!movieWiseLeaderboards[movieId]) {
         movieWiseLeaderboards[movieId] = [];
       }
