@@ -1,7 +1,7 @@
 'use client';
 
-import { useFirestore, useCollection } from '@/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc } from '@/firebase';
+import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy, RefreshCw, Download, Radio } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { UserParticipation } from '@/lib/types';
-import { useState, useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { UserParticipation, CricketTournament, TournamentEvent } from '@/lib/types';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function TournamentLeaderboardPage() {
   const firestore = useFirestore();
@@ -20,11 +21,30 @@ export default function TournamentLeaderboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [realTimeEnabled, setRealTimeEnabled] = useState(false);
   const [realTimeData, setRealTimeData] = useState<UserParticipation[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string>('all');
+  
+  const tournamentRef = firestore ? doc(firestore, 'cricket-tournaments', tournamentId) : null;
+  const { data: tournament } = useDoc<CricketTournament>(tournamentRef);
+  
+  const eventsRef = firestore
+    ? collection(firestore, 'cricket-tournaments', tournamentId, 'events')
+    : null;
+  const { data: events } = useCollection<TournamentEvent>(eventsRef);
   
   const participationsRef = firestore
     ? collection(firestore, 'cricket-tournaments', tournamentId, 'participations')
     : null;
   const { data: participations, isLoading } = useCollection<UserParticipation>(participationsRef);
+  
+  // Get player prediction event IDs
+  const playerEventIds = useMemo(() => {
+    if (!events) return [];
+    return events
+      .filter(e => ['top_run_scorer', 'top_wicket_taker', 'tournament_mvp', 'most_sixes', 
+                    'best_strike_rate', 'most_centuries', 'most_fifties', 'best_bowling_average',
+                    'highest_individual_score', 'fastest_fifty_tournament', 'fastest_hundred_tournament'].includes(e.eventType))
+      .map(e => e.id);
+  }, [events]);
 
   useEffect(() => {
     if (!firestore || !realTimeEnabled || !participationsRef) return;
@@ -119,6 +139,70 @@ export default function TournamentLeaderboardPage() {
     rank: index + 1,
   }));
 
+  // Group-wise leaderboard
+  const groupWiseLeaderboards = useMemo(() => {
+    if (!tournament?.groups || !displayParticipations) return {};
+    
+    const groupLeaderboards: Record<string, UserParticipation[]> = {};
+    
+    tournament.groups.forEach(group => {
+      // Filter participations that have predictions for events in this group
+      const groupEventIds = events?.filter(e => e.groupId === group.name).map(e => e.id) || [];
+      const groupParticipations = displayParticipations.filter(p => {
+        // Check if user has predictions for any group event
+        return groupEventIds.some(eventId => 
+          (p as any).eventPredictions?.[eventId] !== undefined
+        );
+      });
+      
+      if (groupParticipations.length > 0) {
+        const sorted = [...groupParticipations].sort((a, b) => b.totalPoints - a.totalPoints);
+        groupLeaderboards[group.name] = sorted.map((p, index) => ({
+          ...p,
+          rank: index + 1,
+        }));
+      }
+    });
+    
+    return groupLeaderboards;
+  }, [tournament, displayParticipations, events]);
+
+  // Player prediction leaderboard
+  const playerPredictionLeaderboard = useMemo(() => {
+    if (!displayParticipations || playerEventIds.length === 0) return [];
+    
+    // Calculate points only from player prediction events
+    const playerPredictionScores = displayParticipations.map(p => {
+      let playerPoints = 0;
+      let playerCorrect = 0;
+      let playerTotal = 0;
+      
+      playerEventIds.forEach(eventId => {
+        const prediction = (p as any).eventPredictions?.[eventId];
+        if (prediction) {
+          playerTotal++;
+          if (prediction.isCorrect) {
+            playerPoints += prediction.points || 0;
+            playerCorrect++;
+          }
+        }
+      });
+      
+      return {
+        ...p,
+        playerPoints,
+        playerCorrect,
+        playerTotal,
+      };
+    }).filter(p => p.playerTotal > 0);
+    
+    const sorted = [...playerPredictionScores].sort((a, b) => b.playerPoints - a.playerPoints);
+    return sorted.map((p, index) => ({
+      ...p,
+      rank: index + 1,
+    }));
+  }, [displayParticipations, playerEventIds]);
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -209,16 +293,176 @@ export default function TournamentLeaderboardPage() {
 
         <TabsContent value="group-wise" className="mt-6">
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Group-wise leaderboard feature coming soon.
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-5 h-5" />
+                Group-wise Leaderboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!tournament?.groups || tournament.groups.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  This tournament has no groups configured.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                      <SelectTrigger className="w-64">
+                        <SelectValue placeholder="Select a group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Groups</SelectItem>
+                        {tournament.groups.map(group => (
+                          <SelectItem key={group.id || group.name} value={group.name}>
+                            {group.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {selectedGroup === 'all' ? (
+                    Object.entries(groupWiseLeaderboards).map(([groupName, leaderboard]) => (
+                      <div key={groupName} className="space-y-4">
+                        <h3 className="text-lg font-semibold">{groupName} Leaderboard</h3>
+                        {leaderboard.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No participants for this group yet.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {leaderboard.slice(0, 50).map((participation) => (
+                              <div
+                                key={participation.userId}
+                                className={`flex items-center justify-between p-4 rounded-lg ${
+                                  participation.rank <= 3
+                                    ? 'bg-primary/10 border border-primary/20'
+                                    : 'bg-muted/50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
+                                    {participation.rank <= 3 ? (
+                                      <Trophy className="w-5 h-5 text-primary" />
+                                    ) : (
+                                      <span className="font-bold">{participation.rank}</span>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {participation.correctPredictions} / {participation.predictionsCount} correct
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-muted-foreground">Total Points</p>
+                                  <p className="text-2xl font-bold text-primary">{participation.totalPoints}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    groupWiseLeaderboards[selectedGroup] ? (
+                      <div className="space-y-2">
+                        {groupWiseLeaderboards[selectedGroup].slice(0, 50).map((participation) => (
+                          <div
+                            key={participation.userId}
+                            className={`flex items-center justify-between p-4 rounded-lg ${
+                              participation.rank <= 3
+                                ? 'bg-primary/10 border border-primary/20'
+                                : 'bg-muted/50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
+                                {participation.rank <= 3 ? (
+                                  <Trophy className="w-5 h-5 text-primary" />
+                                ) : (
+                                  <span className="font-bold">{participation.rank}</span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {participation.correctPredictions} / {participation.predictionsCount} correct
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-muted-foreground">Total Points</p>
+                              <p className="text-2xl font-bold text-primary">{participation.totalPoints}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No participants for {selectedGroup} yet.
+                      </div>
+                    )
+                  )}
+                  
+                  {Object.keys(groupWiseLeaderboards).length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No group-wise data available yet.
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="player-predictions" className="mt-6">
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Player prediction leaderboard feature coming soon.
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-5 h-5" />
+                Player Prediction Leaderboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {playerPredictionLeaderboard.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No player prediction data available yet.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {playerPredictionLeaderboard.slice(0, 100).map((participation: any) => (
+                    <div
+                      key={participation.userId}
+                      className={`flex items-center justify-between p-4 rounded-lg ${
+                        participation.rank <= 3
+                          ? 'bg-primary/10 border border-primary/20'
+                          : 'bg-muted/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
+                          {participation.rank <= 3 ? (
+                            <Trophy className="w-5 h-5 text-primary" />
+                          ) : (
+                            <span className="font-bold">{participation.rank}</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {participation.playerCorrect} / {participation.playerTotal} player predictions correct
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Player Points</p>
+                        <p className="text-2xl font-bold text-primary">{participation.playerPoints}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

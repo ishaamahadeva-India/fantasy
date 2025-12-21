@@ -211,6 +211,14 @@ export default function CampaignResultsPage() {
                     <div className="flex gap-2">
                       <Button
                         onClick={() => {
+                          if (!resultData.outcome.trim()) {
+                            toast({
+                              variant: 'destructive',
+                              title: 'Validation Error',
+                              description: 'Please enter a result outcome.',
+                            });
+                            return;
+                          }
                           handleVerifyResult(event.id, {
                             outcome: resultData.outcome,
                             verified: true,

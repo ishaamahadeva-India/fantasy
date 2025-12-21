@@ -1,17 +1,18 @@
 'use client';
 
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDocs } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, RefreshCw, Download, Users, Radio, FileText } from 'lucide-react';
+import { Trophy, RefreshCw, Download, Users, Radio, FileText, MapPin } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { UserParticipation } from '@/lib/types';
-import { useState, useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { UserParticipation, UserProfile } from '@/lib/types';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function CampaignLeaderboardPage() {
   const firestore = useFirestore();
@@ -158,6 +159,40 @@ export default function CampaignLeaderboardPage() {
     );
   }
 
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+
+  // Fetch user profiles for city/state data
+  useEffect(() => {
+    if (!firestore || !displayParticipations || displayParticipations.length === 0) return;
+
+    const fetchUserProfiles = async () => {
+      setLoadingProfiles(true);
+      try {
+        const userIds = [...new Set(displayParticipations.map(p => p.userId))];
+        const profiles: Record<string, UserProfile> = {};
+        
+        // Fetch user profiles in batches
+        const usersRef = collection(firestore, 'users');
+        const usersSnapshot = await getDocs(usersRef);
+        usersSnapshot.docs.forEach(doc => {
+          const profile = { id: doc.id, ...doc.data() } as UserProfile;
+          if (userIds.includes(profile.id)) {
+            profiles[profile.id] = profile;
+          }
+        });
+        
+        setUserProfiles(profiles);
+      } catch (error) {
+        console.error('Error fetching user profiles:', error);
+      } finally {
+        setLoadingProfiles(false);
+      }
+    };
+
+    fetchUserProfiles();
+  }, [firestore, displayParticipations]);
+
   // Sort by total points
   const sortedParticipations = [...displayParticipations].sort((a, b) => b.totalPoints - a.totalPoints);
   
@@ -177,6 +212,57 @@ export default function CampaignLeaderboardPage() {
       movieWiseLeaderboards[movieId].push(participation);
     });
   });
+
+  // City/State leaderboards
+  const cityLeaderboards = useMemo(() => {
+    const cityGroups: Record<string, typeof rankedParticipations> = {};
+    
+    rankedParticipations.forEach(participation => {
+      const userProfile = userProfiles[participation.userId];
+      const city = userProfile?.city || 'Unknown';
+      
+      if (!cityGroups[city]) {
+        cityGroups[city] = [];
+      }
+      cityGroups[city].push(participation);
+    });
+
+    // Sort each city's leaderboard
+    Object.keys(cityGroups).forEach(city => {
+      cityGroups[city].sort((a, b) => b.totalPoints - a.totalPoints);
+      cityGroups[city] = cityGroups[city].map((p, index) => ({
+        ...p,
+        rank: index + 1,
+      }));
+    });
+
+    return cityGroups;
+  }, [rankedParticipations, userProfiles]);
+
+  const stateLeaderboards = useMemo(() => {
+    const stateGroups: Record<string, typeof rankedParticipations> = {};
+    
+    rankedParticipations.forEach(participation => {
+      const userProfile = userProfiles[participation.userId];
+      const state = userProfile?.state || 'Unknown';
+      
+      if (!stateGroups[state]) {
+        stateGroups[state] = [];
+      }
+      stateGroups[state].push(participation);
+    });
+
+    // Sort each state's leaderboard
+    Object.keys(stateGroups).forEach(state => {
+      stateGroups[state].sort((a, b) => b.totalPoints - a.totalPoints);
+      stateGroups[state] = stateGroups[state].map((p, index) => ({
+        ...p,
+        rank: index + 1,
+      }));
+    });
+
+    return stateGroups;
+  }, [rankedParticipations, userProfiles]);
 
   // Sort each movie leaderboard
   Object.keys(movieWiseLeaderboards).forEach((movieId) => {
@@ -344,8 +430,131 @@ export default function CampaignLeaderboardPage() {
 
         <TabsContent value="city-state" className="mt-6">
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              City/State leaderboard feature coming soon.
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                City/State Leaderboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingProfiles ? (
+                <div className="text-center py-8">
+                  <Skeleton className="h-64 w-full" />
+                </div>
+              ) : (
+                <Tabs defaultValue="state" className="w-full">
+                  <TabsList>
+                    <TabsTrigger value="state">By State</TabsTrigger>
+                    <TabsTrigger value="city">By City</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="state" className="mt-6">
+                    <div className="space-y-6">
+                      {Object.keys(stateLeaderboards).length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No state data available. Users need to have state information in their profiles.
+                        </div>
+                      ) : (
+                        Object.entries(stateLeaderboards)
+                          .sort(([a], [b]) => a.localeCompare(b))
+                          .map(([state, leaderboard]) => (
+                            <div key={state} className="space-y-4">
+                              <h3 className="text-lg font-semibold flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                {state} ({leaderboard.length} participants)
+                              </h3>
+                              <div className="space-y-2">
+                                {leaderboard.slice(0, 20).map((participation) => (
+                                  <div
+                                    key={participation.userId}
+                                    className={`flex items-center justify-between p-3 rounded-lg ${
+                                      participation.rank <= 3
+                                        ? 'bg-primary/10 border border-primary/20'
+                                        : 'bg-muted/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-background border">
+                                        {participation.rank <= 3 ? (
+                                          <Trophy className="w-4 h-4 text-primary" />
+                                        ) : (
+                                          <span className="font-bold text-sm">{participation.rank}</span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-semibold text-sm">User {participation.userId.slice(0, 8)}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {participation.correctPredictions} / {participation.predictionsCount} correct
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm text-muted-foreground">Points</p>
+                                      <p className="text-xl font-bold text-primary">{participation.totalPoints}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="city" className="mt-6">
+                    <div className="space-y-6">
+                      {Object.keys(cityLeaderboards).length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No city data available. Users need to have city information in their profiles.
+                        </div>
+                      ) : (
+                        Object.entries(cityLeaderboards)
+                          .sort(([a], [b]) => a.localeCompare(b))
+                          .map(([city, leaderboard]) => (
+                            <div key={city} className="space-y-4">
+                              <h3 className="text-lg font-semibold flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                {city} ({leaderboard.length} participants)
+                              </h3>
+                              <div className="space-y-2">
+                                {leaderboard.slice(0, 20).map((participation) => (
+                                  <div
+                                    key={participation.userId}
+                                    className={`flex items-center justify-between p-3 rounded-lg ${
+                                      participation.rank <= 3
+                                        ? 'bg-primary/10 border border-primary/20'
+                                        : 'bg-muted/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-background border">
+                                        {participation.rank <= 3 ? (
+                                          <Trophy className="w-4 h-4 text-primary" />
+                                        ) : (
+                                          <span className="font-bold text-sm">{participation.rank}</span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-semibold text-sm">User {participation.userId.slice(0, 8)}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {participation.correctPredictions} / {participation.predictionsCount} correct
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm text-muted-foreground">Points</p>
+                                      <p className="text-xl font-bold text-primary">{participation.totalPoints}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,21 +1,91 @@
 'use client';
 
 import { useFirestore, useCollection } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Users, Trophy, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import type { FantasyCampaign, UserParticipation, CampaignEntry } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useEffect, useState, useMemo } from 'react';
 
 export default function FantasyAnalyticsPage() {
   const firestore = useFirestore();
+  const [totalParticipants, setTotalParticipants] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [engagementRate, setEngagementRate] = useState(0);
+  const [revenueData, setRevenueData] = useState<Array<{ month: string; revenue: number; participants: number }>>([]);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
   
   const campaignsRef = firestore ? collection(firestore, 'fantasy-campaigns') : null;
   const { data: campaigns, isLoading: campaignsLoading } = useCollection<FantasyCampaign>(campaignsRef);
 
-  if (campaignsLoading) {
+  // Fetch participants and revenue data
+  useEffect(() => {
+    if (!firestore || campaignsLoading) return;
+
+    const fetchMetrics = async () => {
+      setLoadingMetrics(true);
+      try {
+        // Get all campaign entries
+        const entriesRef = collection(firestore, 'campaign-entries');
+        const entriesSnapshot = await getDocs(entriesRef);
+        const entries = entriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as CampaignEntry[];
+
+        // Calculate unique participants
+        const uniqueParticipants = new Set(entries.map(e => e.userId));
+        setTotalParticipants(uniqueParticipants.size);
+
+        // Calculate revenue (sum of all paid entry fees)
+        const paidEntries = entries.filter(e => e.paymentStatus === 'paid' && e.entryFee);
+        const revenue = paidEntries.reduce((sum, entry) => sum + (entry.entryFee || 0), 0);
+        setTotalRevenue(revenue);
+
+        // Calculate engagement rate (participants / total users who could participate)
+        // For now, we'll use a simple calculation based on entries
+        const totalEntries = entries.length;
+        const uniqueUsers = uniqueParticipants.size;
+        const avgEntriesPerUser = totalEntries > 0 ? totalEntries / uniqueUsers : 0;
+        setEngagementRate(Math.min(100, Math.round(avgEntriesPerUser * 20))); // Normalize to 0-100
+
+        // Calculate monthly revenue data
+        const monthlyData: Record<string, { revenue: number; participants: Set<string> }> = {};
+        paidEntries.forEach(entry => {
+          const date = entry.joinedAt instanceof Date ? entry.joinedAt : 
+                      (entry.joinedAt as any)?.toDate ? (entry.joinedAt as any).toDate() : new Date();
+          const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
+          
+          if (!monthlyData[monthKey]) {
+            monthlyData[monthKey] = { revenue: 0, participants: new Set() };
+          }
+          monthlyData[monthKey].revenue += entry.entryFee || 0;
+          monthlyData[monthKey].participants.add(entry.userId);
+        });
+
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const revenueChartData = months.map(month => ({
+          month,
+          revenue: monthlyData[month]?.revenue || 0,
+          participants: monthlyData[month]?.participants.size || 0,
+        })).filter(d => d.revenue > 0 || d.participants > 0);
+        
+        setRevenueData(revenueChartData.length > 0 ? revenueChartData : [
+          { month: 'Jan', revenue: 0, participants: 0 },
+          { month: 'Feb', revenue: 0, participants: 0 },
+          { month: 'Mar', revenue: 0, participants: 0 },
+        ]);
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+      } finally {
+        setLoadingMetrics(false);
+      }
+    };
+
+    fetchMetrics();
+  }, [firestore, campaignsLoading]);
+
+  if (campaignsLoading || loadingMetrics) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-64" />
@@ -32,12 +102,6 @@ export default function FantasyAnalyticsPage() {
   const totalCampaigns = campaigns?.length || 0;
   const activeCampaigns = campaigns?.filter((c) => c.status === 'active').length || 0;
   const completedCampaigns = campaigns?.filter((c) => c.status === 'completed').length || 0;
-  
-  // Calculate total participants (would need to query participations)
-  const totalParticipants = 0; // Placeholder
-  
-  // Calculate revenue (would need to query entries)
-  const totalRevenue = 0; // Placeholder
 
   return (
     <div className="space-y-8">
@@ -96,7 +160,7 @@ export default function FantasyAnalyticsPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--%</div>
+            <div className="text-2xl font-bold">{engagementRate}%</div>
             <p className="text-xs text-muted-foreground">
               Average participation rate
             </p>
@@ -226,13 +290,8 @@ export default function FantasyAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={[
-                  { month: 'Jan', revenue: 0, participants: 0 },
-                  { month: 'Feb', revenue: 5000, participants: 50 },
-                  { month: 'Mar', revenue: 12000, participants: 120 },
-                  { month: 'Apr', revenue: 18000, participants: 180 },
-                  { month: 'May', revenue: 25000, participants: 250 },
-                  { month: 'Jun', revenue: 30000, participants: 300 },
+                <LineChart data={revenueData.length > 0 ? revenueData : [
+                  { month: 'No Data', revenue: 0, participants: 0 },
                 ]}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />

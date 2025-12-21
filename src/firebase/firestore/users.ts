@@ -1,7 +1,7 @@
 
 'use client';
 
-import { doc, updateDoc, increment, arrayUnion, arrayRemove, type Firestore } from "firebase/firestore";
+import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp, type Firestore } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -105,5 +105,110 @@ export function updateUserAdminStatus(firestore: Firestore, userId: string, isAd
             });
             errorEmitter.emit('permission-error', permissionError);
             throw serverError; // Re-throw to be caught by the caller
+        });
+}
+
+/**
+ * Bans a user (permanently or temporarily)
+ * @param firestore - The Firestore instance
+ * @param userId - The ID of the user to ban
+ * @param banReason - Reason for the ban
+ * @param permanent - Whether the ban is permanent
+ * @param banExpiresAt - Expiration date for temporary bans (optional)
+ */
+export async function banUser(
+    firestore: Firestore,
+    userId: string,
+    banReason: string,
+    permanent: boolean = false,
+    banExpiresAt?: Date
+) {
+    const userDocRef = doc(firestore, 'users', userId);
+    const updateData: Record<string, any> = {
+        isBanned: true,
+        banReason,
+        bannedAt: serverTimestamp(),
+    };
+
+    if (permanent) {
+        // Permanent ban - no expiration
+        updateData.banExpiresAt = null;
+    } else if (banExpiresAt) {
+        updateData.banExpiresAt = banExpiresAt;
+    } else {
+        // Default temporary ban: 30 days
+        const defaultExpiry = new Date();
+        defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+        updateData.banExpiresAt = defaultExpiry;
+    }
+
+    return updateDoc(userDocRef, updateData)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw serverError;
+        });
+}
+
+/**
+ * Unbans a user
+ * @param firestore - The Firestore instance
+ * @param userId - The ID of the user to unban
+ */
+export async function unbanUser(firestore: Firestore, userId: string) {
+    const userDocRef = doc(firestore, 'users', userId);
+    const updateData = {
+        isBanned: false,
+        banReason: null,
+        banExpiresAt: null,
+        bannedAt: null,
+    };
+
+    return updateDoc(userDocRef, updateData)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw serverError;
+        });
+}
+
+/**
+ * Resolves a fraud flag
+ * @param firestore - The Firestore instance
+ * @param flagId - The ID of the fraud flag
+ * @param resolvedBy - The admin user ID who resolved it
+ * @param resolutionNotes - Optional notes about the resolution
+ */
+export async function resolveFraudFlag(
+    firestore: Firestore,
+    flagId: string,
+    resolvedBy: string,
+    resolutionNotes?: string
+) {
+    const flagDocRef = doc(firestore, 'fraud-flags', flagId);
+    const updateData = {
+        resolved: true,
+        resolvedAt: serverTimestamp(),
+        resolvedBy,
+        resolutionNotes: resolutionNotes || '',
+    };
+
+    return updateDoc(flagDocRef, updateData)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: flagDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw serverError;
         });
 }

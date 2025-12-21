@@ -1,10 +1,11 @@
 'use client';
 
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useUser } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Ban, CheckCircle, AlertTriangle, Shield, UserX } from 'lucide-react';
@@ -22,11 +23,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { banUser, unbanUser, resolveFraudFlag } from '@/firebase/firestore/users';
 import type { UserProfile, FraudFlag } from '@/lib/types';
 
 export default function UserManagementPage() {
   const firestore = useFirestore();
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [permanentBan, setPermanentBan] = useState(false);
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+  const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
+  const [resolutionNotes, setResolutionNotes] = useState('');
   
   const usersRef = firestore ? collection(firestore, 'users') : null;
   const { data: users, isLoading: usersLoading } = useCollection(usersRef);
@@ -37,36 +58,77 @@ export default function UserManagementPage() {
   const usersList = users as (UserProfile & { id: string })[] | undefined;
   const flagsList = fraudFlags as (FraudFlag & { id: string })[] | undefined;
 
-  const handleBanUser = async (userId: string, permanent: boolean = false) => {
-    if (!firestore) return;
-    try {
-      // TODO: Implement ban functionality
-      toast({
-        title: permanent ? 'User Permanently Banned' : 'User Temporarily Banned',
-        description: 'The user has been banned successfully.',
-      });
-    } catch (error) {
+  const handleBanUser = async () => {
+    if (!firestore || !selectedUserId || !banReason.trim()) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Could not ban the user.',
+        description: 'Please provide a ban reason.',
+      });
+      return;
+    }
+    try {
+      await banUser(firestore, selectedUserId, banReason, permanentBan);
+      toast({
+        title: permanentBan ? 'User Permanently Banned' : 'User Temporarily Banned',
+        description: 'The user has been banned successfully.',
+      });
+      setBanDialogOpen(false);
+      setBanReason('');
+      setSelectedUserId(null);
+      setPermanentBan(false);
+    } catch (error) {
+      console.error('Error banning user:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not ban the user. Please try again.',
       });
     }
   };
 
-  const handleResolveFlag = async (flagId: string) => {
+  const handleUnbanUser = async (userId: string) => {
     if (!firestore) return;
     try {
-      // TODO: Implement flag resolution
+      await unbanUser(firestore, userId);
       toast({
-        title: 'Flag Resolved',
-        description: 'The fraud flag has been resolved.',
+        title: 'User Unbanned',
+        description: 'The user has been unbanned successfully.',
       });
     } catch (error) {
+      console.error('Error unbanning user:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Could not resolve the flag.',
+        description: 'Could not unban the user. Please try again.',
+      });
+    }
+  };
+
+  const handleResolveFlag = async () => {
+    if (!firestore || !selectedFlagId || !user) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Unable to resolve flag.',
+      });
+      return;
+    }
+    try {
+      await resolveFraudFlag(firestore, selectedFlagId, user.uid, resolutionNotes);
+      toast({
+        title: 'Flag Resolved',
+        description: 'The fraud flag has been resolved successfully.',
+      });
+      setResolveDialogOpen(false);
+      setResolutionNotes('');
+      setSelectedFlagId(null);
+    } catch (error) {
+      console.error('Error resolving flag:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not resolve the flag. Please try again.',
       });
     }
   };
@@ -165,31 +227,80 @@ export default function UserManagementPage() {
                         <Button variant="outline" size="sm" asChild>
                           <a href={`/admin/fantasy/users/${user.id}`}>View Details</a>
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                              <Ban className="w-4 h-4 mr-2" />
-                              Ban
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Ban User</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to ban {user.displayName || user.email}?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleBanUser(user.id, false)}>
-                                Temporary Ban
-                              </AlertDialogAction>
-                              <AlertDialogAction onClick={() => handleBanUser(user.id, true)}>
-                                Permanent Ban
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        {user.isBanned ? (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleUnbanUser(user.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Unban
+                          </Button>
+                        ) : (
+                          <Dialog open={banDialogOpen && selectedUserId === user.id} onOpenChange={(open) => {
+                            setBanDialogOpen(open);
+                            if (!open) {
+                              setSelectedUserId(null);
+                              setBanReason('');
+                              setPermanentBan(false);
+                            }
+                          }}>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUserId(user.id);
+                                  setBanDialogOpen(true);
+                                }}
+                              >
+                                <Ban className="w-4 h-4 mr-2" />
+                                Ban
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Ban User</DialogTitle>
+                                <DialogDescription>
+                                  Ban {user.displayName || user.email}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                <div>
+                                  <Label htmlFor="banReason">Ban Reason *</Label>
+                                  <Textarea
+                                    id="banReason"
+                                    placeholder="Enter the reason for banning this user..."
+                                    value={banReason}
+                                    onChange={(e) => setBanReason(e.target.value)}
+                                    className="mt-2"
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                  <div className="space-y-0.5">
+                                    <Label htmlFor="permanent">Permanent Ban</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                      User will be banned indefinitely
+                                    </p>
+                                  </div>
+                                  <Switch
+                                    id="permanent"
+                                    checked={permanentBan}
+                                    onCheckedChange={setPermanentBan}
+                                  />
+                                </div>
+                              </div>
+                              <DialogFooter>
+                                <Button variant="outline" onClick={() => setBanDialogOpen(false)}>
+                                  Cancel
+                                </Button>
+                                <Button variant="destructive" onClick={handleBanUser}>
+                                  {permanentBan ? 'Permanently Ban' : 'Temporarily Ban'}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
                       </div>
                     </div>
                   );
@@ -249,10 +360,28 @@ export default function UserManagementPage() {
                         <Button variant="outline" size="sm" asChild>
                           <a href={`/admin/fantasy/users/${user.id}`}>View Details</a>
                         </Button>
-                        <Button variant="destructive" size="sm">
-                          <Ban className="w-4 h-4 mr-2" />
-                          Ban User
-                        </Button>
+                        {user.isBanned ? (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleUnbanUser(user.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Unban
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUserId(user.id);
+                              setBanDialogOpen(true);
+                            }}
+                          >
+                            <Ban className="w-4 h-4 mr-2" />
+                            Ban User
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
@@ -313,9 +442,54 @@ export default function UserManagementPage() {
                       )}
                     </div>
                     {!flag.resolved && (
-                      <Button variant="outline" size="sm" onClick={() => handleResolveFlag(flag.id)}>
-                        Resolve Flag
-                      </Button>
+                      <Dialog open={resolveDialogOpen && selectedFlagId === flag.id} onOpenChange={(open) => {
+                        setResolveDialogOpen(open);
+                        if (!open) {
+                          setSelectedFlagId(null);
+                          setResolutionNotes('');
+                        }
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedFlagId(flag.id);
+                              setResolveDialogOpen(true);
+                            }}
+                          >
+                            Resolve Flag
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Resolve Fraud Flag</DialogTitle>
+                            <DialogDescription>
+                              Mark this fraud flag as resolved.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <div>
+                              <Label htmlFor="resolutionNotes">Resolution Notes (Optional)</Label>
+                              <Textarea
+                                id="resolutionNotes"
+                                placeholder="Add any notes about how this flag was resolved..."
+                                value={resolutionNotes}
+                                onChange={(e) => setResolutionNotes(e.target.value)}
+                                className="mt-2"
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setResolveDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={handleResolveFlag}>
+                              Resolve Flag
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
                 ))}
