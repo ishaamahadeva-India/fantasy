@@ -33,18 +33,22 @@ import {
 // Extend types to include Firestore document ID
 type FantasyCampaignWithId = FantasyCampaign & { id: string };
 type FantasyMatchWithId = FantasyMatch & { id: string };
+type CricketTournamentWithId = import('@/lib/types').CricketTournament & { id: string };
 
 export default function AdminFantasyPage() {
   const firestore = useFirestore();
   
   const campaignsQuery = firestore ? collection(firestore, 'fantasy-campaigns') : null;
   const matchesQuery = firestore ? collection(firestore, 'fantasy_matches') : null;
+  const tournamentsQuery = firestore ? collection(firestore, 'cricket-tournaments') : null;
   
   const { data: campaignsData, isLoading: campaignsLoading } = useCollection(campaignsQuery);
   const { data: matchesData, isLoading: matchesLoading } = useCollection(matchesQuery);
+  const { data: tournamentsData, isLoading: tournamentsLoading } = useCollection(tournamentsQuery);
   
   const campaigns = campaignsData as FantasyCampaignWithId[] | undefined;
   const matches = matchesData as FantasyMatchWithId[] | undefined;
+  const tournaments = tournamentsData as CricketTournamentWithId[] | undefined;
 
   const handleDeleteCampaign = async (id: string) => {
     if (!firestore) return;
@@ -77,6 +81,98 @@ export default function AdminFantasyPage() {
           Manage Movie Fantasy Leagues and Live Cricket Matches.
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Cricket Tournaments / Series</CardTitle>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/fantasy/tournament/new">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                New Tournament
+              </Link>
+            </Button>
+          </div>
+          <CardDescription>
+            Create and manage tournament-level fantasy (IPL, World Cup, Series, etc.).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {tournamentsLoading && (
+            <>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <Skeleton className="h-5 w-72" />
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              </div>
+            </>
+          )}
+          {tournaments && tournaments.map((tournament) => (
+            <div key={tournament.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div>
+                <p className="font-semibold">{tournament.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {tournament.format} • {tournament.teams.length} teams
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={tournament.status === 'live' ? 'destructive' : 'secondary'}>
+                  {tournament.status}
+                </Badge>
+                <Badge variant="outline">{tournament.format}</Badge>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href={`/admin/fantasy/tournament/edit/${tournament.id}`}>
+                    <Edit className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href={`/admin/fantasy/tournament/${tournament.id}/results`}>
+                    <Trophy className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href={`/admin/fantasy/tournament/${tournament.id}/leaderboard`}>
+                    <ListOrdered className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the tournament "{tournament.name}".
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => {
+                        if (firestore) {
+                          deleteCricketTournament(firestore, tournament.id);
+                          toast({ title: 'Tournament Deleted' });
+                        }
+                      }}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))}
+          {!tournamentsLoading && (!tournaments || tournaments.length === 0) && (
+            <div className="text-center p-6 text-muted-foreground">
+              No tournaments found. Click "New Tournament" to create one.
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

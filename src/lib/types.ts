@@ -401,8 +401,107 @@ export type FantasyMatch = {
         amount?: number;
     };
     maxParticipants?: number;
+    tournamentId?: string; // Link to tournament if part of one
     createdAt: Date;
     updatedAt: Date;
+}
+
+// Tournament Group
+export type TournamentGroup = {
+    id: string;
+    name: string; // e.g., "Group A", "Group B"
+    teams: string[];
+    order: number;
+}
+
+// Tournament Event Types
+export type TournamentEventType =
+    // Tournament Level
+    | 'tournament_winner'
+    | 'tournament_runner_up'
+    | 'semi_finalists'
+    | 'finalists'
+    | 'points_table_topper'
+    // Group Level
+    | 'group_topper'
+    | 'group_second_place'
+    | 'group_qualifiers'
+    | 'group_team_points'
+    // Player Level
+    | 'top_run_scorer'
+    | 'top_wicket_taker'
+    | 'tournament_mvp'
+    | 'most_sixes'
+    | 'best_strike_rate'
+    | 'most_centuries'
+    | 'most_fifties'
+    | 'best_bowling_average'
+    // Special Events
+    | 'most_toss_wins'
+    | 'highest_team_total'
+    | 'lowest_team_total'
+    | 'super_over_count'
+    | 'highest_individual_score'
+    | 'fastest_fifty_tournament'
+    | 'fastest_hundred_tournament'
+    // Live Tournament Predictions
+    | 'group_qualifier_live'
+    | 'top_2_after_matches'
+    | 'playoff_qualifier'
+    | 'mvp_as_of_today';
+
+// Tournament Event
+export type TournamentEvent = {
+    id: string;
+    title: string;
+    description: string;
+    eventType: TournamentEventType;
+    tournamentId: string;
+    groupId?: string; // For group-level events
+    status: 'upcoming' | 'live' | 'completed' | 'locked';
+    startDate: Date;
+    endDate: Date;
+    lockTime?: Date; // When predictions lock
+    points: number;
+    difficultyLevel?: 'easy' | 'medium' | 'hard';
+    options?: string[]; // For choice_selection
+    multiSelect?: boolean; // For multi-select predictions (e.g., semi-finalists)
+    maxSelections?: number; // Max selections allowed (e.g., 4 for semi-finalists)
+    rules?: string[];
+    result?: EventResult;
+    applicableFormats?: ('T20' | 'ODI' | 'Test' | 'IPL')[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// Cricket Tournament / Series
+export type CricketTournament = {
+    id: string;
+    name: string; // e.g., "ICC Men's T20 World Cup 2024"
+    format: "T20" | "ODI" | "Test" | "IPL";
+    description?: string;
+    startDate: Date;
+    endDate: Date;
+    status: 'upcoming' | 'live' | 'completed';
+    teams: string[]; // All participating teams
+    groups?: TournamentGroup[]; // For tournaments with groups
+    venue?: string; // Primary venue or "Multiple Venues"
+    entryFee: {
+        type: 'free' | 'paid';
+        amount?: number;
+        tiers?: Array<{ amount: number; label: string }>; // e.g., ₹99, ₹199, ₹499
+        seasonPass?: boolean; // For IPL full season
+    };
+    maxParticipants?: number;
+    events?: TournamentEvent[];
+    matches?: string[]; // Array of match IDs
+    prizePool?: string;
+    sponsorName?: string;
+    sponsorLogo?: string;
+    visibility: 'public' | 'private' | 'invite_only';
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy?: string;
 }
 
 export type CricketerProfile = {
