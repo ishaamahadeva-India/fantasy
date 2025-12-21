@@ -5,19 +5,21 @@ import { doc } from 'firebase/firestore';
 import { ArticleForm } from '@/components/admin/article-form';
 import { updateArticle } from '@/firebase/firestore/articles';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function EditArticlePage({ params }: { params: { id: string } }) {
+export default function EditArticlePage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const articleRef = firestore ? doc(firestore, 'articles', params.id) : null;
+  const params = useParams();
+  const id = params.id as string;
+  const articleRef = firestore ? doc(firestore, 'articles', id) : null;
   const { data: article, isLoading } = useDoc(articleRef);
 
   const handleUpdateArticle = async (data: any) => {
     if (!firestore) return;
     try {
-      await updateArticle(firestore, params.id, data);
+      await updateArticle(firestore, id, data);
       toast({
         title: 'Article Updated',
         description: 'The article has been successfully updated.',
