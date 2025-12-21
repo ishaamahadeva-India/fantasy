@@ -38,7 +38,7 @@ export default function TournamentResultsPage() {
           verified: true,
           verifiedAt: new Date(),
         },
-      });
+      } as Partial<any>);
       toast({
         title: 'Result Verified',
         description: 'The tournament event result has been verified.',
@@ -62,7 +62,7 @@ export default function TournamentResultsPage() {
           approved: true,
           approvedAt: new Date(),
         },
-      });
+      } as Partial<any>);
       toast({
         title: 'Result Approved',
         description: 'The tournament event result has been approved.',
