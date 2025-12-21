@@ -25,12 +25,12 @@ export default function EditCricketMatchPage() {
   const matchId = params.id as string;
 
   const matchRef = firestore ? doc(firestore, 'fantasy_matches', matchId) : null;
-  const { data: match, isLoading: matchLoading } = useDoc<FantasyMatch>(matchRef);
+  const { data: match, isLoading: matchLoading } = useDoc(matchRef);
 
   const eventsRef = firestore
     ? collection(firestore, 'fantasy_matches', matchId, 'events')
     : null;
-  const { data: events, isLoading: eventsLoading } = useCollection<CricketEvent>(eventsRef);
+  const { data: events, isLoading: eventsLoading } = useCollection(eventsRef);
 
   const handleUpdateMatch = async (data: any) => {
     if (!firestore) return;
