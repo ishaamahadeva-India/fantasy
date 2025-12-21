@@ -145,7 +145,7 @@ export default function TournamentLeaderboardPage() {
     
     const groupLeaderboards: Record<string, UserParticipation[]> = {};
     
-    tournament.groups.forEach(group => {
+    tournament.groups.forEach((group: any) => {
       // Filter participations that have predictions for events in this group
       const groupEventIds = events?.filter(e => e.groupId === group.name).map(e => e.id) || [];
       const groupParticipations = displayParticipations.filter(p => {
