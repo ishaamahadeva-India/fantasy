@@ -554,40 +554,6 @@ export type FantasyRoleSelection = {
     lockedAt: Date;
 };
 
-// Admin Roles
-export type AdminRole = 'super_admin' | 'campaign_manager' | 'content_moderator' | 'finance_admin' | 'analytics_admin';
-
-// Campaign Entry
-export type CampaignEntry = {
-    id: string;
-    userId: string;
-    campaignId: string;
-    entryFee: number;
-    entryTier?: string; // e.g., '₹49', '₹99', '₹199'
-    paymentStatus: 'pending' | 'paid' | 'refunded';
-    paymentMethod?: 'upi' | 'bank' | 'wallet';
-    transactionId?: string;
-    enteredAt: Date;
-}
-
-// Reward Payout
-export type RewardPayout = {
-    id: string;
-    userId: string;
-    campaignId: string;
-    rank: number;
-    rewardType: 'cash' | 'coupons' | 'tickets' | 'ott_subscription' | 'merchandise' | 'badges' | 'xp';
-    rewardValue?: number;
-    rewardDescription?: string;
-    status: 'pending' | 'approved' | 'paid' | 'rejected';
-    paymentMethod?: 'upi' | 'bank' | 'wallet';
-    transactionId?: string;
-    verifiedBy?: string;
-    approvedBy?: string;
-    paidAt?: Date;
-    createdAt: Date;
-}
-
 // User Participation
 export type UserParticipation = {
     userId: string;

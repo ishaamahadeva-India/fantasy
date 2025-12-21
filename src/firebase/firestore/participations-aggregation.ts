@@ -43,7 +43,7 @@ export async function getCampaignParticipationStats(
   const participations = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as UserParticipation[];
+    })) as unknown as UserParticipation[];
 
   return aggregateParticipations(participations);
 }
@@ -65,7 +65,7 @@ export async function getTournamentParticipationStats(
   const participations = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as UserParticipation[];
+    })) as unknown as UserParticipation[];
 
   return aggregateParticipations(participations);
 }

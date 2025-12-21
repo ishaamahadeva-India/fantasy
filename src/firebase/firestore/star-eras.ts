@@ -63,11 +63,11 @@ export async function getStarEras(firestore: Firestore, starId: string) {
   const erasCollection = collection(firestore, 'star-eras');
   const q = query(erasCollection, where('starId', '==', starId));
   const snapshot = await getDocs(q);
-  return snapshot.docs
+  return (snapshot.docs
     .map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    })) as StarEra[]
+    })) as StarEra[])
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 }
 

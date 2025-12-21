@@ -92,7 +92,7 @@ export async function getUserTournamentEntry(
   );
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
-  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as unknown as TournamentEntry;
 }
 
 /**
@@ -105,6 +105,6 @@ export async function getTournamentEntries(
   const entriesCollection = collection(firestore, 'tournament-entries');
   const q = query(entriesCollection, where('tournamentId', '==', tournamentId));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as unknown as TournamentEntry));
 }
 

@@ -12,6 +12,7 @@ import {
   useFirebaseApp,
   useFirestore,
   useAuth,
+  useStorage,
 } from './provider';
 
 import { FirebaseClientProvider } from './client-provider';

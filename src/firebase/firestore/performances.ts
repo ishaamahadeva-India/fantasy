@@ -103,11 +103,11 @@ export async function getStarPerformances(firestore: Firestore, starId: string) 
   const performancesCollection = collection(firestore, 'performances');
   const q = query(performancesCollection, where('starId', '==', starId));
   const snapshot = await getDocs(q);
-  return snapshot.docs
+  return (snapshot.docs
     .map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    })) as Performance[]
+    })) as Performance[])
     .sort((a, b) => (b.year || 0) - (a.year || 0)); // Sort by year descending
 }
 
@@ -118,11 +118,11 @@ export async function getMoviePerformances(firestore: Firestore, movieId: string
   const performancesCollection = collection(firestore, 'performances');
   const q = query(performancesCollection, where('movieId', '==', movieId));
   const snapshot = await getDocs(q);
-  return snapshot.docs
+  return (snapshot.docs
     .map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    })) as Performance[]
+    })) as Performance[])
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 }
 

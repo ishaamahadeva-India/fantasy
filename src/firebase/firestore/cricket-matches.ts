@@ -43,7 +43,7 @@ type NewCricketEvent = {
   difficultyLevel?: 'easy' | 'medium' | 'hard';
   options?: string[];
   rules?: string[];
-  applicableFormats?: ('T20' | 'ODI' | 'Test')[];
+  applicableFormats?: ('T20' | 'ODI' | 'Test' | 'IPL')[];
 };
 
 /**
@@ -196,7 +196,7 @@ export const CRICKET_EVENT_TEMPLATES: Array<{
   difficultyLevel?: 'easy' | 'medium' | 'hard';
   defaultOptions?: string[];
   defaultRules?: string[];
-  applicableFormats?: ('T20' | 'ODI' | 'Test')[];
+  applicableFormats?: ('T20' | 'ODI' | 'Test' | 'IPL')[];
 }> = [
   // Powerplay Events (T20/ODI)
   {

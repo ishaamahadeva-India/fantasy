@@ -70,6 +70,6 @@ export async function getCampaignLeaderboard(
   const snapshot = await getDoc(leaderboardDocRef);
   
   if (!snapshot.exists()) return null;
-  return { id: snapshot.id, ...snapshot.data() } as CampaignLeaderboard;
+  return { id: snapshot.id, ...snapshot.data() } as unknown as CampaignLeaderboard;
 }
 

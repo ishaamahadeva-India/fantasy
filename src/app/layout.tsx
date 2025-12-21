@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AppShell } from '@/components/layout/app-shell';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 export const metadata: Metadata = {
   title: 'Ultra-Posh',
@@ -44,10 +45,12 @@ export default function RootLayout({
         <meta name="theme-color" content="#E6C87A" />
       </head>
       <body className="font-sans antialiased min-h-screen">
-        <FirebaseClientProvider>
-          <AppShell>{children}</AppShell>
-        </FirebaseClientProvider>
-        <Toaster />
+        <ErrorBoundary>
+          <FirebaseClientProvider>
+            <AppShell>{children}</AppShell>
+          </FirebaseClientProvider>
+          <Toaster />
+        </ErrorBoundary>
       </body>
     </html>
   );

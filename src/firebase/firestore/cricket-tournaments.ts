@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import type { CricketTournament, TournamentEvent, TournamentGroup } from '@/lib/types';
+import type { CricketTournament, TournamentEvent, TournamentGroup, TournamentEventType } from '@/lib/types';
 
 type NewCricketTournament = {
   name: string;

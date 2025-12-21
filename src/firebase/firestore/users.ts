@@ -75,7 +75,7 @@ export function updateUserFantasySettings(firestore: Firestore, userId: string, 
 
     if(Object.keys(updateData).length === 0) return;
 
-    updateDoc(userDocRef, updateData, { merge: true })
+    updateDoc(userDocRef, updateData)
         .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: userDocRef.path,
