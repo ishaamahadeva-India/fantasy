@@ -31,6 +31,8 @@ export type FanRating = {
   createdAt: Date;
 };
 
+export type AdminRole = 'super_admin' | 'campaign_manager' | 'content_moderator' | 'finance_admin' | 'analytics_admin';
+
 export type UserProfile = {
     id: string;
     displayName: string;
@@ -41,15 +43,27 @@ export type UserProfile = {
     ageVerified?: boolean;
     fantasyEnabled?: boolean;
     isAdmin?: boolean;
+    adminRole?: AdminRole;
+    city?: string;
+    state?: string;
+    isBanned?: boolean;
+    banReason?: string;
+    banExpiresAt?: Date;
+    suspiciousActivity?: boolean;
 };
 
 export type UserPrediction = {
+    id?: string;
     userId: string;
     eventId: string;
     campaignId: string;
+    movieId?: string; // For multi-movie campaigns
     predictionData: Record<string, any>;
     score?: number;
+    isLocked: boolean;
+    lockedAt?: Date;
     createdAt: Date;
+    updatedAt?: Date;
 };
 
 export type Article = {
@@ -92,13 +106,202 @@ export type AdvertisementPosition =
     | 'profile-sidebar'           // Sidebar in profile page
     | 'quiz-banner';              // Banner in quiz pages
 
-export type FantasyCampaign = {
-    title: string;
+export type FantasyEventType = 
+    | 'choice_selection'      // Multiple choice questions
+    | 'numeric_prediction'   // Number predictions (views, collections, etc.)
+    | 'draft_selection'      // Team/player draft
+    | 'opening_day_collection'  // Opening day box office collection
+    | 'weekend_collection'      // First weekend box office
+    | 'lifetime_gross'          // Lifetime gross collection
+    | 'imdb_rating'             // IMDb rating range
+    | 'occupancy_percentage'    // Opening day occupancy %
+    | 'day1_talk'               // Day-1 talk (Hit/Average/Flop)
+    | 'awards_rank'             // Awards / Trending rank
+    | 'ott_debut_rank';         // OTT platform debut week rank
+
+// Campaign Movie - represents a movie in a campaign
+export type CampaignMovie = {
+    id: string;
     movieId: string;
-    movieLanguage: string;
+    movieTitle: string;
+    language: string;
+    industry: 'Hollywood' | 'Bollywood' | 'Tollywood' | 'Tamil' | 'Kannada' | 'Malayalam' | 'Punjabi' | 'Bhojpuri' | 'Other' | 'OTT';
+    releaseDate: Date;
+    releaseType: 'theatrical' | 'ott';
+    posterUrl?: string;
+    status: 'upcoming' | 'released' | 'completed';
+    order: number; // Display order
+}
+
+// Campaign Type
+export type CampaignType = 'single_movie' | 'multiple_movies';
+
+// Entry Fee Configuration
+export type EntryFeeConfig = {
+    type: 'free' | 'paid';
+    amount?: number; // In rupees
+    tiers?: Array<{ amount: number; label: string }>; // e.g., ₹49, ₹99, ₹199
+}
+
+// Reward Configuration
+export type RewardConfig = {
+    type: 'cash' | 'coupons' | 'tickets' | 'ott_subscription' | 'merchandise' | 'badges' | 'xp';
+    value?: number; // For cash
+    description?: string;
+    rankRange?: { start: number; end: number }; // e.g., rank 1-3 gets this reward
+    minParticipants?: number; // Minimum participants required
+}
+
+// Points Configuration
+export type PointsConfig = {
+    difficultyLevel: 'easy' | 'medium' | 'hard';
+    basePoints: number;
+    perfectBonus?: number; // Bonus for perfect prediction
+    allMovieBonus?: number; // Bonus for getting all movies correct
+    perfectMovieBonus?: number; // Bonus for perfect movie-wise score
+    negativeMarking?: number; // Negative points for wrong prediction (0 = no negative)
+    accuracyBased?: boolean; // If true, points scale with accuracy
+    rangeBased?: boolean; // If true, use range-based scoring for numeric predictions
+    tolerance?: number; // Percentage tolerance for range-based scoring (default 10%)
+}
+
+// Event Result with Verification
+export type EventResult = {
+    outcome: string | number;
+    verified: boolean;
+    verifiedBy?: string; // Admin user ID
+    verifiedAt?: Date;
+    approved: boolean;
+    approvedBy?: string; // Super Admin user ID
+    approvedAt?: Date;
+    notes?: string;
+}
+
+// Enhanced Fantasy Event
+export type FantasyEvent = {
+    id: string;
+    title: string;
+    description: string;
+    eventType: FantasyEventType;
+    status: 'upcoming' | 'live' | 'completed' | 'locked';
+    startDate: Date;
+    endDate: Date;
+    lockTime?: Date; // When predictions should be locked
+    movieId?: string; // For single-movie campaigns, or specific movie in multi-movie
+    points: number;
+    pointsConfig?: PointsConfig;
+    difficultyLevel?: 'easy' | 'medium' | 'hard';
+    options?: string[]; // For choice_selection type
+    rules?: string[];
+    result?: EventResult;
+    draftConfig?: {
+        budget: number;
+        roles: Array<{ id: string; title: string; players: string[] }>;
+        playerCredits: Record<string, number>;
+    };
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// Leaderboard Entry
+export type LeaderboardEntry = {
+    userId: string;
+    displayName: string;
+    avatarUrl?: string;
+    totalPoints: number;
+    rank: number;
+    movieWisePoints?: Record<string, number>; // movieId -> points
+    city?: string;
+    state?: string;
+    predictionsCount: number;
+    correctPredictions: number;
+    lastUpdated: Date;
+}
+
+// Campaign Leaderboard
+export type CampaignLeaderboard = {
+    campaignId: string;
+    type: 'overall' | 'movie_wise' | 'city_wise' | 'state_wise' | 'friends' | 'private_group';
+    movieId?: string; // For movie-wise leaderboards
+    entries: LeaderboardEntry[];
+    lastUpdated: Date;
+}
+
+// Campaign Entry (User participation)
+export type CampaignEntry = {
+    id: string;
+    userId: string;
+    campaignId: string;
+    entryFee?: number;
+    entryFeeTier?: string;
+    paymentStatus?: 'pending' | 'paid' | 'refunded';
+    paymentMethod?: 'upi' | 'bank' | 'wallet';
+    totalPoints: number;
+    rank?: number;
+    joinedAt: Date;
+    city?: string;
+    state?: string;
+}
+
+// Reward Payout
+export type RewardPayout = {
+    id: string;
+    campaignId: string;
+    userId: string;
+    reward: RewardConfig;
+    rank: number;
+    status: 'pending' | 'approved' | 'paid' | 'rejected';
+    paymentMethod?: 'upi' | 'bank' | 'wallet';
+    paymentDetails?: string;
+    processedBy?: string;
+    processedAt?: Date;
+    notes?: string;
+}
+
+// Enhanced Fantasy Campaign
+export type FantasyCampaign = {
+    id: string;
+    title: string;
+    campaignType: CampaignType;
+    description?: string;
+    prizePool?: string;
+    sponsorName?: string;
+    sponsorLogo?: string;
+    
+    // Single movie (for backward compatibility)
+    movieId?: string;
+    movieTitle?: string;
+    movieLanguage?: string;
+    
+    // Multiple movies
+    movies?: CampaignMovie[];
+    
+    // Campaign settings
     startDate: Date;
     endDate?: Date;
     status: 'upcoming' | 'active' | 'completed';
+    visibility: 'public' | 'private' | 'invite_only';
+    maxParticipants?: number;
+    
+    // Entry and rewards
+    entryFee: EntryFeeConfig;
+    rewards?: RewardConfig[];
+    
+    // Events
+    events?: FantasyEvent[]; // Events within this campaign
+    
+    // Leaderboards
+    leaderboards?: {
+        overall?: CampaignLeaderboard;
+        movieWise?: Record<string, CampaignLeaderboard>; // movieId -> leaderboard
+        cityWise?: CampaignLeaderboard;
+        stateWise?: CampaignLeaderboard;
+    };
+    
+    // Metadata
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy?: string;
 }
 
 export type FantasyMatch = {
@@ -124,3 +327,61 @@ export type FantasyRoleSelection = {
     selectedRoles: Record<string, string>; // e.g., { "powerplay-king": "player-id-1" }
     lockedAt: Date;
 };
+
+// Admin Roles
+export type AdminRole = 'super_admin' | 'campaign_manager' | 'content_moderator' | 'finance_admin' | 'analytics_admin';
+
+// Campaign Entry
+export type CampaignEntry = {
+    id: string;
+    userId: string;
+    campaignId: string;
+    entryFee: number;
+    entryTier?: string; // e.g., '₹49', '₹99', '₹199'
+    paymentStatus: 'pending' | 'paid' | 'refunded';
+    paymentMethod?: 'upi' | 'bank' | 'wallet';
+    transactionId?: string;
+    enteredAt: Date;
+}
+
+// Reward Payout
+export type RewardPayout = {
+    id: string;
+    userId: string;
+    campaignId: string;
+    rank: number;
+    rewardType: 'cash' | 'coupons' | 'tickets' | 'ott_subscription' | 'merchandise' | 'badges' | 'xp';
+    rewardValue?: number;
+    rewardDescription?: string;
+    status: 'pending' | 'approved' | 'paid' | 'rejected';
+    paymentMethod?: 'upi' | 'bank' | 'wallet';
+    transactionId?: string;
+    verifiedBy?: string;
+    approvedBy?: string;
+    paidAt?: Date;
+    createdAt: Date;
+}
+
+// User Participation
+export type UserParticipation = {
+    userId: string;
+    campaignId: string;
+    totalPoints: number;
+    movieWisePoints: Record<string, number>;
+    predictionsCount: number;
+    correctPredictions: number;
+    rank?: number;
+    lastUpdated: Date;
+}
+
+// Fraud Detection
+export type FraudFlag = {
+    userId: string;
+    reason: 'multiple_accounts' | 'same_device' | 'unusual_pattern' | 'suspicious_activity';
+    severity: 'low' | 'medium' | 'high';
+    flaggedAt: Date;
+    flaggedBy?: string;
+    resolved: boolean;
+    resolvedAt?: Date;
+    notes?: string;
+}

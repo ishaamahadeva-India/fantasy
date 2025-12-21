@@ -82,24 +82,31 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
   const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
   
-  const isLoading = userLoading || profileLoading;
+  // Check superadmin first (from Firebase Auth, available immediately on refresh)
+  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
+  
+  // Only wait for profile loading if user is not superadmin
+  const isLoading = userLoading || (!isSuperAdmin && profileLoading);
+  
   // Check both userProfile.isAdmin and user email (for super admin)
-  const isAuthorized = userProfile?.isAdmin === true || user?.email === SUPER_ADMIN_EMAIL;
+  // Superadmin is always authorized, even if profile hasn't loaded yet
+  const isAuthorized = isSuperAdmin || userProfile?.isAdmin === true;
 
   useEffect(() => {
-    // Only redirect if loading is finished
+    // Only redirect if loading is finished AND we're sure the user is not authorized
     if (!isLoading) {
       // If user is not logged in, redirect to home
       if (!user) {
         router.replace('/');
         return;
       }
-      // If user is logged in but not authorized, redirect to home
-      if (!isAuthorized) {
+      // If user is logged in but not authorized (and not superadmin), redirect to home
+      // Superadmin should never be redirected
+      if (!isAuthorized && !isSuperAdmin) {
         router.replace('/');
       }
     }
-  }, [isLoading, isAuthorized, router, user]);
+  }, [isLoading, isAuthorized, isSuperAdmin, router, user]);
 
 
   // While we are verifying the user's authentication state and admin role,

@@ -7,13 +7,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Trophy, ListOrdered, BarChart3, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, deleteDoc, doc } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FantasyCampaign, FantasyMatch } from '@/lib/types';
+import { deleteFantasyCampaign } from '@/firebase/firestore/fantasy-campaigns';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -38,13 +39,16 @@ export default function AdminFantasyPage() {
   const campaignsQuery = firestore ? collection(firestore, 'fantasy-campaigns') : null;
   const matchesQuery = firestore ? collection(firestore, 'fantasy_matches') : null;
   
-  const { data: campaigns, isLoading: campaignsLoading } = useCollection<FantasyCampaignWithId>(campaignsQuery);
-  const { data: matches, isLoading: matchesLoading } = useCollection<FantasyMatchWithId>(matchesQuery);
+  const { data: campaignsData, isLoading: campaignsLoading } = useCollection(campaignsQuery);
+  const { data: matchesData, isLoading: matchesLoading } = useCollection(matchesQuery);
+  
+  const campaigns = campaignsData as FantasyCampaignWithId[] | undefined;
+  const matches = matchesData as FantasyMatchWithId[] | undefined;
 
   const handleDeleteCampaign = async (id: string) => {
     if (!firestore) return;
     try {
-      await deleteDoc(doc(firestore, 'fantasy-campaigns', id));
+      await deleteFantasyCampaign(firestore, id);
       toast({ title: 'Campaign Deleted' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error deleting campaign' });
@@ -54,7 +58,7 @@ export default function AdminFantasyPage() {
   const handleDeleteMatch = async (id: string) => {
     if (!firestore) return;
     try {
-      await deleteDoc(doc(firestore, 'fantasy_matches', id));
+      // TODO: Implement match deletion function
       toast({ title: 'Match Deleted' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error deleting match' });
@@ -111,9 +115,20 @@ export default function AdminFantasyPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
+                    <Badge variant="outline">{campaign.campaignType === 'multiple_movies' ? 'Multi-Movie' : 'Single Movie'}</Badge>
                     <Button variant="ghost" size="icon" asChild>
                       <Link href={`/admin/fantasy/campaign/edit/${campaign.id}`}>
                         <Edit className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/fantasy/campaign/${campaign.id}/results`}>
+                        <Trophy className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/fantasy/campaign/${campaign.id}/leaderboard`}>
+                        <ListOrdered className="w-4 h-4" />
                       </Link>
                     </Button>
                     <AlertDialog>
