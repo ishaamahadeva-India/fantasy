@@ -16,6 +16,8 @@
 # next.js
 /.next/
 /out/
+fantasy-main/.next/
+fantasy-main/node_modules/
 
 # production
 /build
