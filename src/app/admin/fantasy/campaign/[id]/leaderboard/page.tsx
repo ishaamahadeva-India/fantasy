@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, RefreshCw, Download, Users, Radio } from 'lucide-react';
+import { Trophy, RefreshCw, Download, Users, Radio, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UserParticipation } from '@/lib/types';
@@ -93,16 +93,19 @@ export default function CampaignLeaderboardPage() {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
+      const fileName = `leaderboard-${campaignId}-${new Date().toISOString().split('T')[0]}.csv`;
       link.setAttribute('href', url);
-      link.setAttribute('download', `leaderboard-${campaignId}-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', fileName);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       toast({
         title: 'Export Complete',
-        description: 'Leaderboard data has been exported as CSV.',
+        description: `File "${fileName}" downloaded to your Downloads folder.`,
+        duration: 5000,
       });
     } else {
       // For Excel, we'd need a library like xlsx
@@ -111,6 +114,39 @@ export default function CampaignLeaderboardPage() {
         description: 'Excel export requires additional setup. Please use CSV export for now.',
       });
     }
+  };
+
+  const handleDownloadTemplate = () => {
+    // Generate template CSV with sample data
+    const headers = ['Rank', 'User ID', 'Total Points', 'Predictions', 'Correct', 'Movie-wise Points'];
+    const sampleRows = [
+      [1, 'user123', 500, 10, 8, '{"movie1": 200, "movie2": 300}'],
+      [2, 'user456', 450, 10, 7, '{"movie1": 150, "movie2": 300}'],
+      [3, 'user789', 400, 10, 6, '{"movie1": 200, "movie2": 200}'],
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...sampleRows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const fileName = `leaderboard-template.csv`;
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Template Downloaded',
+      description: `Template file "${fileName}" downloaded to your Downloads folder.`,
+      duration: 5000,
+    });
   };
 
   if (isLoading) {
@@ -175,6 +211,10 @@ export default function CampaignLeaderboardPage() {
           <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
+          </Button>
+          <Button variant="outline" onClick={handleDownloadTemplate}>
+            <FileText className="w-4 h-4 mr-2" />
+            Download Template
           </Button>
           <Button variant="outline" onClick={() => handleExport('csv')}>
             <Download className="w-4 h-4 mr-2" />
