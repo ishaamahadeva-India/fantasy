@@ -30,10 +30,10 @@ export default function NationalTeamProfilePage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const teamRef = firestore ? doc(firestore, 'teams', id) : null;
-  const { data: team, isLoading } = useDoc<TeamProfile>(teamRef);
+  const { data: team, isLoading } = useDoc(teamRef);
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
   const [eras, setEras] = useState<TeamEra[]>([]);
   const [erasLoading, setErasLoading] = useState(true);
