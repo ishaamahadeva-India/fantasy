@@ -539,7 +539,7 @@ function FirstInningsView({ onInningsEnd, currentStreak, setStreak, onScoreUpdat
             case 'range':
                 return <RangePrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status}/>
             case 'ranking':
-                return <RankingPrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status} players={players}/>
+                return <RankingPrediction prediction={currentPrediction} onLock={handleLockPrediction} status={status} players={players as any as (CricketerProfile & { id: string })[]}/>
             default:
                 return <p>Unsupported prediction type</p>;
         }
@@ -769,15 +769,15 @@ export default function LiveFantasyMatchPage() {
   const renderGameContent = () => {
     switch(matchPhase) {
       case 'pre-match':
-        return <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} players={players} />;
+        return <PreMatchView onLockSelections={() => setMatchPhase('1st-innings')} players={players as any as (CricketerProfile & { id: string })[]} />;
       case '1st-innings':
-        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate} players={players} />;
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('innings-break')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate} players={players as any as (CricketerProfile & { id: string })[]} />;
       case 'innings-break':
         return <InningsBreakView onStartNextInnings={() => setMatchPhase('2nd-innings-selection')} />;
       case '2nd-innings-selection':
-        return <SecondInningsSelectionView onLockSelections={() => setMatchPhase('2nd-innings-live')} players={players} />;
+        return <SecondInningsSelectionView onLockSelections={() => setMatchPhase('2nd-innings-live')} players={players as any as (CricketerProfile & { id: string })[]} />;
       case '2nd-innings-live':
-        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate} players={players}/>; // Re-use for simulation
+        return <FirstInningsView onInningsEnd={() => setMatchPhase('match-over')} currentStreak={currentStreak} setStreak={setCurrentStreak} onScoreUpdate={handleScoreUpdate} players={players as any as (CricketerProfile & { id: string })[]}/>; // Re-use for simulation
       case 'match-over':
         return <Card><CardHeader><CardTitle>Match Over!</CardTitle><CardContent><p>Final leaderboard is now available.</p></CardContent></CardHeader></Card>;
       default:
