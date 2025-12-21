@@ -1,14 +1,16 @@
 'use client';
 
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Users, Trophy, DollarSign, BarChart3, Calendar } from 'lucide-react';
-import type { FantasyCampaign, UserParticipation, CampaignEntry } from '@/lib/types';
+import type { FantasyCampaign } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import { getOverallEntryStats } from '@/firebase/firestore/campaign-entries-aggregation';
+import type { CampaignEntryAggregation } from '@/firebase/firestore/campaign-entries-aggregation';
 
 export default function FantasyAnalyticsPage() {
   const firestore = useFirestore();
@@ -21,60 +23,39 @@ export default function FantasyAnalyticsPage() {
   const campaignsRef = firestore ? collection(firestore, 'fantasy-campaigns') : null;
   const { data: campaigns, isLoading: campaignsLoading } = useCollection<FantasyCampaign>(campaignsRef);
 
-  // Fetch participants and revenue data
+  // Fetch participants and revenue data using aggregation queries
   useEffect(() => {
     if (!firestore || campaignsLoading) return;
 
     const fetchMetrics = async () => {
       setLoadingMetrics(true);
       try {
-        // Get all campaign entries
-        const entriesRef = collection(firestore, 'campaign-entries');
-        const entriesSnapshot = await getDocs(entriesRef);
-        const entries = entriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as CampaignEntry[];
-
-        // Calculate unique participants
-        const uniqueParticipants = new Set(entries.map(e => e.userId));
-        setTotalParticipants(uniqueParticipants.size);
-
-        // Calculate revenue (sum of all paid entry fees)
-        const paidEntries = entries.filter(e => e.paymentStatus === 'paid' && e.entryFee);
-        const revenue = paidEntries.reduce((sum, entry) => sum + (entry.entryFee || 0), 0);
-        setTotalRevenue(revenue);
-
-        // Calculate engagement rate (participants / total users who could participate)
-        // For now, we'll use a simple calculation based on entries
-        const totalEntries = entries.length;
-        const uniqueUsers = uniqueParticipants.size;
-        const avgEntriesPerUser = totalEntries > 0 ? totalEntries / uniqueUsers : 0;
+        // Use aggregation query for better performance
+        const entryStats = await getOverallEntryStats(firestore);
+        
+        setTotalParticipants(entryStats.uniqueParticipants);
+        setTotalRevenue(entryStats.totalRevenue);
+        
+        // Calculate engagement rate
+        const avgEntriesPerUser = entryStats.uniqueParticipants > 0 
+          ? entryStats.totalEntries / entryStats.uniqueParticipants 
+          : 0;
         setEngagementRate(Math.min(100, Math.round(avgEntriesPerUser * 20))); // Normalize to 0-100
 
-        // Calculate monthly revenue data
-        const monthlyData: Record<string, { revenue: number; participants: Set<string> }> = {};
-        paidEntries.forEach(entry => {
-          const date = entry.joinedAt instanceof Date ? entry.joinedAt : 
-                      (entry.joinedAt as any)?.toDate ? (entry.joinedAt as any).toDate() : new Date();
-          const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
-          
-          if (!monthlyData[monthKey]) {
-            monthlyData[monthKey] = { revenue: 0, participants: new Set() };
-          }
-          monthlyData[monthKey].revenue += entry.entryFee || 0;
-          monthlyData[monthKey].participants.add(entry.userId);
-        });
-
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const revenueChartData = months.map(month => ({
-          month,
-          revenue: monthlyData[month]?.revenue || 0,
-          participants: monthlyData[month]?.participants.size || 0,
-        })).filter(d => d.revenue > 0 || d.participants > 0);
+        // Use monthly revenue from aggregation
+        const revenueChartData = entryStats.monthlyRevenue.length > 0 
+          ? entryStats.monthlyRevenue.map(m => ({
+              month: m.month.split(' ')[0], // Extract month name
+              revenue: m.revenue,
+              participants: m.entries,
+            }))
+          : [
+              { month: 'Jan', revenue: 0, participants: 0 },
+              { month: 'Feb', revenue: 0, participants: 0 },
+              { month: 'Mar', revenue: 0, participants: 0 },
+            ];
         
-        setRevenueData(revenueChartData.length > 0 ? revenueChartData : [
-          { month: 'Jan', revenue: 0, participants: 0 },
-          { month: 'Feb', revenue: 0, participants: 0 },
-          { month: 'Mar', revenue: 0, participants: 0 },
-        ]);
+        setRevenueData(revenueChartData);
       } catch (error) {
         console.error('Error fetching metrics:', error);
       } finally {
