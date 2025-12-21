@@ -134,7 +134,7 @@ export default function MovieProfilePage() {
   const { user } = useUser();
 
   const movieRef = firestore ? doc(firestore, 'movies', id) : null;
-  const { data: movie, isLoading: movieLoading } = useDoc<Movie>(movieRef);
+  const { data: movie, isLoading: movieLoading } = useDoc(movieRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -147,8 +147,8 @@ export default function MovieProfilePage() {
 
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
 
-  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
-  const { data: userProfile, isLoading: userProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  const { data: ratings, isLoading: ratingsLoading } = useCollection(ratingsQuery);
+  const { data: userProfile, isLoading: userProfileLoading } = useDoc(userProfileRef);
 
   if (movieLoading) {
     return <MovieProfileSkeleton />;
