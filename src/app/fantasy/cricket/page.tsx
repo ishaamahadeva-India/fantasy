@@ -19,7 +19,7 @@ type FantasyMatchWithId = FantasyMatch & { id: string };
 function TournamentsTab() {
     const firestore = useFirestore();
     const tournamentsQuery = firestore ? collection(firestore, 'cricket-tournaments') : null;
-    const { data: tournaments, isLoading } = useCollection<any>(tournamentsQuery);
+    const { data: tournaments, isLoading } = useCollection(tournamentsQuery);
 
     if (isLoading) {
         return (
@@ -226,7 +226,7 @@ function MatchList({ matches, isLoading }: { matches: FantasyMatchWithId[] | nul
 function CricketFantasyContent() {
     const firestore = useFirestore();
     const matchesQuery = firestore ? collection(firestore, 'fantasy_matches') : null;
-    const { data: matchesData, isLoading } = useCollection<FantasyMatch>(matchesQuery);
+    const { data: matchesData, isLoading } = useCollection(matchesQuery);
     
     const allMatches = matchesData as FantasyMatchWithId[] | undefined;
 
@@ -301,7 +301,7 @@ export default function CricketFantasyPage() {
     const { user } = useUser();
     const firestore = useFirestore();
     const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-    const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+    const { data: userProfile, isLoading } = useDoc(userProfileRef);
     const [showDisclaimer, setShowDisclaimer] = useState(false);
 
     useEffect(() => {
