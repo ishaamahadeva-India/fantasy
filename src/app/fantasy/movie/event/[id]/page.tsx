@@ -379,7 +379,7 @@ function LiveEventView({ eventDetails }: { eventDetails: any }) {
             eventId: eventDetails.id,
             campaignId: eventDetails.campaignId,
             predictionData: predictionData,
-        }, user.uid);
+        } as any, user.uid);
         
         setIsLocked(true);
 
