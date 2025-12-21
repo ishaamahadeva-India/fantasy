@@ -45,7 +45,7 @@ export default function CampaignResultsPage() {
           verified: true,
           verifiedAt: new Date(),
         },
-      });
+      } as Partial<any>);
       toast({
         title: 'Result Verified',
         description: 'The event result has been verified.',
@@ -69,7 +69,7 @@ export default function CampaignResultsPage() {
           approved: true,
           approvedAt: new Date(),
         },
-      });
+      } as Partial<any>);
       toast({
         title: 'Result Approved',
         description: 'The event result has been approved.',
