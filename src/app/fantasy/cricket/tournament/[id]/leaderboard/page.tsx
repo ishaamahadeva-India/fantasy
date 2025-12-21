@@ -58,17 +58,17 @@ export default function TournamentLeaderboardPage() {
     : [];
   
   // Add ranks
-  const rankedParticipations = sortedParticipations.map((p, index) => ({
+  const rankedParticipations = sortedParticipations.map((p: any, index: number) => ({
     ...p,
     rank: index + 1,
   }));
 
   // Find user's rank
   const userRank = user 
-    ? rankedParticipations.findIndex(p => p.userId === user.uid) + 1
+    ? rankedParticipations.findIndex((p: any) => p.userId === user.uid) + 1
     : null;
   const userParticipation = user 
-    ? rankedParticipations.find(p => p.userId === user.uid)
+    ? rankedParticipations.find((p: any) => p.userId === user.uid)
     : null;
 
   const getRankIcon = (rank: number) => {
