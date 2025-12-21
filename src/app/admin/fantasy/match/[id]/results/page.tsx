@@ -38,7 +38,7 @@ export default function CricketMatchResultsPage() {
           verified: true,
           verifiedAt: new Date(),
         },
-      });
+      } as Partial<any>);
       toast({
         title: 'Result Verified',
         description: 'The event result has been verified.',
@@ -62,7 +62,7 @@ export default function CricketMatchResultsPage() {
           approved: true,
           approvedAt: new Date(),
         },
-      });
+      } as Partial<any>);
       toast({
         title: 'Result Approved',
         description: 'The event result has been approved.',
