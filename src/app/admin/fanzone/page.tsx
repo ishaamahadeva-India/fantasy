@@ -69,32 +69,7 @@ export default function AdminFanZonePage() {
     const starsQuery = firestore ? collection(firestore, 'stars') : null;
     const { data: stars, isLoading: starsLoading } = useCollection<StarType>(starsQuery);
 
-    return (
-        <div className="space-y-8">
-            <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                            <Star className="w-6 h-6 text-primary" />
-                        </div>
-                        <h1 className="text-3xl font-bold md:text-4xl font-headline bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                            Fan Zone Management
-                        </h1>
-                    </div>
-                    <p className="text-muted-foreground ml-12">
-                        Manage cricketers, teams, movies, and stars.
-                    </p>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                    <Link href="/admin/fanzone/analytics">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Analytics
-                    </Link>
-                </Button>
-            </div>
-
-
-     const handleDeleteCricketer = async (cricketerId: string) => {
+    const handleDeleteCricketer = async (cricketerId: string) => {
         if (!firestore) return;
         try {
         await deleteCricketer(firestore, cricketerId);
