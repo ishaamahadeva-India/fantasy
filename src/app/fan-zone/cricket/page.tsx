@@ -66,7 +66,7 @@ function CricketersTab({
 }) {
   const firestore = useFirestore();
   const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
-  const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
+  const { data: cricketers, isLoading } = useCollection(cricketersQuery);
 
   const filteredCricketers =
     cricketers
@@ -141,7 +141,7 @@ function CricketersTab({
 function TeamsTab({ type, searchTerm }: { type: 'national' | 'ip', searchTerm: string }) {
   const firestore = useFirestore();
   const teamsQuery = firestore ? query(collection(firestore, 'teams'), where('type', '==', type)) : null;
-  const { data: teams, isLoading } = useCollection<TeamProfile>(teamsQuery);
+  const { data: teams, isLoading } = useCollection(teamsQuery);
   
   const filteredTeams =
     teams?.filter((team) =>
@@ -200,7 +200,7 @@ function TeamsTab({ type, searchTerm }: { type: 'national' | 'ip', searchTerm: s
 function TrendingTab() {
   const firestore = useFirestore();
   const cricketersQuery = firestore ? query(collection(firestore, 'cricketers'), where('trendingRank', '>', 0), orderBy('trendingRank'), limit(5)) : null;
-  const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
+  const { data: cricketers, isLoading } = useCollection(cricketersQuery);
 
   if (isLoading) {
     return <Card><CardContent><Skeleton className="h-64" /></CardContent></Card>
@@ -281,7 +281,7 @@ function StatBar({ label, value1, value2, higherIsBetter = true }: { label: stri
 function AnalystViewTab() {
   const firestore = useFirestore();
   const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
-  const { data: cricketers, isLoading } = useCollection<Cricketer>(cricketersQuery);
+  const { data: cricketers, isLoading } = useCollection(cricketersQuery);
 
   const [player1, setPlayer1] = useState<string | undefined>(undefined);
   const [player2, setPlayer2] = useState<string | undefined>(undefined);
@@ -392,7 +392,7 @@ export default function CricketFanZonePage() {
 
   const firestore = useFirestore();
   const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
-  const { data: cricketers } = useCollection<Cricketer>(cricketersQuery);
+  const { data: cricketers } = useCollection(cricketersQuery);
 
   const allRoles = cricketers ? [...new Set(cricketers.flatMap((c) => c.roles || []))] : [];
   const allCountries = cricketers ? [...new Set(cricketers.map((c) => c.country))] : [];
