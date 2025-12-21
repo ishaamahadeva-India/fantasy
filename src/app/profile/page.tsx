@@ -12,7 +12,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useUser } from '@/firebase';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import {
   Check,
   User,
@@ -23,7 +24,16 @@ import {
   Award,
   History,
   LogIn,
+  MapPin,
+  Edit,
+  Save,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { toast } from '@/hooks/use-toast';
+import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -70,8 +80,41 @@ const historyItems = [
     { type: 'Game', title: 'Fact or Fiction: IPL Dynasties', score: '5/5 Correct' },
 ];
 
-function ProfileHeader({ user, isLoading }: { user: any, isLoading: boolean}) {
+function ProfileHeader({ user, isLoading, userProfile }: { user: any, isLoading: boolean, userProfile?: UserProfile | null}) {
     const router = useRouter();
+    const firestore = useFirestore();
+    const [isEditing, setIsEditing] = useState(false);
+    const [city, setCity] = useState(userProfile?.city || '');
+    const [state, setState] = useState(userProfile?.state || '');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+      if (!firestore || !user) return;
+      
+      setIsSaving(true);
+      try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userDocRef, {
+          city: city.trim() || null,
+          state: state.trim() || null,
+        });
+        
+        toast({
+          title: 'Profile Updated',
+          description: 'Your location information has been saved.',
+        });
+        setIsEditing(false);
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Update Failed',
+          description: 'There was an error updating your profile. Please try again.',
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    };
 
     if (isLoading) {
         return (
@@ -117,15 +160,78 @@ function ProfileHeader({ user, isLoading }: { user: any, isLoading: boolean}) {
                 <User className="w-12 h-12" />
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold md:text-4xl font-headline">
                 {user?.displayName || 'User'}
               </h1>
               <p className="mt-1 text-muted-foreground">{user?.email || 'user@example.com'}</p>
-              <div className="mt-2">
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
                 <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/20 text-primary">
                   Pro Pass
                 </span>
+                {userProfile && (
+                  <div className="flex items-center gap-2">
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="City"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="h-7 w-32"
+                        />
+                        <Input
+                          placeholder="State"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          className="h-7 w-32"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={handleSave}
+                          disabled={isSaving}
+                          className="h-7"
+                        >
+                          <Save className="w-3 h-3 mr-1" />
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setIsEditing(false);
+                            setCity(userProfile?.city || '');
+                            setState(userProfile?.state || '');
+                          }}
+                          className="h-7"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        {(userProfile.city || userProfile.state) ? (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="w-3 h-3" />
+                            {userProfile.city && userProfile.state 
+                              ? `${userProfile.city}, ${userProfile.state}`
+                              : userProfile.city || userProfile.state}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">No location set</span>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setIsEditing(true)}
+                          className="h-6 px-2"
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Add Location
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
         </div>
@@ -134,10 +240,13 @@ function ProfileHeader({ user, isLoading }: { user: any, isLoading: boolean}) {
 
 export default function ProfilePage() {
     const { user, isLoading } = useUser();
+    const firestore = useFirestore();
+    const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+    const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   return (
     <div className="space-y-8">
-      <ProfileHeader user={user} isLoading={isLoading} />
+      <ProfileHeader user={user} isLoading={isLoading} userProfile={userProfile} />
 
       <Tabs defaultValue="badges">
         <TabsList className="grid w-full grid-cols-3">
