@@ -141,13 +141,22 @@ export default function LoginPage() {
             <LogIn className="mr-2 h-4 w-4" /> Google
           </Button>
         </CardContent>
-        <CardFooter className="justify-center">
+        <CardFooter className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/signup" className="text-primary hover:underline">
               Sign up
             </Link>
           </p>
+          <div className="flex gap-4 text-xs text-muted-foreground">
+            <Link href="/terms" className="hover:text-foreground transition-colors">
+              Terms
+            </Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">
+              Privacy
+            </Link>
+          </div>
         </CardFooter>
       </Card>
     </div>

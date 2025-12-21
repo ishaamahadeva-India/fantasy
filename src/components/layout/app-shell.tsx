@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sidebar';
 import { MainNav } from './main-nav';
 import { Header } from './header';
+import { Footer } from './footer';
 import { BookHeart } from 'lucide-react';
 
 
@@ -29,9 +30,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <MainNav />
           </SidebarContent>
         </Sidebar>
-        <SidebarInset>
+        <SidebarInset className="flex flex-col min-h-screen">
           <Header />
-          <main className="p-4 md:p-8 lg:p-12">{children}</main>
+          <main className="flex-1 p-4 md:p-8 lg:p-12">{children}</main>
+          <Footer />
         </SidebarInset>
       </SidebarProvider>
   );

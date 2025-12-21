@@ -149,12 +149,16 @@ export default function SignupPage() {
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-normal cursor-pointer">
-                          I accept the{' '}
-                          <Link href="/terms" className="text-primary hover:underline" target="_blank">
-                            Terms and Conditions
-                          </Link>
-                          {' '}and confirm that:
+                          <FormLabel className="text-sm font-normal cursor-pointer">
+                            I accept the{' '}
+                            <Link href="/terms" className="text-primary hover:underline" target="_blank">
+                              Terms and Conditions
+                            </Link>
+                            {' '}and{' '}
+                            <Link href="/privacy" className="text-primary hover:underline" target="_blank">
+                              Privacy Policy
+                            </Link>
+                            {' '}and confirm that:
                         </FormLabel>
                         <div className="text-xs text-muted-foreground space-y-1 mt-2">
                           <p>• I am 18 years of age or older</p>
