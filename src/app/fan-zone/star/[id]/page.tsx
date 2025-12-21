@@ -116,10 +116,10 @@ export default function StarProfilePage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const starRef = firestore ? doc(firestore, 'stars', id) : null;
-  const { data: star, isLoading: starLoading } = useDoc<StarType>(starRef);
+  const { data: star, isLoading: starLoading } = useDoc(starRef);
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -130,7 +130,7 @@ export default function StarProfilePage() {
     );
   }, [firestore, id]);
 
-  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+  const { data: ratings, isLoading: ratingsLoading } = useCollection(ratingsQuery);
   
   const [starEras, setStarEras] = useState<StarEra[]>([]);
   const [erasLoading, setErasLoading] = useState(false);
