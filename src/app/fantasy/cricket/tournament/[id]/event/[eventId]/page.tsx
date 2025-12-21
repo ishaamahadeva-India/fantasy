@@ -27,15 +27,15 @@ export default function TournamentEventPage() {
   const { user } = useUser();
   
   const tournamentRef = firestore ? doc(firestore, 'cricket-tournaments', tournamentId) : null;
-  const { data: tournament, isLoading: tournamentLoading } = useDoc<CricketTournament>(tournamentRef);
+  const { data: tournament, isLoading: tournamentLoading } = useDoc(tournamentRef);
   
   const eventRef = firestore 
     ? doc(firestore, 'cricket-tournaments', tournamentId, 'events', eventId) 
     : null;
-  const { data: event, isLoading: eventLoading } = useDoc<TournamentEvent>(eventRef);
+  const { data: event, isLoading: eventLoading } = useDoc(eventRef);
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
   // Check if user has already made a prediction
   const predictionsRef = firestore
@@ -49,7 +49,7 @@ export default function TournamentEventPage() {
         where('eventId', '==', eventId)
       )
     : null;
-  const { data: existingPredictions } = useCollection<any>(predictionsQuery);
+  const { data: existingPredictions } = useCollection(predictionsQuery);
 
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // For multi-select
