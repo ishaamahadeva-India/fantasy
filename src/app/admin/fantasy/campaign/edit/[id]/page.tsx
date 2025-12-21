@@ -84,7 +84,7 @@ export default function EditFantasyCampaignPage() {
     ...campaign,
     startDate: toDate(campaign.startDate),
     endDate: campaign.endDate ? toDate(campaign.endDate) : undefined,
-    movies: campaign.movies?.map((movie) => ({
+    movies: campaign.movies?.map((movie: any) => ({
       ...movie,
       releaseDate: toDate(movie.releaseDate),
     })) || [],
