@@ -2,6 +2,7 @@
 import { config } from 'dotenv';
 config();
 
+import { withSentryConfig } from '@sentry/nextjs';
 import type {NextConfig} from 'next';
 
 const withPWA = require('next-pwa')({
@@ -58,4 +59,16 @@ const nextConfig: NextConfig = {
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-export default isProduction ? withPWA(nextConfig) : nextConfig;
+const configWithPWA = isProduction ? withPWA(nextConfig) : nextConfig;
+
+// Wrap with Sentry if DSN is provided
+const finalConfig = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(configWithPWA, {
+      // Sentry options
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    })
+  : configWithPWA;
+
+export default finalConfig;
