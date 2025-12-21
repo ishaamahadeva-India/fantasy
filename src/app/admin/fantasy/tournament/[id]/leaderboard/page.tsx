@@ -55,7 +55,7 @@ export default function TournamentLeaderboardPage() {
         const updated = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        })) as UserParticipation[];
+        })) as any as UserParticipation[];
         setRealTimeData(updated);
       },
       (error) => {
