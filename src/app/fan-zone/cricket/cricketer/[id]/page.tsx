@@ -283,7 +283,7 @@ export default function CricketerProfilePage() {
               <FavoriteButton 
                 entityId={id} 
                 entityType="cricketer" 
-                userProfile={userProfile || null}
+                userProfile={(userProfile as any) as UserProfile | null}
               />
             </div>
           </div>
