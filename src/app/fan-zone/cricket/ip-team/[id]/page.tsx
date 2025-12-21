@@ -16,22 +16,13 @@ import { ArrowLeft, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
-import { useCollection, useFirestore, useDoc } from '@/firebase';
-import type { FanRating } from '@/lib/types';
+import { useCollection, useFirestore, useDoc, useUser } from '@/firebase';
+import type { FanRating, UserProfile, TeamProfile } from '@/lib/types';
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FavoriteButton } from '@/components/fan-zone/favorite-button';
 
-type TeamProfile = {
-    id: string;
-    name: string;
-    type: 'ip' | 'national';
-    logoUrl?: string;
-    // IP-specific fields
-    homeVenue?: string;
-    stabilityIndex?: number;
-    squadBalance?: number;
-    momentum?: number[];
-};
+// Using TeamProfile from types.ts
 
 
 function MomentumVisualizer({ momentum }: { momentum: number[] | undefined }) {
@@ -117,9 +108,12 @@ export default function IpTeamProfilePage({
   ];
   
   const firestore = useFirestore();
-
+  const { user } = useUser();
   const teamRef = firestore ? doc(firestore, 'teams', id) : null;
   const { data: team, isLoading: teamLoading } = useDoc<TeamProfile>(teamRef);
+  
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -163,15 +157,40 @@ export default function IpTeamProfilePage({
               />
             </div>
           </Card>
-          <div className="text-center mt-4">
-            <p className="text-sm text-muted-foreground">{team.homeVenue || 'N/A'}</p>
+          <div className="mt-4 space-y-4">
+            <h1 className="text-4xl font-bold font-headline text-center">
+              {team.name}
+            </h1>
+            {team.description && (
+              <p className="text-center text-sm text-muted-foreground">{team.description}</p>
+            )}
+            {(team.foundedYear || team.homeGround) && (
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {team.foundedYear && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Founded</p>
+                    <p className="font-semibold">{team.foundedYear}</p>
+                  </div>
+                )}
+                {(team.homeGround || team.homeVenue) && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Home Ground</p>
+                    <p className="font-semibold text-sm">{team.homeGround || team.homeVenue}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex justify-center mt-4">
+              <FavoriteButton 
+                entityId={team.id} 
+                entityType="team" 
+                userProfile={userProfile || null}
+              />
+            </div>
           </div>
         </div>
         <div className="md:col-span-2 space-y-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold font-headline text-balance">
-              {team.name}
-            </h1>
             <div className="mt-2 flex items-center gap-2">
               <Badge variant="secondary">IP League</Badge>
             </div>
