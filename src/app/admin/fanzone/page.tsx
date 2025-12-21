@@ -69,6 +69,30 @@ export default function AdminFanZonePage() {
     const starsQuery = firestore ? collection(firestore, 'stars') : null;
     const { data: stars, isLoading: starsLoading } = useCollection<StarType>(starsQuery);
 
+    return (
+        <div className="space-y-8">
+            <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                            <Star className="w-6 h-6 text-primary" />
+                        </div>
+                        <h1 className="text-3xl font-bold md:text-4xl font-headline bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                            Fan Zone Management
+                        </h1>
+                    </div>
+                    <p className="text-muted-foreground ml-12">
+                        Manage cricketers, teams, movies, and stars.
+                    </p>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                    <Link href="/admin/fanzone/analytics">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Analytics
+                    </Link>
+                </Button>
+            </div>
+
 
      const handleDeleteCricketer = async (cricketerId: string) => {
         if (!firestore) return;
@@ -145,44 +169,53 @@ export default function AdminFanZonePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold md:text-4xl font-headline">
-            Fan Zone Management
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Manage all entities within the Cricket and Movie Fan Zones.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <Link href="/admin/fanzone/analytics">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Analytics
-          </Link>
-        </Button>
-      </div>
-
       <Tabs defaultValue="cricketers" className="w-full">
-        <TabsList>
-          <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
-          <TabsTrigger value="teams">Teams</TabsTrigger>
-          <TabsTrigger value="movies">Movies</TabsTrigger>
-          <TabsTrigger value="stars">Stars</TabsTrigger>
-        </TabsList>
-        <TabsContent value="cricketers" className="mt-4">
-          <Card>
-            <CardHeader>
-                <div className='flex justify-between items-center'>
-                    <CardTitle>Cricketers</CardTitle>
-                    <Button variant="outline" size="sm" asChild>
+        <Card className="border-2 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-primary" />
+                  Fan Zone Management
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Manage all entities within the Cricket and Movie Fan Zones.
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/fanzone/analytics">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0">
+              <TabsTrigger value="cricketers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-6 py-4">
+                Cricketers
+              </TabsTrigger>
+              <TabsTrigger value="teams" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-6 py-4">
+                Teams
+              </TabsTrigger>
+              <TabsTrigger value="movies" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-6 py-4">
+                Movies
+              </TabsTrigger>
+              <TabsTrigger value="stars" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-6 py-4">
+                Stars
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="cricketers" className="m-0">
+              <div className="p-6">
+                <div className='flex justify-between items-center mb-4'>
+                    <h3 className="text-lg font-semibold">Cricketers</h3>
+                    <Button size="sm" asChild>
                        <Link href="/admin/fanzone/cricketers/new">
                         <PlusCircle className="w-4 h-4 mr-2" />
                         Add Cricketer
                        </Link>
                     </Button>
                 </div>
-            </CardHeader>
-            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
