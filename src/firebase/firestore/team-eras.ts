@@ -18,7 +18,7 @@ export type TeamEra = {
   teamId: string;
   eraName: string; // e.g., "2000s", "2010s", "2020s"
   startYear: number;
-  endYear: number;
+  endYear?: number; // Optional - null for ongoing eras
   winRate: number; // Percentage
   iccTrophies: number;
   keyPlayers: string[]; // Array of player names
