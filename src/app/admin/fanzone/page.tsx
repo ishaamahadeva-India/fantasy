@@ -58,16 +58,16 @@ export default function AdminFanZonePage() {
     const firestore = useFirestore();
     
     const cricketersQuery = firestore ? collection(firestore, 'cricketers') : null;
-    const { data: cricketers, isLoading: cricketersLoading } = useCollection<CricketerProfile>(cricketersQuery);
+    const { data: cricketers, isLoading: cricketersLoading } = useCollection(cricketersQuery);
 
     const teamsQuery = firestore ? collection(firestore, 'teams') : null;
-    const { data: teams, isLoading: teamsLoading } = useCollection<TeamProfile>(teamsQuery);
+    const { data: teams, isLoading: teamsLoading } = useCollection(teamsQuery);
     
     const moviesQuery = firestore ? collection(firestore, 'movies') : null;
-    const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
+    const { data: movies, isLoading: moviesLoading } = useCollection(moviesQuery);
 
     const starsQuery = firestore ? collection(firestore, 'stars') : null;
-    const { data: stars, isLoading: starsLoading } = useCollection<StarType>(starsQuery);
+    const { data: stars, isLoading: starsLoading } = useCollection(starsQuery);
 
     const handleDeleteCricketer = async (cricketerId: string) => {
         if (!firestore) return;
