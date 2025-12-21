@@ -158,7 +158,7 @@ export default function CricketerProfilePage() {
     );
   }, [firestore, id]);
 
-  const { data: ratings, isLoading: ratingsLoading } = useCollection<FanRating>(ratingsQuery);
+  const { data: ratings, isLoading: ratingsLoading } = useCollection(ratingsQuery);
 
   if (cricketerLoading) {
     return <ProfileSkeleton />;
