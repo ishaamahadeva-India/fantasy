@@ -214,7 +214,7 @@ export default function IpTeamProfilePage() {
                   {team.squadBalance?.toFixed(1) || 'N/A'}
                 </p>
               </div>
-              <FanConfidenceDisplay ratings={ratings} isLoading={ratingsLoading} />
+              <FanConfidenceDisplay ratings={ratings as any as FanRating[] | null} isLoading={ratingsLoading} />
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Momentum</p>
                 <MomentumVisualizer momentum={team.momentum} />
