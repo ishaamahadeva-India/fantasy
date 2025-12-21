@@ -313,7 +313,7 @@ export default function TournamentLeaderboardPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Groups</SelectItem>
-                        {tournament.groups.map(group => (
+                        {tournament.groups.map((group: any) => (
                           <SelectItem key={group.id || group.name} value={group.name}>
                             {group.name}
                           </SelectItem>
