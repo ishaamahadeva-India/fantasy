@@ -282,23 +282,19 @@ export default function AdminFanZonePage() {
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="teams" className="mt-4">
-             <Card>
-                <CardHeader>
-                    <div className='flex justify-between items-center'>
-                        <CardTitle>Teams (IP & National)</CardTitle>
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href="/admin/fanzone/teams/new">
-                                <PlusCircle className="w-4 h-4 mr-2" />
-                                Add Team
-                            </Link>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
+              </div>
+            </TabsContent>
+            <TabsContent value="teams" className="m-0">
+              <div className="p-6">
+                <div className='flex justify-between items-center mb-4'>
+                    <h3 className="text-lg font-semibold">Teams (IP & National)</h3>
+                    <Button size="sm" asChild>
+                        <Link href="/admin/fanzone/teams/new">
+                            <PlusCircle className="w-4 h-4 mr-2" />
+                            Add Team
+                        </Link>
+                    </Button>
+                </div>
                     <Table>
                         <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -356,23 +352,19 @@ export default function AdminFanZonePage() {
                             )}
                         </TableBody>
                     </Table>
-                </CardContent>
-            </Card>
-        </TabsContent>
-         <TabsContent value="movies" className="mt-4">
-             <Card>
-                <CardHeader>
-                    <div className='flex justify-between items-center'>
-                        <CardTitle>Movies</CardTitle>
-                        <Button variant="outline" size="sm" asChild>
-                           <Link href="/admin/fanzone/movies/new">
+              </div>
+            </TabsContent>
+            <TabsContent value="movies" className="m-0">
+              <div className="p-6">
+                <div className='flex justify-between items-center mb-4'>
+                    <h3 className="text-lg font-semibold">Movies</h3>
+                    <Button size="sm" asChild>
+                        <Link href="/admin/fanzone/movies/new">
                             <PlusCircle className="w-4 h-4 mr-2" />
                             Add Movie
-                           </Link>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
+                        </Link>
+                    </Button>
+                </div>
                     <Table>
                         <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Year</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -410,23 +402,19 @@ export default function AdminFanZonePage() {
                             )}
                         </TableBody>
                     </Table>
-                </CardContent>
-            </Card>
-        </TabsContent>
-         <TabsContent value="stars" className="mt-4">
-             <Card>
-                <CardHeader>
-                     <div className='flex justify-between items-center'>
-                        <CardTitle>Stars</CardTitle>
-                        <Button variant="outline" size="sm" asChild>
-                           <Link href="/admin/fanzone/stars/new">
+              </div>
+            </TabsContent>
+            <TabsContent value="stars" className="m-0">
+              <div className="p-6">
+                <div className='flex justify-between items-center mb-4'>
+                    <h3 className="text-lg font-semibold">Stars</h3>
+                    <Button size="sm" asChild>
+                        <Link href="/admin/fanzone/stars/new">
                             <PlusCircle className="w-4 h-4 mr-2" />
                             Add Star
-                           </Link>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
+                        </Link>
+                    </Button>
+                </div>
                     <Table>
                         <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Genre</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -464,9 +452,10 @@ export default function AdminFanZonePage() {
                             )}
                         </TableBody>
                     </Table>
-                </CardContent>
-            </Card>
-        </TabsContent>
+              </div>
+            </TabsContent>
+          </CardContent>
+        </Card>
       </Tabs>
     </div>
   );
