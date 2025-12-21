@@ -202,7 +202,7 @@ export default function StarProfilePage() {
                     </h1>
                      <div className="mt-2 flex items-center gap-2 flex-wrap">
                         {star.profession && <Badge variant="default">{star.profession}</Badge>}
-                        {star.genre?.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
+                        {star.genre?.map((g: string) => <Badge key={g} variant="secondary">{g}</Badge>)}
                         {star.industry && <Badge variant="outline">{star.industry}</Badge>}
                         {star.trendingRank && <Badge variant="default">#{star.trendingRank} Trending</Badge>}
                     </div>
