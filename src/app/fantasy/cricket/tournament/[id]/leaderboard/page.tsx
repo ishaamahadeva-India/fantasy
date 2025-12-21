@@ -21,17 +21,17 @@ export default function TournamentLeaderboardPage() {
   const { user } = useUser();
   
   const tournamentRef = firestore ? doc(firestore, 'cricket-tournaments', tournamentId) : null;
-  const { data: tournament, isLoading: tournamentLoading } = useDoc<CricketTournament>(tournamentRef);
+  const { data: tournament, isLoading: tournamentLoading } = useDoc(tournamentRef);
   
   const participationsRef = firestore
     ? collection(firestore, 'cricket-tournaments', tournamentId, 'participations')
     : null;
-  const { data: participations, isLoading: participationsLoading } = useCollection<UserParticipation>(participationsRef);
+  const { data: participations, isLoading: participationsLoading } = useCollection(participationsRef);
 
   // Get user profiles for display names
   const userIds = participations ? [...new Set(participations.map(p => p.userId))] : [];
   const userProfilesRef = firestore ? collection(firestore, 'users') : null;
-  const { data: allUsers } = useCollection<UserProfile>(userProfilesRef);
+  const { data: allUsers } = useCollection(userProfilesRef);
   const userProfilesMap = allUsers?.reduce((acc, profile) => {
     if (userIds.includes(profile.id)) {
       acc[profile.id] = profile;
