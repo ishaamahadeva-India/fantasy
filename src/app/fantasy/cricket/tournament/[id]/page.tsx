@@ -57,9 +57,9 @@ export default function TournamentPage() {
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-6">
         <Button variant="ghost" asChild>
-          <Link href="/fan-zone/cricket">
+          <Link href="/fantasy/cricket">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Cricket Fan Zone
+            Back to Cricket Fantasy
           </Link>
         </Button>
       </div>
@@ -223,7 +223,7 @@ export default function TournamentPage() {
                           </div>
                         </div>
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/fan-zone/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                          <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
                             {event.status === 'live' ? 'Predict Now' : 'View Details'}
                           </Link>
                         </Button>

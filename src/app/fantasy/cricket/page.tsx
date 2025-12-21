@@ -1,15 +1,18 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowRight, Ticket } from 'lucide-react';
+import { ArrowRight, Ticket, Trophy, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import type { UserProfile, FantasyMatch } from '@/lib/types';
 import { doc, collection } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 import { DisclaimerModal } from '@/components/fantasy/disclaimer-modal';
 import { useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { useCollection } from '@/firebase';
 
 type FantasyMatchWithId = FantasyMatch & { id: string };
 
@@ -48,6 +51,160 @@ const placeholderMatches: FantasyMatchWithId[] = [
         status: 'upcoming'
     }
 ];
+
+function TournamentsTab() {
+    const firestore = useFirestore();
+    const tournamentsQuery = firestore ? collection(firestore, 'cricket-tournaments') : null;
+    const { data: tournaments, isLoading } = useCollection<any>(tournamentsQuery);
+
+    if (isLoading) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                    <Card key={i}>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-48 mb-2" />
+                            <Skeleton className="h-4 w-32" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-20 w-full" />
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        );
+    }
+
+    if (!tournaments || tournaments.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                    <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-semibold">No Tournaments Available</p>
+                    <p className="text-sm mt-2">Check back soon for upcoming tournaments like T20 World Cup and IPL 2026!</p>
+                    <Button asChild className="mt-4" variant="outline">
+                        <Link href="/fantasy">Back to Fantasy Hub</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Sort tournaments: live first, then upcoming, then completed
+    const sortedTournaments = [...tournaments].sort((a, b) => {
+        const statusOrder = { live: 0, upcoming: 1, completed: 2 };
+        const aOrder = statusOrder[a.status as keyof typeof statusOrder] ?? 3;
+        const bOrder = statusOrder[b.status as keyof typeof statusOrder] ?? 3;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        
+        // If same status, sort by start date
+        const aDate = a.startDate?.seconds ? new Date(a.startDate.seconds * 1000) : new Date(0);
+        const bDate = b.startDate?.seconds ? new Date(b.startDate.seconds * 1000) : new Date(0);
+        return bDate.getTime() - aDate.getTime();
+    });
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedTournaments.map((tournament) => {
+                    const startDate = tournament.startDate?.seconds 
+                        ? new Date(tournament.startDate.seconds * 1000) 
+                        : null;
+                    const endDate = tournament.endDate?.seconds 
+                        ? new Date(tournament.endDate.seconds * 1000) 
+                        : null;
+                    const isLive = tournament.status === 'live';
+                    const isUpcoming = tournament.status === 'upcoming';
+                    const isCompleted = tournament.status === 'completed';
+
+                    return (
+                        <Card 
+                            key={tournament.id} 
+                            className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${
+                                isLive ? 'border-primary border-2 ring-2 ring-primary/20' : ''
+                            }`}
+                        >
+                            {isLive && (
+                                <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">
+                                    LIVE
+                                </div>
+                            )}
+                            <CardHeader>
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1">
+                                        <CardTitle className="text-xl mb-2 flex items-center gap-2">
+                                            <Trophy className={`w-5 h-5 ${isLive ? 'text-primary' : 'text-muted-foreground'}`} />
+                                            {tournament.name}
+                                        </CardTitle>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <Badge variant={isLive ? 'default' : isUpcoming ? 'secondary' : 'outline'}>
+                                                {tournament.format}
+                                            </Badge>
+                                            <Badge variant="outline" className="text-xs">
+                                                {tournament.teams?.length || 0} teams
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {tournament.description && (
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                        {tournament.description}
+                                    </p>
+                                )}
+                                
+                                <div className="space-y-2 text-sm">
+                                    {startDate && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Calendar className="w-4 h-4" />
+                                            <span>
+                                                {startDate.toLocaleDateString()} 
+                                                {endDate && ` - ${endDate.toLocaleDateString()}`}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {tournament.venue && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <span className="text-xs">📍 {tournament.venue}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {tournament.prizePool && (
+                                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                                        <p className="text-xs text-muted-foreground mb-1">Prize Pool</p>
+                                        <p className="text-lg font-bold text-primary">{tournament.prizePool}</p>
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between pt-2 border-t">
+                                    <div className="text-xs text-muted-foreground">
+                                        {tournament.entryFee?.type === 'free' ? (
+                                            <span className="text-green-600 font-semibold">Free Entry</span>
+                                        ) : (
+                                            <span>Entry: ₹{tournament.entryFee?.amount || 'Paid'}</span>
+                                        )}
+                                    </div>
+                                    <Button 
+                                        size="sm" 
+                                        variant={isLive ? 'default' : isUpcoming ? 'outline' : 'ghost'}
+                                        asChild
+                                        className={isCompleted ? 'opacity-50 cursor-not-allowed' : ''}
+                                    >
+                                        <Link href={`/fantasy/cricket/tournament/${tournament.id}`}>
+                                            {isLive ? 'Join Live' : isUpcoming ? 'View Details' : 'View Results'}
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 
 function MatchList({ matches, isLoading }: { matches: FantasyMatchWithId[] | null, isLoading: boolean }) {
     if (isLoading) {
@@ -127,13 +284,20 @@ function CricketFantasyContent() {
                 </p>
             </div>
 
-            <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">All</TabsTrigger>
+            <Tabs defaultValue="tournaments" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="tournaments">
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Tournaments
+                </TabsTrigger>
+                <TabsTrigger value="all">All Matches</TabsTrigger>
                 <TabsTrigger value="t20">T20 / IPL</TabsTrigger>
                 <TabsTrigger value="odi">ODI</TabsTrigger>
                 <TabsTrigger value="test">Test</TabsTrigger>
                 </TabsList>
+                <TabsContent value="tournaments" className="mt-6">
+                    <TournamentsTab />
+                </TabsContent>
                 <TabsContent value="all" className="mt-6">
                     <MatchList matches={filterMatches(null)} isLoading={isLoading} />
                 </TabsContent>
