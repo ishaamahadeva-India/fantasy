@@ -269,7 +269,7 @@ export default function StarProfilePage() {
                         <FavoriteButton 
                             entityId={star.id} 
                             entityType="star" 
-                            userProfile={userProfile || null}
+                            userProfile={(userProfile as any) as UserProfile | null}
                         />
                         <PulseCheck question={`How do you rate ${star.name}'s recent script selections?`} options={["Excellent", "Average", "Poor"]} entityId={star.id} entityType='star' />
                         {starEras.length >= 2 && (
