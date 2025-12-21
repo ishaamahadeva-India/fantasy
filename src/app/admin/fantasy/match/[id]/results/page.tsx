@@ -24,7 +24,7 @@ export default function CricketMatchResultsPage() {
   const eventsRef = firestore
     ? collection(firestore, 'fantasy_matches', matchId, 'events')
     : null;
-  const { data: events, isLoading } = useCollection<CricketEvent>(eventsRef);
+  const { data: events, isLoading } = useCollection(eventsRef);
   
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [resultData, setResultData] = useState<{ outcome: string; notes: string }>({ outcome: '', notes: '' });
