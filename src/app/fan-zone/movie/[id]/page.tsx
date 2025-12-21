@@ -262,7 +262,7 @@ export default function MovieProfilePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <CommunityInsightDisplay ratings={ratings} isLoading={ratingsLoading} />
+              <CommunityInsightDisplay ratings={ratings as any as FanRating[] | null} isLoading={ratingsLoading} />
             </CardContent>
           </Card>
         </div>
