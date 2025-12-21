@@ -125,7 +125,7 @@ export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormPr
     append({
       title: template.title,
       description: template.description,
-      eventType: template.eventType,
+      eventType: template.eventType as any,
       status: 'upcoming',
       points: template.defaultPoints,
       difficultyLevel: template.difficultyLevel,
