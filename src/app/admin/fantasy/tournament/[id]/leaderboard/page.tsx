@@ -29,12 +29,12 @@ export default function TournamentLeaderboardPage() {
   const eventsRef = firestore
     ? collection(firestore, 'cricket-tournaments', tournamentId, 'events')
     : null;
-  const { data: events } = useCollection<TournamentEvent>(eventsRef);
+  const { data: events } = useCollection(eventsRef);
   
   const participationsRef = firestore
     ? collection(firestore, 'cricket-tournaments', tournamentId, 'participations')
     : null;
-  const { data: participations, isLoading } = useCollection<UserParticipation>(participationsRef);
+  const { data: participations, isLoading } = useCollection(participationsRef);
   
   // Get player prediction event IDs
   const playerEventIds = useMemo(() => {
