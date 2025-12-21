@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AppShell } from '@/components/layout/app-shell';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { CookieConsent } from '@/components/cookie-consent';
 
 export const metadata: Metadata = {
   title: 'Ultra-Posh',
@@ -50,6 +51,7 @@ export default function RootLayout({
             <AppShell>{children}</AppShell>
           </FirebaseClientProvider>
           <Toaster />
+          <CookieConsent />
         </ErrorBoundary>
       </body>
     </html>
