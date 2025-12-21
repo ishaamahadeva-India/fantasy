@@ -304,12 +304,105 @@ export type FantasyCampaign = {
     createdBy?: string;
 }
 
+export type CricketEventType =
+    // Powerplay Events
+    | 'powerplay_runs'
+    | 'powerplay_wickets'
+    | 'powerplay_boundaries'
+    | 'powerplay_sixes'
+    | 'powerplay_overs'
+    // Batting Events
+    | 'first_ball_runs'
+    | 'first_boundary'
+    | 'first_six'
+    | 'first_wicket'
+    | 'first_50_partnership'
+    | 'first_100_partnership'
+    | 'highest_individual_score'
+    | 'most_boundaries'
+    | 'most_sixes'
+    | 'strike_rate_range'
+    // Bowling Events
+    | 'first_wicket_bowler'
+    | 'most_wickets'
+    | 'best_economy'
+    | 'maiden_overs'
+    | 'hat_trick'
+    | 'first_5_wicket_haul'
+    // Match Outcome Events
+    | 'toss_winner'
+    | 'toss_decision'
+    | 'match_winner'
+    | 'win_margin'
+    | 'win_by_wickets_or_runs'
+    | 'total_runs'
+    | 'total_wickets'
+    | 'total_fours'
+    | 'total_sixes'
+    | 'total_extras'
+    // Innings Events
+    | 'first_innings_score'
+    | 'second_innings_score'
+    | 'first_innings_wickets'
+    | 'second_innings_wickets'
+    // Test Match Specific
+    | 'first_innings_lead'
+    | 'follow_on'
+    | 'declaration'
+    | 'century_count'
+    | 'fifty_count'
+    // ODI Specific
+    | '300_plus_score'
+    | '400_plus_score'
+    | 'chase_successful'
+    // T20/IPL Specific
+    | '200_plus_score'
+    | 'fastest_50'
+    | 'fastest_100'
+    | 'super_over'
+    | 'drs_reviews'
+    | 'timeout_taken';
+
+export type CricketEvent = {
+    id: string;
+    title: string;
+    description: string;
+    eventType: CricketEventType;
+    matchId: string;
+    innings?: number; // 1 or 2 (for two-innings formats)
+    status: 'upcoming' | 'live' | 'completed' | 'locked';
+    startTime?: Date;
+    endTime?: Date;
+    lockTime?: Date;
+    points: number;
+    difficultyLevel?: 'easy' | 'medium' | 'hard';
+    options?: string[]; // For choice_selection type
+    rules?: string[];
+    result?: EventResult;
+    applicableFormats?: ('T20' | 'ODI' | 'Test')[]; // Which formats this event applies to
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export type FantasyMatch = {
+    id: string;
     matchName: string;
-    format: "T20" | "ODI" | "Test";
+    format: "T20" | "ODI" | "Test" | "IPL";
     teams: string[];
+    team1: string;
+    team2: string;
+    venue?: string;
     startTime: Date;
     status: "upcoming" | "live" | "completed";
+    events?: CricketEvent[];
+    description?: string;
+    entryFee?: {
+        type: 'free' | 'paid';
+        amount?: number;
+    };
+    maxParticipants?: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export type CricketerProfile = {

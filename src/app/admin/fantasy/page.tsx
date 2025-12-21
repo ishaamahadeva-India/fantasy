@@ -15,6 +15,7 @@ import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FantasyCampaign, FantasyMatch } from '@/lib/types';
 import { deleteFantasyCampaign } from '@/firebase/firestore/fantasy-campaigns';
+import { deleteCricketMatch } from '@/firebase/firestore/cricket-matches';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -58,7 +59,7 @@ export default function AdminFantasyPage() {
   const handleDeleteMatch = async (id: string) => {
     if (!firestore) return;
     try {
-      // TODO: Implement match deletion function
+      await deleteCricketMatch(firestore, id);
       toast({ title: 'Match Deleted' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error deleting match' });
@@ -188,12 +189,19 @@ export default function AdminFantasyPage() {
             <div key={match.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                     <p className="font-semibold">{match.matchName}</p>
+                    <p className="text-sm text-muted-foreground">{match.format} • {match.team1} vs {match.team2}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant={match.status === 'live' ? 'destructive' : 'secondary'}>{match.status}</Badge>
-                     <Button variant="ghost" size="icon" asChild>
+                    <Badge variant="outline">{match.format}</Badge>
+                    <Button variant="ghost" size="icon" asChild>
                       <Link href={`/admin/fantasy/match/edit/${match.id}`}>
                         <Edit className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/fantasy/match/${match.id}/results`}>
+                        <Trophy className="w-4 h-4" />
                       </Link>
                     </Button>
                      <AlertDialog>
