@@ -19,6 +19,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -34,6 +36,9 @@ const formSchema = z.object({
   displayName: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email address.'),
   password: z.string().min(6, 'Password must be at least 6 characters.'),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: 'You must accept the Terms and Conditions to continue.',
+  }),
 });
 
 export default function SignupPage() {
@@ -48,6 +53,7 @@ export default function SignupPage() {
       displayName: '',
       email: '',
       password: '',
+      acceptTerms: false,
     },
   });
 
@@ -121,17 +127,49 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
+                      <PasswordInput
                         placeholder="••••••••"
                         {...field}
-                        type="password"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button className="w-full" type="submit" disabled={!auth || !firestore}>
+              <FormField
+                control={form.control}
+                name="acceptTerms"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-normal cursor-pointer">
+                          I accept the{' '}
+                          <Link href="/terms" className="text-primary hover:underline" target="_blank">
+                            Terms and Conditions
+                          </Link>
+                          {' '}and confirm that:
+                        </FormLabel>
+                        <div className="text-xs text-muted-foreground space-y-1 mt-2">
+                          <p>• I am 18 years of age or older</p>
+                          <p>• This is a skill-based platform with NO real money transactions</p>
+                          <p>• This is NOT gambling - outcomes depend on knowledge and analysis</p>
+                          <p>• I understand and comply with all applicable government regulations</p>
+                          <p>• I acknowledge that no element of chance or randomness is involved</p>
+                        </div>
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button className="w-full" type="submit" disabled={!auth || !firestore || !form.watch('acceptTerms')}>
                 Create Account
               </Button>
             </form>
