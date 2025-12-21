@@ -245,7 +245,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <ProfileHeader user={user} isLoading={isLoading} userProfile={userProfile} />
+      <ProfileHeader user={user} isLoading={isLoading} userProfile={(userProfile as any) as UserProfile | null | undefined} />
 
       <Tabs defaultValue="badges">
         <TabsList className="grid w-full grid-cols-3">
