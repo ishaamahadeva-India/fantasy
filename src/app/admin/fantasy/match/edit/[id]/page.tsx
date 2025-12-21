@@ -99,7 +99,7 @@ export default function EditCricketMatchPage() {
       <h1 className="text-3xl font-bold md:text-4xl font-headline mb-8">
         Edit Cricket Match
       </h1>
-      <CricketMatchForm onSubmit={handleUpdateMatch} defaultValues={defaultValues} />
+      <CricketMatchForm onSubmit={handleUpdateMatch} defaultValues={defaultValues as any} />
     </div>
   );
 }
