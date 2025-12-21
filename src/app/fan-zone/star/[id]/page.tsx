@@ -256,7 +256,7 @@ export default function StarProfilePage() {
                         <CardDescription>Average scores from the community.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <CommunityStarRatingDisplay ratings={ratings} isLoading={ratingsLoading} />
+                        <CommunityStarRatingDisplay ratings={ratings as any as FanRating[] | null} isLoading={ratingsLoading} />
                     </CardContent>
                 </Card>
 
