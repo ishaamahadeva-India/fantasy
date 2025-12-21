@@ -94,7 +94,7 @@ export default function MovieFantasyPage() {
     const { user } = useUser();
     const firestore = useFirestore();
     const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-    const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+    const { data: userProfile, isLoading } = useDoc(userProfileRef);
     const [showDisclaimer, setShowDisclaimer] = useState(false);
 
     useEffect(() => {
