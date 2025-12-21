@@ -35,4 +35,5 @@ export {
   useFirebaseApp,
   useFirestore,
   useAuth,
+  useStorage,
 };

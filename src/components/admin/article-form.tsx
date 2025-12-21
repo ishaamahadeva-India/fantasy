@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ImageUpload } from '@/components/admin/image-upload';
 
 const articleSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -23,6 +24,7 @@ const articleSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   excerpt: z.string().min(1, 'Excerpt is required'),
   content: z.string().min(1, 'Content is required'),
+  imageUrl: z.string().optional(),
 });
 
 type ArticleFormValues = z.infer<typeof articleSchema>;
@@ -112,6 +114,23 @@ export function ArticleForm({ onSubmit, defaultValues }: ArticleFormProps) {
                       placeholder="Full article content (HTML is supported)"
                       className="h-64"
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="articles"
+                      label="Article Image"
                     />
                   </FormControl>
                   <FormMessage />

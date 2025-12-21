@@ -10,6 +10,7 @@ import {
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { firebaseConfig } from './sdk-config'; // UPDATED_IMPORT
 
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -20,12 +21,14 @@ type FirebaseContextType = {
   app: FirebaseApp | null;
   auth: Auth | null;
   firestore: Firestore | null;
+  storage: FirebaseStorage | null;
 };
 
 const FirebaseContext = createContext<FirebaseContextType>({
   app: null,
   auth: null,
   firestore: null,
+  storage: null,
 });
 
 function FirebaseErrorListener() {
@@ -58,6 +61,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
     app: null,
     auth: null,
     firestore: null,
+    storage: null,
   });
 
   useEffect(() => {
@@ -65,7 +69,8 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         const auth = getAuth(app);
         const firestore = getFirestore(app);
-        setInstances({ app, auth, firestore });
+        const storage = getStorage(app);
+        setInstances({ app, auth, firestore, storage });
     }
   }, []);
 
@@ -82,3 +87,4 @@ export const useFirebase = () => useContext(FirebaseContext);
 export const useFirebaseApp = () => useContext(FirebaseContext).app;
 export const useAuth = () => useContext(FirebaseContext).auth;
 export const useFirestore = () => useContext(FirebaseContext).firestore;
+export const useStorage = () => useContext(FirebaseContext).storage;

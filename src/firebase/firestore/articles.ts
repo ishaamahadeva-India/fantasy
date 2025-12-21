@@ -19,6 +19,7 @@ type NewArticle = {
     category: string;
     excerpt: string;
     content: string;
+    imageUrl?: string;
 }
 
 /**

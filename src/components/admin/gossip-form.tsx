@@ -16,10 +16,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ImageUpload } from '@/components/admin/image-upload';
 
 const gossipSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   source: z.string().min(1, 'Source is required'),
+  imageUrl: z.string().optional(),
 });
 
 type GossipFormValues = z.infer<typeof gossipSchema>;
@@ -64,6 +66,23 @@ export function GossipForm({ onSubmit, defaultValues }: GossipFormProps) {
                   <FormLabel>Source</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., FilmFare" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="gossips"
+                      label="Gossip Image"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

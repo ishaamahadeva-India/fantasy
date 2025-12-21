@@ -15,6 +15,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 type GossipData = {
   title: string;
   source: string;
+  imageUrl?: string;
 };
 
 export function addGossip(firestore: Firestore, data: GossipData) {

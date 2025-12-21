@@ -58,13 +58,39 @@ export type Article = {
   category: string;
   excerpt: string;
   content: string;
+  imageUrl?: string;
 }
 
 export type Gossip = {
     id: string;
     title: string;
     source: string;
+    imageUrl?: string;
 }
+
+export type Advertisement = {
+    id: string;
+    title: string;
+    description?: string;
+    imageUrl: string;
+    linkUrl: string;
+    position: AdvertisementPosition;
+    active: boolean;
+    startDate?: Date;
+    endDate?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+export type AdvertisementPosition = 
+    | 'home-banner-top'           // Top banner on home page
+    | 'home-sidebar-sponsored'    // Sidebar sponsored card on home
+    | 'home-article-between'      // Between articles on home (AdBanner)
+    | 'article-top'               // Top of article pages
+    | 'article-sidebar'           // Sidebar in article pages
+    | 'fantasy-banner'             // Banner in fantasy pages
+    | 'profile-sidebar'           // Sidebar in profile page
+    | 'quiz-banner';              // Banner in quiz pages
 
 export type FantasyCampaign = {
     title: string;
@@ -97,30 +123,4 @@ export type FantasyRoleSelection = {
     innings: number;
     selectedRoles: Record<string, string>; // e.g., { "powerplay-king": "player-id-1" }
     lockedAt: Date;
-};
-
-export type LivePrediction = {
-    matchId: string;
-    phase: string; // e.g., "Powerplay", "Middle Overs", "Death Overs"
-    type: 'range' | 'yesno' | 'ranking' | 'conditional';
-    question: string;
-    options?: string[]; // For range or conditional
-    startTime: Date;
-    lockTime: Date;
-};
-
-export type UserLivePrediction = {
-    userId: string;
-    predictionId: string;
-    selectedOption: string;
-    confidenceLevel?: 'Low' | 'Medium' | 'High';
-    answeredAt: Date;
-};
-
-export type FantasyLeaderboard = {
-    rankings: {
-        userId: string;
-        score: number;
-        rank: number;
-    }[];
 };

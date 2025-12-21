@@ -72,6 +72,8 @@ function AdminSidebar() {
   );
 }
 
+const SUPER_ADMIN_EMAIL = 'admin@fantasy.com';
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, isLoading: userLoading } = useUser();
   const firestore = useFirestore();
@@ -81,14 +83,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
   
   const isLoading = userLoading || profileLoading;
-  const isAuthorized = userProfile?.isAdmin === true;
+  // Check both userProfile.isAdmin and user email (for super admin)
+  const isAuthorized = userProfile?.isAdmin === true || user?.email === SUPER_ADMIN_EMAIL;
 
   useEffect(() => {
-    // If loading is finished and the user is not authorized, redirect them.
-    if (!isLoading && !isAuthorized) {
-      router.replace('/');
+    // Only redirect if loading is finished
+    if (!isLoading) {
+      // If user is not logged in, redirect to home
+      if (!user) {
+        router.replace('/');
+        return;
+      }
+      // If user is logged in but not authorized, redirect to home
+      if (!isAuthorized) {
+        router.replace('/');
+      }
     }
-  }, [isLoading, isAuthorized, router]);
+  }, [isLoading, isAuthorized, router, user]);
 
 
   // While we are verifying the user's authentication state and admin role,
@@ -103,8 +114,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   // After loading, if the user is still not authorized, show an access denied message.
-  // This handles the case where the user is logged in but is not an admin,
-  // or is not logged in at all.
+  // This handles the case where the user is logged in but is not an admin.
   if (!isAuthorized) {
     return (
        <div className="flex items-center justify-center h-screen">
