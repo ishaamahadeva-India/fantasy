@@ -255,7 +255,7 @@ export default function TournamentLeaderboardPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {rankedParticipations.slice(0, 100).map((participation) => (
+                  {rankedParticipations.slice(0, 100).map((participation: any) => (
                     <div
                       key={participation.userId}
                       className={`flex items-center justify-between p-4 rounded-lg ${
