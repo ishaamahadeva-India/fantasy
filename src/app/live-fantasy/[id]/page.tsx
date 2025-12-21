@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/ui/table';
 import { useDoc, useCollection, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import type { FantasyMatch, UserProfile, CricketerProfile, LivePrediction, FantasyRoleSelection, UserLivePrediction, FantasyLeaderboard } from '@/lib/types';
+import type { FantasyMatch, UserProfile, CricketerProfile, FantasyRoleSelection, UserPrediction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
