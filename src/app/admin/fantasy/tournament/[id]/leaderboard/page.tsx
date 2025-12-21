@@ -24,7 +24,7 @@ export default function TournamentLeaderboardPage() {
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
   
   const tournamentRef = firestore ? doc(firestore, 'cricket-tournaments', tournamentId) : null;
-  const { data: tournament } = useDoc<CricketTournament>(tournamentRef);
+  const { data: tournament } = useDoc(tournamentRef);
   
   const eventsRef = firestore
     ? collection(firestore, 'cricket-tournaments', tournamentId, 'events')
