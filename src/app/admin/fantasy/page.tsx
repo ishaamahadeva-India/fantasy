@@ -153,7 +153,7 @@ export default function AdminFantasyPage() {
                   <Badge variant="outline" className="text-xs">{tournament.format}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {tournament.teams.length} teams • {tournament.startDate && new Date(tournament.startDate.seconds * 1000).toLocaleDateString()}
+                  {tournament.teams.length} teams • {tournament.startDate && (tournament.startDate instanceof Date ? tournament.startDate.toLocaleDateString() : new Date((tournament.startDate as any).seconds * 1000).toLocaleDateString())}
                 </p>
               </div>
               <div className="flex items-center gap-1">
