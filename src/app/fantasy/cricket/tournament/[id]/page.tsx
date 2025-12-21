@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function TournamentPage() {
   const params = useParams();
   const tournamentId = params.id as string;
+  const router = useRouter();
   const firestore = useFirestore();
   const { user } = useUser();
   
@@ -23,6 +24,33 @@ export default function TournamentPage() {
   
   const eventsRef = firestore ? collection(firestore, 'cricket-tournaments', tournamentId, 'events') : null;
   const { data: events } = useCollection<TournamentEvent>(eventsRef);
+
+  const [hasEntry, setHasEntry] = useState(false);
+  const [isCheckingEntry, setIsCheckingEntry] = useState(true);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string>('');
+  const [isJoining, setIsJoining] = useState(false);
+
+  // Check if user has already joined
+  useEffect(() => {
+    const checkEntry = async () => {
+      if (!firestore || !user || !tournamentId) {
+        setIsCheckingEntry(false);
+        return;
+      }
+
+      try {
+        const entry = await getUserTournamentEntry(firestore, tournamentId, user.uid);
+        setHasEntry(!!entry);
+      } catch (error) {
+        console.error('Error checking tournament entry:', error);
+      } finally {
+        setIsCheckingEntry(false);
+      }
+    };
+
+    checkEntry();
+  }, [firestore, user, tournamentId]);
 
   if (isLoading) {
     return (
@@ -52,6 +80,66 @@ export default function TournamentPage() {
   const isLive = tournament.status === 'live';
   const isUpcoming = tournament.status === 'upcoming';
   const isCompleted = tournament.status === 'completed';
+
+  const handleJoinTournament = async () => {
+    if (!firestore || !user) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Required',
+        description: 'Please log in to join tournaments.',
+      });
+      return;
+    }
+
+    if (tournament.entryFee?.type === 'paid' && !selectedTier) {
+      toast({
+        variant: 'destructive',
+        title: 'Selection Required',
+        description: 'Please select an entry tier.',
+      });
+      return;
+    }
+
+    setIsJoining(true);
+
+    try {
+      const entryData = {
+        userId: user.uid,
+        tournamentId,
+        entryFee: tournament.entryFee?.type === 'paid' && selectedTier ? parseFloat(selectedTier) : undefined,
+        entryFeeTier: tournament.entryFee?.type === 'paid' && selectedTier 
+          ? tournament.entryFee.tiers?.find(t => t.amount.toString() === selectedTier)?.label
+          : undefined,
+        paymentStatus: tournament.entryFee?.type === 'free' ? 'paid' as const : 'pending' as const,
+        city: userProfile?.city,
+        state: userProfile?.state,
+      };
+
+      await addTournamentEntry(firestore, entryData);
+
+      toast({
+        title: 'Successfully Joined!',
+        description: tournament.entryFee?.type === 'free' 
+          ? 'You have successfully registered for this tournament.'
+          : 'Your registration is pending payment confirmation.',
+      });
+
+      setHasEntry(true);
+      setJoinDialogOpen(false);
+      
+      // Refresh page to show updated status
+      router.refresh();
+    } catch (error) {
+      console.error('Error joining tournament:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: 'There was an error joining the tournament. Please try again.',
+      });
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -163,19 +251,85 @@ export default function TournamentPage() {
                 )}
               </div>
               {!isCompleted && (
-                <Button size="lg" className={isLive ? '' : 'bg-primary'}>
-                  {isLive ? (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Join Tournament
-                    </>
+                <>
+                  {hasEntry ? (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span className="font-semibold">You're Registered!</span>
+                    </div>
                   ) : (
-                    <>
-                      <Clock className="w-4 h-4 mr-2" />
-                      Register Now
-                    </>
+                    <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="lg" className={isLive ? '' : 'bg-primary'}>
+                          {isLive ? (
+                            <>
+                              <Play className="w-4 h-4 mr-2" />
+                              Join Tournament
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-4 h-4 mr-2" />
+                              Register Now
+                            </>
+                          )}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Join Tournament</DialogTitle>
+                          <DialogDescription>
+                            {tournament.entryFee?.type === 'free' 
+                              ? 'This tournament is free to join. Click confirm to register.'
+                              : 'Select your entry tier and complete registration.'}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          {tournament.entryFee?.type === 'paid' && tournament.entryFee.tiers && (
+                            <div className="space-y-3">
+                              <Label>Select Entry Tier</Label>
+                              <RadioGroup value={selectedTier} onValueChange={setSelectedTier}>
+                                {tournament.entryFee.tiers.map((tier, idx) => (
+                                  <div key={idx} className="flex items-center space-x-2 p-3 border rounded-lg">
+                                    <RadioGroupItem value={tier.amount.toString()} id={`tier-${idx}`} />
+                                    <Label htmlFor={`tier-${idx}`} className="flex-1 cursor-pointer">
+                                      <div className="flex justify-between items-center">
+                                        <span className="font-semibold">{tier.label}</span>
+                                        <span className="text-primary font-bold">₹{tier.amount}</span>
+                                      </div>
+                                    </Label>
+                                  </div>
+                                ))}
+                              </RadioGroup>
+                            </div>
+                          )}
+                          {tournament.entryFee?.type === 'free' && (
+                            <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                              <p className="text-green-700 dark:text-green-300 font-semibold">
+                                Free Entry - No payment required
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            variant="outline"
+                            onClick={() => setJoinDialogOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleJoinTournament}
+                            disabled={isJoining || (tournament.entryFee?.type === 'paid' && !selectedTier)}
+                            className="flex-1"
+                          >
+                            {isJoining ? 'Joining...' : 'Confirm & Join'}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
-                </Button>
+                </>
               )}
             </div>
           </CardContent>
