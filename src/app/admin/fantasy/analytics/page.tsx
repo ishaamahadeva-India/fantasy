@@ -21,7 +21,7 @@ export default function FantasyAnalyticsPage() {
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   
   const campaignsRef = firestore ? collection(firestore, 'fantasy-campaigns') : null;
-  const { data: campaigns, isLoading: campaignsLoading } = useCollection<FantasyCampaign>(campaignsRef);
+  const { data: campaigns, isLoading: campaignsLoading } = useCollection(campaignsRef);
 
   // Fetch participants and revenue data using aggregation queries
   useEffect(() => {
