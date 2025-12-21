@@ -266,10 +266,10 @@ export default function TournamentLeaderboardPage() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
-                          {participation.rank <= 3 ? (
+                          {(participation.rank ?? 999) <= 3 ? (
                             <Trophy className="w-5 h-5 text-primary" />
                           ) : (
-                            <span className="font-bold">{participation.rank}</span>
+                            <span className="font-bold">{participation.rank ?? 'N/A'}</span>
                           )}
                         </div>
                         <div>
@@ -341,10 +341,10 @@ export default function TournamentLeaderboardPage() {
                               >
                                 <div className="flex items-center gap-4">
                                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
-                                    {participation.rank <= 3 ? (
+                                    {(participation.rank ?? 999) <= 3 ? (
                                       <Trophy className="w-5 h-5 text-primary" />
                                     ) : (
-                                      <span className="font-bold">{participation.rank}</span>
+                                      <span className="font-bold">{participation.rank ?? 'N/A'}</span>
                                     )}
                                   </div>
                                   <div>
@@ -378,10 +378,10 @@ export default function TournamentLeaderboardPage() {
                           >
                             <div className="flex items-center gap-4">
                               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
-                                {participation.rank <= 3 ? (
+                                {(participation.rank ?? 999) <= 3 ? (
                                   <Trophy className="w-5 h-5 text-primary" />
                                 ) : (
-                                  <span className="font-bold">{participation.rank}</span>
+                                  <span className="font-bold">{participation.rank ?? 'N/A'}</span>
                                 )}
                               </div>
                               <div>
@@ -442,10 +442,10 @@ export default function TournamentLeaderboardPage() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border">
-                          {participation.rank <= 3 ? (
+                          {(participation.rank ?? 999) <= 3 ? (
                             <Trophy className="w-5 h-5 text-primary" />
                           ) : (
-                            <span className="font-bold">{participation.rank}</span>
+                            <span className="font-bold">{participation.rank ?? 'N/A'}</span>
                           )}
                         </div>
                         <div>
