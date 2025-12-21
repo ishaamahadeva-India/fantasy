@@ -205,18 +205,26 @@ export default function CricketMatchResultsPage() {
                       />
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          handleVerifyResult(event.id, {
-                            outcome: resultData.outcome,
-                            verified: true,
-                            approved: false,
-                            notes: resultData.notes,
-                          });
-                        }}
-                      >
-                        Verify Result
-                      </Button>
+                        <Button
+                          onClick={() => {
+                            if (!resultData.outcome.trim()) {
+                              toast({
+                                variant: 'destructive',
+                                title: 'Validation Error',
+                                description: 'Please enter a result outcome.',
+                              });
+                              return;
+                            }
+                            handleVerifyResult(event.id, {
+                              outcome: resultData.outcome,
+                              verified: true,
+                              approved: false,
+                              notes: resultData.notes,
+                            });
+                          }}
+                        >
+                          Verify Result
+                        </Button>
                       <Button
                         variant="outline"
                         onClick={() => {
