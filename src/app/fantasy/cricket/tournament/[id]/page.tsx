@@ -392,11 +392,18 @@ export default function TournamentPage() {
                             </Badge>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
-                            {event.status === 'live' ? 'Predict Now' : 'View Details'}
-                          </Link>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                              {event.status === 'live' ? 'Predict Now' : 'View Details'}
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/fantasy/cricket/tournament/${tournamentId}/leaderboard`}>
+                              <Trophy className="w-4 h-4" />
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
