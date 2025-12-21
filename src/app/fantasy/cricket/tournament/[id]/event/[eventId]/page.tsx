@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { addTournamentPrediction, updateTournamentPrediction } from '@/firebase/firestore/tournament-predictions';
 
 export default function TournamentEventPage() {
   const params = useParams();
@@ -122,36 +123,24 @@ export default function TournamentEventPage() {
     setIsSubmitting(true);
 
     try {
-      const predictionsRef = collection(firestore, 'tournament-predictions');
       const predictionData = {
         userId: user.uid,
         tournamentId,
         eventId,
         eventType: event.eventType,
         prediction: event.multiSelect ? selectedOptions : selectedOption,
-        notes: notes.trim() || null,
+        notes: notes.trim() || undefined,
         points: event.points,
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        status: 'pending' as const,
       };
 
-      // Use Firestore directly
-      const { addDoc, updateDoc, serverTimestamp } = await import('firebase/firestore');
-      
-      if (existingPrediction) {
-        const predictionDocRef = doc(firestore, 'tournament-predictions', existingPrediction.id);
-        await updateDoc(predictionDocRef, {
+      if (existingPrediction && existingPrediction.id) {
+        await updateTournamentPrediction(firestore, existingPrediction.id, {
           prediction: event.multiSelect ? selectedOptions : selectedOption,
-          notes: notes.trim() || null,
-          updatedAt: serverTimestamp(),
+          notes: notes.trim() || undefined,
         });
       } else {
-        await addDoc(predictionsRef, {
-          ...predictionData,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+        await addTournamentPrediction(firestore, predictionData);
       }
 
       toast({

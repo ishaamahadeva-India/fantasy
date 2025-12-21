@@ -14,41 +14,7 @@ import { Badge } from '@/components/ui/badge';
 
 type FantasyMatchWithId = FantasyMatch & { id: string };
 
-// Placeholder data with examples for all formats
-const placeholderMatches: FantasyMatchWithId[] = [
-    {
-        id: 'match-1',
-        matchName: 'IND vs AUS - T20 World Cup',
-        format: 'T20',
-        teams: ['IND', 'AUS'],
-        startTime: new Date(),
-        status: 'live'
-    },
-    {
-        id: 'match-2',
-        matchName: 'CSK vs MI - IPL Final',
-        format: 'T20', // IPL is a T20 format
-        teams: ['CSK', 'MI'],
-        startTime: new Date(),
-        status: 'live'
-    },
-    {
-        id: 'match-3',
-        matchName: 'ENG vs SA - ODI Series',
-        format: 'ODI',
-        teams: ['ENG', 'SA'],
-        startTime: new Date(),
-        status: 'upcoming'
-    },
-    {
-        id: 'match-4',
-        matchName: 'NZ vs WI - Test Championship',
-        format: 'Test',
-        teams: ['NZ', 'WI'],
-        startTime: new Date(),
-        status: 'upcoming'
-    }
-];
+// Matches will be fetched from Firestore
 
 function TournamentsTab() {
     const firestore = useFirestore();
@@ -258,8 +224,11 @@ function MatchList({ matches, isLoading }: { matches: FantasyMatchWithId[] | nul
 }
 
 function CricketFantasyContent() {
-    const allMatches = placeholderMatches;
-    const isLoading = false; // Using placeholder data, so not loading.
+    const firestore = useFirestore();
+    const matchesQuery = firestore ? collection(firestore, 'fantasy_matches') : null;
+    const { data: matchesData, isLoading } = useCollection<FantasyMatch>(matchesQuery);
+    
+    const allMatches = matchesData as FantasyMatchWithId[] | undefined;
 
     const filterMatches = (format: string | null) => {
         if (!allMatches) return [];
@@ -297,16 +266,16 @@ function CricketFantasyContent() {
                     <TournamentsTab />
                 </TabsContent>
                 <TabsContent value="all" className="mt-6">
-                    <MatchList matches={filterMatches(null)} isLoading={isLoading} />
+                    <MatchList matches={allMatches ? filterMatches(null) : null} isLoading={isLoading} />
                 </TabsContent>
                 <TabsContent value="t20" className="mt-6">
-                    <MatchList matches={filterMatches('T20')} isLoading={isLoading} />
+                    <MatchList matches={allMatches ? filterMatches('T20') : null} isLoading={isLoading} />
                 </TabsContent>
                 <TabsContent value="odi" className="mt-6">
-                    <MatchList matches={filterMatches('ODI')} isLoading={isLoading} />
+                    <MatchList matches={allMatches ? filterMatches('ODI') : null} isLoading={isLoading} />
                 </TabsContent>
                 <TabsContent value="test" className="mt-6">
-                    <MatchList matches={filterMatches('Test')} isLoading={isLoading} />
+                    <MatchList matches={allMatches ? filterMatches('Test') : null} isLoading={isLoading} />
                 </TabsContent>
             </Tabs>
             
