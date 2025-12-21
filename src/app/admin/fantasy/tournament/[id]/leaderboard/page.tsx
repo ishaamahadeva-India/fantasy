@@ -160,7 +160,7 @@ export default function TournamentLeaderboardPage() {
         groupLeaderboards[group.name] = sorted.map((p, index) => ({
           ...p,
           rank: index + 1,
-        }));
+        })) as any as UserParticipation[];
       }
     });
     
