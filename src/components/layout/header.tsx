@@ -54,7 +54,7 @@ export function Header() {
   const auth = useAuth();
   const firestore = useFirestore();
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileRef);
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b shrink-0 bg-background md:px-6">

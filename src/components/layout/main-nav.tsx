@@ -41,7 +41,7 @@ export function MainNav() {
   const { user } = useUser();
   const firestore = useFirestore();
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
 
   return (
