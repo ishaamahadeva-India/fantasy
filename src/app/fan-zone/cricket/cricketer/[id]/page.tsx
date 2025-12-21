@@ -264,7 +264,7 @@ export default function CricketerProfilePage() {
                     <CardDescription>Average scores from the community.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <FanRatingDisplay ratings={ratings} isLoading={ratingsLoading} />
+                    <FanRatingDisplay ratings={ratings as any as FanRating[] | null} isLoading={ratingsLoading} />
                 </CardContent>
             </Card>
 
