@@ -258,7 +258,7 @@ export default function TournamentPage() {
                   <p className="text-lg font-bold text-green-600">Free Entry</p>
                 ) : tournament.entryFee?.tiers ? (
                   <div className="flex gap-2">
-                    {tournament.entryFee.tiers.map((tier, idx) => (
+                    {tournament.entryFee.tiers.map((tier: any, idx: number) => (
                       <Badge key={idx} variant="outline">₹{tier.amount}</Badge>
                     ))}
                   </div>
@@ -304,7 +304,7 @@ export default function TournamentPage() {
                             <div className="space-y-3">
                               <Label>Select Entry Tier</Label>
                               <RadioGroup value={selectedTier} onValueChange={setSelectedTier}>
-                                {tournament.entryFee.tiers.map((tier, idx) => (
+                                {tournament.entryFee.tiers.map((tier: any, idx: number) => (
                                   <div key={idx} className="flex items-center space-x-2 p-3 border rounded-lg">
                                     <RadioGroupItem value={tier.amount.toString()} id={`tier-${idx}`} />
                                     <Label htmlFor={`tier-${idx}`} className="flex-1 cursor-pointer">
