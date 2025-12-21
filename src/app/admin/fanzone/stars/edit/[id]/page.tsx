@@ -5,22 +5,24 @@ import { doc } from 'firebase/firestore';
 import { StarForm } from '@/components/admin/star-form';
 import { updateStar } from '@/firebase/firestore/stars';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function EditStarPage({ params }: { params: { id: string } }) {
+export default function EditStarPage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const starRef = firestore ? doc(firestore, 'stars', params.id) : null;
+  const params = useParams();
+  const id = params.id as string;
+  const starRef = firestore ? doc(firestore, 'stars', id) : null;
   const { data: star, isLoading } = useDoc<any>(starRef);
 
   const handleUpdateStar = async (data: any) => {
     if (!firestore) return;
     try {
-      await updateStar(firestore, params.id, data);
+      await updateStar(firestore, id, data);
       toast({
         title: 'Star Updated',
         description: 'The star profile has been successfully updated.',

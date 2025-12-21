@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, ClipboardCheck, Clock, FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import type { Article } from '@/lib/types';
 import { useState, useEffect } from 'react';
 
-export default function PreFactOrFictionPage({ params: { slug } }: { params: { slug: string } }) {
+export default function PreFactOrFictionPage() {
+  const params = useParams();
+  const slug = params.slug as string;
   const firestore = useFirestore();
   const [article, setArticle] = useState<Article & { id: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);

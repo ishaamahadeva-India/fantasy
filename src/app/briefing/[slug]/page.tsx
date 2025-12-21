@@ -1,6 +1,6 @@
 'use client';
 import { summarizeArticle, type SummarizeArticleOutput } from '@/ai/flows/summarize-article';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,8 +11,10 @@ import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import type { Article } from '@/lib/types';
 
-export default function BriefingPage({ params: { slug } }: { params: { slug: string } }) {
+export default function BriefingPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const firestore = useFirestore();
   const [article, setArticle] = useState<(Article & {id: string}) | null>(null);
   const [summary, setSummary] = useState<SummarizeArticleOutput | null>(null);

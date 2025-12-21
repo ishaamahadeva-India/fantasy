@@ -5,22 +5,24 @@ import { doc } from 'firebase/firestore';
 import { CricketerForm } from '@/components/admin/cricketer-form';
 import { updateCricketer } from '@/firebase/firestore/cricketers';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function EditCricketerPage({ params }: { params: { id: string } }) {
+export default function EditCricketerPage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const cricketerRef = firestore ? doc(firestore, 'cricketers', params.id) : null;
+  const params = useParams();
+  const id = params.id as string;
+  const cricketerRef = firestore ? doc(firestore, 'cricketers', id) : null;
   const { data: cricketer, isLoading } = useDoc<any>(cricketerRef);
 
   const handleUpdateCricketer = async (data: any) => {
     if (!firestore) return;
     try {
-      await updateCricketer(firestore, params.id, data);
+      await updateCricketer(firestore, id, data);
       toast({
         title: 'Cricketer Updated',
         description: 'The cricketer profile has been successfully updated.',

@@ -5,19 +5,21 @@ import { doc } from 'firebase/firestore';
 import { GossipForm } from '@/components/admin/gossip-form';
 import { updateGossip } from '@/firebase/firestore/gossips';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function EditGossipPage({ params }: { params: { id: string } }) {
+export default function EditGossipPage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const gossipRef = firestore ? doc(firestore, 'gossips', params.id) : null;
+  const params = useParams();
+  const id = params.id as string;
+  const gossipRef = firestore ? doc(firestore, 'gossips', id) : null;
   const { data: gossip, isLoading } = useDoc(gossipRef);
 
   const handleUpdateGossip = async (data: any) => {
     if (!firestore) return;
     try {
-      await updateGossip(firestore, params.id, data);
+      await updateGossip(firestore, id, data);
       toast({
         title: 'Gossip Updated',
         description: 'The gossip item has been successfully updated.',

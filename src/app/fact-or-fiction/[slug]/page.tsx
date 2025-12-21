@@ -1,6 +1,6 @@
 'use client';
 import { generateFactOrFiction, type FactOrFictionOutput } from '@/ai/flows/fact-or-fiction';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,9 @@ import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import type { Article } from '@/lib/types';
 
 
-export default function FactOrFictionPage({ params: { slug } }: { params: { slug: string } }) {
+export default function FactOrFictionPage() {
+  const params = useParams();
+  const slug = params.slug as string;
   const firestore = useFirestore();
   const [article, setArticle] = useState<(Article & {id: string}) | null>(null);
   const [gameData, setGameData] = useState<FactOrFictionOutput | null>(null);

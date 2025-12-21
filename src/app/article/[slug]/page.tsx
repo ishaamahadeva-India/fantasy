@@ -1,6 +1,6 @@
 
 'use client';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Clock, ThumbsUp, Star, Share2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
@@ -49,8 +49,10 @@ function ArticleSkeleton() {
 }
 
 
-export default function ArticlePage({ params: { slug } }: { params: { slug: string } }) {
+export default function ArticlePage() {
   const firestore = useFirestore();
+  const params = useParams();
+  const slug = params.slug as string;
 
   const articleQuery = useMemo(() => {
     if (!firestore) return null;

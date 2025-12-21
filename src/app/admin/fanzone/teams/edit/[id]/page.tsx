@@ -5,22 +5,24 @@ import { doc } from 'firebase/firestore';
 import { TeamForm } from '@/components/admin/team-form';
 import { updateTeam } from '@/firebase/firestore/teams';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function EditTeamPage({ params }: { params: { id: string } }) {
+export default function EditTeamPage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const teamRef = firestore ? doc(firestore, 'teams', params.id) : null;
+  const params = useParams();
+  const id = params.id as string;
+  const teamRef = firestore ? doc(firestore, 'teams', id) : null;
   const { data: team, isLoading } = useDoc<any>(teamRef);
 
   const handleUpdateTeam = async (data: any) => {
     if (!firestore) return;
     try {
-      await updateTeam(firestore, params.id, data);
+      await updateTeam(firestore, id, data);
       toast({
         title: 'Team Updated',
         description: 'The team profile has been successfully updated.',

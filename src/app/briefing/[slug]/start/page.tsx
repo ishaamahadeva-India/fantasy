@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BrainCircuit, Clock, FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useDoc, useFirestore } from '@/firebase';
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
@@ -12,7 +12,9 @@ import type { Article } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
 
-export default function PreBriefingPage({ params: { slug } }: { params: { slug: string } }) {
+export default function PreBriefingPage() {
+  const params = useParams();
+  const slug = params.slug as string;
   const firestore = useFirestore();
   const [article, setArticle] = useState<Article & { id: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);

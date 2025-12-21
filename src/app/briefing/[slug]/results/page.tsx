@@ -7,6 +7,7 @@ import { Loader2, ArrowLeft, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
+import { useParams } from 'next/navigation';
 
 function ScoreDisplay({ score, label }: { score: number, label: string }) {
     return (
@@ -17,7 +18,9 @@ function ScoreDisplay({ score, label }: { score: number, label: string }) {
     )
 }
 
-export default function BriefingResultsPage({ params: { slug } }: { params: { slug: string } }) {
+export default function BriefingResultsPage() {
+  const params = useParams();
+  const slug = params.slug as string;
   const [results, setResults] = useState<CompareSummariesOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [summaries, setSummaries] = useState<{aiSummary: string, userSummary: string} | null>(null);

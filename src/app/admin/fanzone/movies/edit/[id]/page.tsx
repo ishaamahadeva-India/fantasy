@@ -5,22 +5,24 @@ import { doc } from 'firebase/firestore';
 import { MovieForm } from '@/components/admin/movie-form';
 import { updateMovie } from '@/firebase/firestore/movies';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function EditMoviePage({ params }: { params: { id: string } }) {
+export default function EditMoviePage() {
   const firestore = useFirestore();
   const router = useRouter();
-  const movieRef = firestore ? doc(firestore, 'movies', params.id) : null;
+  const params = useParams();
+  const id = params.id as string;
+  const movieRef = firestore ? doc(firestore, 'movies', id) : null;
   const { data: movie, isLoading } = useDoc<any>(movieRef);
 
   const handleUpdateMovie = async (data: any) => {
     if (!firestore) return;
     try {
-      await updateMovie(firestore, params.id, data);
+      await updateMovie(firestore, id, data);
       toast({
         title: 'Movie Updated',
         description: 'The movie profile has been successfully updated.',
