@@ -24,12 +24,12 @@ export default function EditCricketTournamentPage() {
   const tournamentId = params.id as string;
 
   const tournamentRef = firestore ? doc(firestore, 'cricket-tournaments', tournamentId) : null;
-  const { data: tournament, isLoading: tournamentLoading } = useDoc<CricketTournament>(tournamentRef);
+  const { data: tournament, isLoading: tournamentLoading } = useDoc(tournamentRef);
 
   const eventsRef = firestore
     ? collection(firestore, 'cricket-tournaments', tournamentId, 'events')
     : null;
-  const { data: events, isLoading: eventsLoading } = useCollection<TournamentEvent>(eventsRef);
+  const { data: events, isLoading: eventsLoading } = useCollection(eventsRef);
 
   const handleUpdateTournament = async (data: any) => {
     if (!firestore) return;
