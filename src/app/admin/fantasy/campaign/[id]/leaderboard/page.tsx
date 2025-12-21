@@ -223,6 +223,27 @@ export default function CampaignLeaderboardPage() {
         </div>
       </div>
 
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Download className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold mb-1">CSV Export Information</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                When you click "Export CSV", the file will be automatically downloaded to your browser's default Downloads folder.
+              </p>
+              <div className="text-sm space-y-1">
+                <p><strong>File Location:</strong> Your Downloads folder</p>
+                <p><strong>File Name Format:</strong> leaderboard-[campaign-id]-[date].csv</p>
+                <p><strong>Example:</strong> leaderboard-abc123-2024-01-15.csv</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="overall" className="w-full">
         <TabsList>
           <TabsTrigger value="overall">Overall</TabsTrigger>
