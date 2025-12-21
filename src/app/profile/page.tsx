@@ -241,7 +241,7 @@ export default function ProfilePage() {
     const { user, isLoading } = useUser();
     const firestore = useFirestore();
     const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-    const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+    const { data: userProfile } = useDoc(userProfileRef);
 
   return (
     <div className="space-y-8">
