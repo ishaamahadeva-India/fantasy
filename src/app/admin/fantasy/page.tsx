@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash2, Trophy, ListOrdered, BarChart3, Users } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Trophy, ListOrdered, BarChart3, Users, Gamepad } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore } from '@/firebase';
@@ -78,7 +78,7 @@ export default function AdminFantasyPage() {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Gamepad2 className="w-6 h-6 text-primary" />
+              <Gamepad className="w-6 h-6 text-primary" />
             </div>
             <h1 className="text-3xl font-bold md:text-4xl font-headline bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Fantasy Game Management
