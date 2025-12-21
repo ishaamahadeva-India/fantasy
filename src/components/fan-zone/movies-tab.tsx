@@ -21,7 +21,7 @@ export function MoviesTab({ searchTerm, industry }: { searchTerm: string, indust
     return collection(firestore, 'movies');
   }, [firestore, industry]);
 
-  const { data: movies, isLoading } = useCollection<Movie>(moviesQuery);
+  const { data: movies, isLoading } = useCollection(moviesQuery);
 
   const filteredMovies =
     movies

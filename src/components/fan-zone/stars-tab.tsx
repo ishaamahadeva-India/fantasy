@@ -37,7 +37,7 @@ function FollowButton({ starId }: { starId: string }) {
 export function StarsTab({ searchTerm }: { searchTerm: string }) {
   const firestore = useFirestore();
   const starsQuery = firestore ? collection(firestore, 'stars') : null;
-  const { data: stars, isLoading } = useCollection<Star>(starsQuery);
+  const { data: stars, isLoading } = useCollection(starsQuery);
 
   const filteredStars =
     stars

@@ -22,8 +22,8 @@ export function TrendingTab() {
     const trendingMoviesQuery = firestore ? query(collection(firestore, 'movies'), orderBy('trendingRank'), limit(5)) : null;
     const trendingStarsQuery = firestore ? query(collection(firestore, 'stars'), orderBy('trendingRank'), limit(5)) : null;
 
-    const { data: trendingMovies, isLoading: moviesLoading } = useCollection<Movie>(trendingMoviesQuery);
-    const { data: trendingStars, isLoading: starsLoading } = useCollection<Star>(trendingStarsQuery);
+    const { data: trendingMovies, isLoading: moviesLoading } = useCollection(trendingMoviesQuery);
+    const { data: trendingStars, isLoading: starsLoading } = useCollection(trendingStarsQuery);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

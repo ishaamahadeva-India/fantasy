@@ -16,8 +16,8 @@ export function TopRatedTab() {
   const topMoviesQuery = firestore ? query(collection(firestore, 'movies'), orderBy('communityScore', 'desc'), limit(6)) : null;
   const topStarsQuery = firestore ? query(collection(firestore, 'stars'), orderBy('popularityIndex', 'desc'), limit(6)) : null;
 
-  const { data: topMovies, isLoading: moviesLoading } = useCollection<Movie>(topMoviesQuery);
-  const { data: topStars, isLoading: starsLoading } = useCollection<StarType>(topStarsQuery);
+  const { data: topMovies, isLoading: moviesLoading } = useCollection(topMoviesQuery);
+  const { data: topStars, isLoading: starsLoading } = useCollection(topStarsQuery);
 
   return (
     <div className="space-y-8">
