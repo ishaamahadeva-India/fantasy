@@ -181,7 +181,7 @@ export default function IpTeamProfilePage() {
               <FavoriteButton 
                 entityId={team.id} 
                 entityType="team" 
-                userProfile={userProfile || null}
+                userProfile={(userProfile as any) as UserProfile | null}
               />
             </div>
           </div>
