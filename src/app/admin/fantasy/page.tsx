@@ -73,29 +73,55 @@ export default function AdminFantasyPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Fantasy Game Management
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Manage Movie Fantasy Leagues and Live Cricket Matches.
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Gamepad2 className="w-6 h-6 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold md:text-4xl font-headline bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Fantasy Game Management
+            </h1>
+          </div>
+          <p className="text-muted-foreground ml-12">
+            Manage Movie Fantasy Leagues and Live Cricket Matches.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/fantasy/analytics">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/fantasy/users">
+              <Users className="w-4 h-4 mr-2" />
+              Users
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="border-2 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b">
           <div className="flex items-center justify-between">
-            <CardTitle>Cricket Tournaments / Series</CardTitle>
-            <Button variant="outline" size="sm" asChild>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-primary" />
+                Cricket Tournaments / Series
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Create and manage tournament-level fantasy (IPL, World Cup, Series, etc.).
+              </CardDescription>
+            </div>
+            <Button size="sm" asChild>
               <Link href="/admin/fantasy/tournament/new">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 New Tournament
               </Link>
             </Button>
           </div>
-          <CardDescription>
-            Create and manage tournament-level fantasy (IPL, World Cup, Series, etc.).
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {tournamentsLoading && (
@@ -110,37 +136,45 @@ export default function AdminFantasyPage() {
             </>
           )}
           {tournaments && tournaments.map((tournament) => (
-            <div key={tournament.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="font-semibold">{tournament.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {tournament.format} • {tournament.teams.length} teams
+            <div 
+              key={tournament.id} 
+              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <p className="font-semibold text-base">{tournament.name}</p>
+                  <Badge 
+                    variant={tournament.status === 'live' ? 'destructive' : tournament.status === 'completed' ? 'secondary' : 'outline'}
+                    className="text-xs"
+                  >
+                    {tournament.status}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">{tournament.format}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {tournament.teams.length} teams • {tournament.startDate && new Date(tournament.startDate.seconds * 1000).toLocaleDateString()}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={tournament.status === 'live' ? 'destructive' : 'secondary'}>
-                  {tournament.status}
-                </Badge>
-                <Badge variant="outline">{tournament.format}</Badge>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/admin/fantasy/tournament/edit/${tournament.id}`}>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <Link href={`/admin/fantasy/tournament/edit/${tournament.id}`} title="Edit">
                     <Edit className="w-4 h-4" />
                   </Link>
                 </Button>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/admin/fantasy/tournament/${tournament.id}/results`}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <Link href={`/admin/fantasy/tournament/${tournament.id}/results`} title="Results">
                     <Trophy className="w-4 h-4" />
                   </Link>
                 </Button>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/admin/fantasy/tournament/${tournament.id}/leaderboard`}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <Link href={`/admin/fantasy/tournament/${tournament.id}/leaderboard`} title="Leaderboard">
                     <ListOrdered className="w-4 h-4" />
                   </Link>
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Trash2 className="w-4 h-4 text-destructive" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>

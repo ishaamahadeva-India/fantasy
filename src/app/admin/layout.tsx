@@ -35,36 +35,59 @@ function AdminSidebar() {
   const { user } = useUser();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 flex-col hidden w-64 border-r bg-background sm:flex">
-      <nav className="flex flex-col h-full gap-4 px-2 py-4">
-        <div className="flex items-center h-16 gap-2 px-4 border-b">
-          <Avatar>
-            {user?.photoURL && <AvatarImage src={user.photoURL} />}
-            <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="font-semibold">{user?.displayName}</span>
+    <aside className="fixed inset-y-0 left-0 z-10 flex-col hidden w-64 border-r bg-gradient-to-b from-background to-muted/20 sm:flex shadow-lg">
+      <nav className="flex flex-col h-full gap-2 px-3 py-4">
+        <div className="flex items-center gap-3 px-4 py-4 mb-2 border-b bg-gradient-to-r from-primary/5 to-transparent rounded-lg">
+          <div className="relative">
+            <Avatar className="ring-2 ring-primary/20">
+              {user?.photoURL && <AvatarImage src={user.photoURL} />}
+              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                {user?.displayName?.charAt(0) || 'A'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <span className="font-semibold text-sm truncate">{user?.displayName || 'Admin'}</span>
             <span className="text-xs text-muted-foreground">Administrator</span>
           </div>
         </div>
-        <div className="flex-1">
-          {adminNavItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
-                pathname === item.href && 'bg-muted text-primary'
-              )}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </Link>
-          ))}
+        <div className="flex-1 space-y-1">
+          {adminNavItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group',
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <item.icon className={cn(
+                  'w-5 h-5 transition-transform group-hover:scale-110',
+                  isActive && 'text-primary-foreground'
+                )} />
+                <span>{item.label}</span>
+                {isActive && (
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-foreground/50" />
+                )}
+              </Link>
+            );
+          })}
         </div>
-        <div className="mt-auto">
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link href="/">Back to App</Link>
+        <div className="mt-auto pt-2 border-t">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-2 hover:bg-muted" 
+            asChild
+          >
+            <Link href="/">
+              <Home className="w-4 h-4" />
+              Back to App
+            </Link>
           </Button>
         </div>
       </nav>
@@ -137,10 +160,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   // If all checks pass, render the admin layout with its content.
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-muted/20">
       <AdminSidebar />
       <main className="flex flex-col sm:gap-4 sm:py-4 sm:pl-64">
-        <div className="p-4 sm:p-0">{children}</div>
+        <div className="p-4 sm:p-6 sm:max-w-7xl">{children}</div>
       </main>
     </div>
   );
