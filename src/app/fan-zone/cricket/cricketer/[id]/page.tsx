@@ -197,7 +197,7 @@ export default function CricketerProfilePage() {
               {cricketer.name}
             </h1>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
-              {cricketer.roles?.map((role) => (
+                  {cricketer.roles?.map((role: string) => (
                 <Badge key={role} variant="secondary">
                   {role}
                 </Badge>
