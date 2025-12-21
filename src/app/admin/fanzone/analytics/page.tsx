@@ -22,10 +22,10 @@ export default function FanZoneAnalyticsPage() {
   const moviesQuery = firestore ? collection(firestore, 'movies') : null;
   const starsQuery = firestore ? collection(firestore, 'stars') : null;
   
-  const { data: cricketers, isLoading: cricketersLoading } = useCollection<Cricketer>(cricketersQuery);
-  const { data: teams, isLoading: teamsLoading } = useCollection<Team>(teamsQuery);
-  const { data: movies, isLoading: moviesLoading } = useCollection<Movie>(moviesQuery);
-  const { data: stars, isLoading: starsLoading } = useCollection<Star>(starsQuery);
+  const { data: cricketers, isLoading: cricketersLoading } = useCollection(cricketersQuery);
+  const { data: teams, isLoading: teamsLoading } = useCollection(teamsQuery);
+  const { data: movies, isLoading: moviesLoading } = useCollection(moviesQuery);
+  const { data: stars, isLoading: starsLoading } = useCollection(starsQuery);
 
   // Calculate statistics
   const totalCricketers = cricketers?.length || 0;
