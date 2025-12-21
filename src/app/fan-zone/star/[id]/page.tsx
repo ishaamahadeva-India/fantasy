@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -108,8 +108,9 @@ function StarProfileSkeleton() {
     )
 }
 
-export default function StarProfilePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function StarProfilePage() {
+  const params = useParams();
+  const id = params.id as string;
   const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
 
   const firestore = useFirestore();

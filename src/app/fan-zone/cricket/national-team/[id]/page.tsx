@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,8 +24,9 @@ import type { UserProfile, TeamProfile } from '@/lib/types';
 import type { TeamEra } from '@/firebase/firestore/team-eras';
 import { useEffect } from 'react';
 
-export default function NationalTeamProfilePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function NationalTeamProfilePage() {
+  const params = useParams();
+  const id = params.id as string;
   const firestore = useFirestore();
   const { user } = useUser();
   const teamRef = firestore ? doc(firestore, 'teams', id) : null;

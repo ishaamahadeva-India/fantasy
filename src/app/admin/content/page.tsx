@@ -48,10 +48,10 @@ type ArticleWithId = {
 export default function AdminContentPage() {
   const firestore = useFirestore();
   const articlesQuery = firestore ? collection(firestore, 'articles') : null;
-  const { data: articles, isLoading: articlesLoading } = useCollection<ArticleWithId>(articlesQuery);
+  const { data: articles, isLoading: articlesLoading } = useCollection(articlesQuery);
 
   const gossipsQuery = firestore ? collection(firestore, 'gossips') : null;
-  const { data: gossips, isLoading: gossipsLoading } = useCollection<Gossip>(gossipsQuery);
+  const { data: gossips, isLoading: gossipsLoading } = useCollection(gossipsQuery);
 
 
   const handleDeleteArticle = async (articleId: string) => {

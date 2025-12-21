@@ -1,7 +1,7 @@
 
 'use client';
 import { useMemo, useEffect, useState } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -94,12 +94,9 @@ function FanConfidenceDisplay({ ratings, isLoading }: { ratings: FanRating[] | n
 }
 
 
-export default function IpTeamProfilePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+export default function IpTeamProfilePage() {
+  const params = useParams();
+  const id = params.id as string;
   const teamAttributes = [
     'Auction Strategy',
     'Youth Policy',

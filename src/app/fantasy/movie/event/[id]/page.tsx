@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Clock, Info, ShieldCheck, Star, Trophy, CheckCircle2, Building } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useUser } from '@/firebase';
@@ -490,8 +490,9 @@ function CompletedEventView({ eventDetails }: { eventDetails: any }) {
     );
 }
 
-export default function PredictionEventPage({ params }: { params: { id: string } }) {
-    const { id } = use(params);
+export default function PredictionEventPage() {
+    const params = useParams();
+    const id = params.id as string;
     const eventDetails = allEvents.find(e => e.id === id);
 
     if (!eventDetails) {

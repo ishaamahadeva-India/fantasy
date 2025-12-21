@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -125,12 +125,9 @@ function MovieProfileSkeleton() {
     )
 }
 
-export default function MovieProfilePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+export default function MovieProfilePage() {
+  const params = useParams();
+  const id = params.id as string;
   const movieAttributes = ['Direction', 'Screenplay', 'Acting', 'Music Impact'];
   
   const firestore = useFirestore();

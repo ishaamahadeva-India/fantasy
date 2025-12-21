@@ -16,7 +16,7 @@ export default function EditAdvertisementPage() {
   const adId = params.id as string;
 
   const adRef = firestore ? doc(firestore, 'advertisements', adId) : null;
-  const { data: advertisement, isLoading } = useDoc<Advertisement>(adRef);
+  const { data: advertisement, isLoading } = useDoc(adRef);
 
   const handleUpdateAdvertisement = async (data: any) => {
     if (!firestore) return;

@@ -1,6 +1,6 @@
 
 'use client';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -136,8 +136,9 @@ function ProfileSkeleton() {
 }
 
 
-export default function CricketerProfilePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function CricketerProfilePage() {
+  const params = useParams();
+  const id = params.id as string;
   const cricketerAttributes = ["Batting", "Bowling", "Fielding", "Power Hitting"];
   
   const firestore = useFirestore();

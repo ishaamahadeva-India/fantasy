@@ -36,9 +36,10 @@ async function getMovie(id: string): Promise<Movie | null> {
 export default async function MovieQuizPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const movie = await getMovie(params.id);
+  const { id } = await params;
+  const movie = await getMovie(id);
   if (!movie) {
     notFound();
   }

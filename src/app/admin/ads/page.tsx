@@ -42,7 +42,7 @@ import type { Advertisement } from '@/lib/types';
 export default function AdminAdsPage() {
   const firestore = useFirestore();
   const adsQuery = firestore ? collection(firestore, 'advertisements') : null;
-  const { data: advertisements, isLoading } = useCollection<Advertisement>(adsQuery);
+  const { data: advertisements, isLoading } = useCollection(adsQuery);
 
   const handleToggle = async (id: string, currentStatus: boolean) => {
     if (!firestore) return;

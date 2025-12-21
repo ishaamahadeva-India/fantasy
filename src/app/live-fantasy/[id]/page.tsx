@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, use } from 'react';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -736,8 +736,9 @@ function LeaderboardView() {
 type MatchPhase = 'pre-match' | '1st-innings' | 'innings-break' | '2nd-innings-selection' | '2nd-innings-live' | 'match-over';
 
 
-export default function LiveFantasyMatchPage({ params }: { params: { id: string } }) {
-  const { id } = use(params);
+export default function LiveFantasyMatchPage() {
+  const params = useParams();
+  const id = params.id as string;
   const firestore = useFirestore();
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('pre-match');
   const [activeTab, setActiveTab] = useState('game');

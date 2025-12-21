@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Check, Clock, ListOrdered, Lock, Trophy, ArrowLeft, User, Award, Building } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 // Placeholder Data
 const campaignDetails = {
@@ -91,7 +92,9 @@ function EventCard({ event }: { event: (typeof predictionEvents)[0] }) {
     );
 }
 
-export default function FantasyMovieCampaignPage({ params }: { params: { id: string } }) {
+export default function FantasyMovieCampaignPage() {
+  const params = useParams();
+  const id = params.id as string;
 
   const completedEvents = predictionEvents.filter(e => e.status === 'Completed');
   const totalPoints = completedEvents.reduce((acc, event) => acc + (event.score || 0), 0);
