@@ -3,16 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowRight, Ticket, Trophy, Calendar } from 'lucide-react';
 import Link from 'next/link';
-import { useUser, useDoc, useFirestore } from '@/firebase';
+import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import type { UserProfile, FantasyMatch } from '@/lib/types';
 import { doc, collection } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { DisclaimerModal } from '@/components/fantasy/disclaimer-modal';
 import { useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useCollection } from '@/firebase';
 
 type FantasyMatchWithId = FantasyMatch & { id: string };
 
