@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Lock, Search, SlidersHorizontal, Flame, BarChartHorizontal, BarChart2 } from 'lucide-react';
+import { Lock, Search, SlidersHorizontal, Flame, BarChartHorizontal, BarChart2, Trophy, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -492,8 +493,12 @@ export default function CricketFanZonePage() {
         <SponsorBanner />
       </div>
 
-      <Tabs defaultValue="cricketers" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-5">
+      <Tabs defaultValue="tournaments" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-6">
+          <TabsTrigger value="tournaments">
+            <Trophy className="w-4 h-4 mr-2" />
+            Tournaments
+          </TabsTrigger>
           <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
           <TabsTrigger value="national-teams">National Teams</TabsTrigger>
           <TabsTrigger value="ip-teams">IP Teams</TabsTrigger>
@@ -506,6 +511,9 @@ export default function CricketFanZonePage() {
             Analyst View
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="tournaments">
+          <TournamentsTab />
+        </TabsContent>
         <TabsContent value="cricketers">
           <CricketersTab searchTerm={searchTerm} filters={filters} />
         </TabsContent>
