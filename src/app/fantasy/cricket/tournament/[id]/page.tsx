@@ -1,16 +1,29 @@
 'use client';
 
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useDoc, useFirestore, useUser, useCollection } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Trophy, Calendar, MapPin, Users, DollarSign, Play, Clock } from 'lucide-react';
+import { ArrowLeft, Trophy, Calendar, MapPin, Users, DollarSign, Play, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import type { CricketTournament, TournamentEvent } from '@/lib/types';
+import type { CricketTournament, TournamentEvent, UserProfile } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from '@/hooks/use-toast';
+import { addTournamentEntry, getUserTournamentEntry } from '@/firebase/firestore/tournament-entries';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export default function TournamentPage() {
   const params = useParams();
@@ -24,6 +37,9 @@ export default function TournamentPage() {
   
   const eventsRef = firestore ? collection(firestore, 'cricket-tournaments', tournamentId, 'events') : null;
   const { data: events } = useCollection<TournamentEvent>(eventsRef);
+
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const [hasEntry, setHasEntry] = useState(false);
   const [isCheckingEntry, setIsCheckingEntry] = useState(true);
