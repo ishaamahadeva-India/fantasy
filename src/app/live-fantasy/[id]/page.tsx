@@ -746,7 +746,7 @@ export default function LiveFantasyMatchPage() {
   const [currentStreak, setCurrentStreak] = useState(0);
 
   const playersQuery = firestore ? collection(firestore, 'cricketers') : null;
-  const { data: players, isLoading } = useCollection<CricketerProfile & {id:string}>(playersQuery);
+  const { data: players, isLoading } = useCollection(playersQuery);
 
   if (id !== 'live-match-1') {
     return notFound();
