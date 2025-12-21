@@ -48,7 +48,7 @@ export default function AdminUsersPage() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
   const usersQuery = firestore ? collection(firestore, 'users') : null;
-  const { data: users, isLoading } = useCollection<UserProfile & { id: string }>(usersQuery);
+  const { data: users, isLoading } = useCollection(usersQuery);
 
   const handleAdminToggle = async (userId: string, currentStatus: boolean) => {
     if (!firestore || !currentUser) return;
