@@ -33,13 +33,13 @@ export default function TournamentPage() {
   const { user } = useUser();
   
   const tournamentRef = firestore ? doc(firestore, 'cricket-tournaments', tournamentId) : null;
-  const { data: tournament, isLoading } = useDoc<CricketTournament>(tournamentRef);
+  const { data: tournament, isLoading } = useDoc(tournamentRef);
   
   const eventsRef = firestore ? collection(firestore, 'cricket-tournaments', tournamentId, 'events') : null;
-  const { data: events } = useCollection<TournamentEvent>(eventsRef);
-
+  const { data: events } = useCollection(eventsRef);
+  
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
   const [hasEntry, setHasEntry] = useState(false);
   const [isCheckingEntry, setIsCheckingEntry] = useState(true);
