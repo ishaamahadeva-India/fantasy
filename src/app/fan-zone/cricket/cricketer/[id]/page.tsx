@@ -144,10 +144,10 @@ export default function CricketerProfilePage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const cricketerRef = firestore ? doc(firestore, 'cricketers', id) : null;
-  const { data: cricketer, isLoading: cricketerLoading } = useDoc<Cricketer>(cricketerRef);
+  const { data: cricketer, isLoading: cricketerLoading } = useDoc(cricketerRef);
 
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile } = useDoc(userProfileRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
