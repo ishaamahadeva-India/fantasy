@@ -11,11 +11,12 @@ import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star, ArrowLeft } from 'luci
 import { Separator } from '@/components/ui/separator';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
-import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { useCollection, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import type { FanRating, Star as StarType } from '@/lib/types';
+import type { FanRating, Star as StarType, UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
+import { FavoriteButton } from '@/components/fan-zone/favorite-button';
 
 function CommunityStarRatingDisplay({ ratings, isLoading }: { ratings: FanRating[] | null, isLoading: boolean }) {
     const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
@@ -101,9 +102,13 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
   const starAttributes = ['Screen Presence', 'Acting Range', 'Dialogue Delivery', 'Consistency'];
 
   const firestore = useFirestore();
+  const { user } = useUser();
   const starRef = firestore ? doc(firestore, 'stars', id) : null;
   const { data: star, isLoading: starLoading } = useDoc<StarType>(starRef);
   
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -151,10 +156,31 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                     <h1 className="text-4xl md:text-5xl font-bold font-headline text-balance">
                         {star.name}
                     </h1>
-                     <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="default">{star.profession}</Badge>
-                        {star.specialization?.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
+                     <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        {star.profession && <Badge variant="default">{star.profession}</Badge>}
+                        {star.genre?.map(g => <Badge key={g} variant="secondary">{g}</Badge>)}
+                        {star.industry && <Badge variant="outline">{star.industry}</Badge>}
+                        {star.trendingRank && <Badge variant="default">#{star.trendingRank} Trending</Badge>}
                     </div>
+                    {star.bio && (
+                        <p className="mt-4 text-muted-foreground">{star.bio}</p>
+                    )}
+                    {(star.dateOfBirth || star.debutYear) && (
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            {star.dateOfBirth && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Date of Birth</p>
+                                    <p className="font-semibold">{new Date(star.dateOfBirth).toLocaleDateString()}</p>
+                                </div>
+                            )}
+                            {star.debutYear && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Debut Year</p>
+                                    <p className="font-semibold">{star.debutYear}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <Card>
@@ -196,7 +222,11 @@ export default function StarProfilePage({ params }: { params: { id: string } }) 
                     <h3 className="font-headline text-xl">Fan Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <AttributeRating triggerButtonText="Rate Performance" attributes={starAttributes} icon={Star} entityId={star.id} entityType="star" />
-                        <Button variant="outline" size="lg" disabled><BrainCircuit className="mr-2"/> Compare Eras</Button>
+                        <FavoriteButton 
+                            entityId={star.id} 
+                            entityType="star" 
+                            userProfile={userProfile || null}
+                        />
                         <PulseCheck question={`How do you rate ${star.name}'s recent script selections?`} options={["Excellent", "Average", "Poor"]} entityId={star.id} entityType='star' />
                     </div>
                 </div>

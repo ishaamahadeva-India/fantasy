@@ -10,9 +10,10 @@ import { ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useEffect, useState } from 'react';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
-import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { FavoriteButton } from '@/components/fan-zone/favorite-button';
+import { useCollection, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import type { FanRating } from '@/lib/types';
+import type { FanRating, UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Cricketer = {
@@ -140,8 +141,12 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
   const cricketerAttributes = ["Batting", "Bowling", "Fielding", "Power Hitting"];
   
   const firestore = useFirestore();
+  const { user } = useUser();
   const cricketerRef = firestore ? doc(firestore, 'cricketers', id) : null;
   const { data: cricketer, isLoading: cricketerLoading } = useDoc<Cricketer>(cricketerRef);
+
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const ratingsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -190,14 +195,42 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
             <h1 className="text-4xl md:text-5xl font-bold font-headline text-balance">
               {cricketer.name}
             </h1>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
               {cricketer.roles?.map((role) => (
                 <Badge key={role} variant="secondary">
                   {role}
                 </Badge>
               ))}
               <Badge variant="outline">{cricketer.country}</Badge>
+              {cricketer.trendingRank && (
+                <Badge variant="default">#{cricketer.trendingRank} Trending</Badge>
+              )}
             </div>
+            {cricketer.bio && (
+              <p className="mt-4 text-muted-foreground">{cricketer.bio}</p>
+            )}
+            {(cricketer.dateOfBirth || cricketer.battingStyle || cricketer.bowlingStyle) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                {cricketer.dateOfBirth && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Date of Birth</p>
+                    <p className="font-semibold">{new Date(cricketer.dateOfBirth).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {cricketer.battingStyle && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Batting Style</p>
+                    <p className="font-semibold">{cricketer.battingStyle}</p>
+                  </div>
+                )}
+                {cricketer.bowlingStyle && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Bowling Style</p>
+                    <p className="font-semibold">{cricketer.bowlingStyle}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
             <Card>
@@ -238,13 +271,18 @@ export default function CricketerProfilePage({ params }: { params: { id: string 
 
           <div className="space-y-4">
             <h3 className="font-headline text-xl">Fan Actions</h3>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
                <AttributeRating
                 triggerButtonText="Rate Performance"
                 attributes={cricketerAttributes}
                 icon={Star}
                 entityId={id}
                 entityType="cricketer"
+              />
+              <FavoriteButton 
+                entityId={id} 
+                entityType="cricketer" 
+                userProfile={userProfile || null}
               />
             </div>
           </div>

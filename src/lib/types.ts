@@ -5,9 +5,14 @@ export type Movie = {
     title: string;
     releaseYear: number;
     genre: string;
-    industry: 'Hollywood' | 'Bollywood' | 'Tollywood' | 'Tamil' | 'Kannada' | 'Malayalam' | 'Punjabi' | 'Bhojpuri' | 'Other';
+    industry: 'Hollywood' | 'Bollywood' | 'Tollywood' | 'Tamil' | 'Kannada' | 'Malayalam' | 'Punjabi' | 'Bhojpuri' | 'Other' | 'OTT';
     posterUrl: string;
     description: string;
+    director?: string;
+    cast?: string;
+    runtime?: string;
+    imdbRating?: number;
+    language?: string;
     communityScore?: number;
     trendingRank?: number;
 }
@@ -15,10 +20,14 @@ export type Movie = {
 export type Star = {
     id: string;
     name: string;
-    profession: string;
+    profession?: string;
+    genre: string[]; // Changed from specialization
     avatar: string;
-    specialization: string[];
-    popularityIndex: number;
+    bio?: string;
+    dateOfBirth?: string;
+    debutYear?: number;
+    industry?: string;
+    popularityIndex?: number;
     trendingRank?: number;
 }
 
@@ -39,7 +48,12 @@ export type UserProfile = {
     email: string;
     avatarUrl?: string;
     points: number;
-    watchlist?: string[];
+    watchlist?: string[]; // Movie IDs
+    favorites?: {
+        cricketer?: string[];
+        star?: string[];
+        team?: string[];
+    };
     ageVerified?: boolean;
     fantasyEnabled?: boolean;
     isAdmin?: boolean;
@@ -510,6 +524,26 @@ export type CricketerProfile = {
     country: string;
     roles: string[];
     avatarUrl?: string;
+    bio?: string;
+    dateOfBirth?: string;
+    battingStyle?: string;
+    bowlingStyle?: string;
+    consistencyIndex?: number;
+    impactScore?: number;
+    trendingRank?: number;
+    recentForm?: number[];
+    careerPhase?: 'Early' | 'Peak' | 'Late';
+}
+
+export type TeamProfile = {
+    id: string;
+    name: string;
+    type: 'ip' | 'national';
+    logoUrl?: string;
+    country?: string;
+    foundedYear?: number;
+    homeGround?: string;
+    description?: string;
 }
 
 export type FantasyRoleSelection = {

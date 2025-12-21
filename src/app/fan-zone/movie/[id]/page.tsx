@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Gamepad2, PieChart, ArrowLeft } from 'lucide-react';
+import { Gamepad2, PieChart, ArrowLeft, Star } from 'lucide-react';
 import { ScoreRating } from '@/components/fan-zone/score-rating';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
@@ -189,13 +189,49 @@ export default function MovieProfilePage({
             <h1 className="text-4xl md:text-5xl font-bold font-headline text-balance">
               {movie.title}
             </h1>
-            <div className="mt-2 flex items-center gap-4 text-muted-foreground">
+            <div className="mt-2 flex items-center gap-4 text-muted-foreground flex-wrap">
               <span>{movie.releaseYear}</span>
               <Badge variant="outline">{movie.genre}</Badge>
+              <Badge variant="secondary">{movie.industry}</Badge>
+              {movie.imdbRating && (
+                <Badge variant="default" className="flex items-center gap-1">
+                  <Star className="w-3 h-3" />
+                  {movie.imdbRating.toFixed(1)} IMDb
+                </Badge>
+              )}
             </div>
           </div>
 
           <p className="text-lg text-muted-foreground">{movie.description}</p>
+
+          {(movie.director || movie.cast || movie.runtime || movie.language) && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+              {movie.director && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Director</p>
+                  <p className="font-semibold">{movie.director}</p>
+                </div>
+              )}
+              {movie.cast && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Cast</p>
+                  <p className="font-semibold text-sm">{movie.cast}</p>
+                </div>
+              )}
+              {movie.runtime && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Runtime</p>
+                  <p className="font-semibold">{movie.runtime}</p>
+                </div>
+              )}
+              {movie.language && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Language</p>
+                  <p className="font-semibold">{movie.language}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           <Separator />
 

@@ -15,9 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDoc, useFirestore } from '@/firebase';
+import { useDoc, useFirestore, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FavoriteButton } from '@/components/fan-zone/favorite-button';
+import type { UserProfile, TeamProfile } from '@/lib/types';
 
 // Note: This component is still partially using placeholder data for "eras"
 // as this is a complex data structure not modeled in the DB.
@@ -37,18 +39,15 @@ const placeholderEras = {
     }
 };
 
-type TeamProfile = {
-    id: string;
-    name: string;
-    type: 'ip' | 'national';
-    logoUrl?: string;
-};
-
 export default function NationalTeamProfilePage({ params }: { params: { id: string } }) {
   const { id } = params;
   const firestore = useFirestore();
+  const { user } = useUser();
   const teamRef = firestore ? doc(firestore, 'teams', id) : null;
   const { data: team, isLoading } = useDoc<TeamProfile>(teamRef);
+  
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const eras = placeholderEras; // Using placeholder for now
   const defaultEra = Object.keys(eras)[0];
@@ -86,10 +85,39 @@ export default function NationalTeamProfilePage({ params }: { params: { id: stri
               />
             </div>
           </Card>
-           <div className="mt-4">
+           <div className="mt-4 space-y-4">
             <h1 className="text-4xl font-bold font-headline text-center">
               {team.name}
             </h1>
+            {team.country && (
+              <p className="text-center text-muted-foreground">{team.country}</p>
+            )}
+            {team.description && (
+              <p className="text-center text-sm text-muted-foreground">{team.description}</p>
+            )}
+            {(team.foundedYear || team.homeGround) && (
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {team.foundedYear && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Founded</p>
+                    <p className="font-semibold">{team.foundedYear}</p>
+                  </div>
+                )}
+                {team.homeGround && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Home Ground</p>
+                    <p className="font-semibold text-sm">{team.homeGround}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex justify-center mt-4">
+              <FavoriteButton 
+                entityId={team.id} 
+                entityType="team" 
+                userProfile={userProfile || null}
+              />
+            </div>
           </div>
         </div>
         <div className="md:col-span-2 space-y-6">
