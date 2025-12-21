@@ -242,7 +242,7 @@ export default function MovieProfilePage() {
                 entityId={movie.id}
                 entityType="movie"
               />
-              <WatchlistButton movieId={movie.id} userProfile={userProfile} />
+              <WatchlistButton movieId={movie.id} userProfile={(userProfile as any) as UserProfile | null} />
               <Button variant="outline" size="lg" asChild>
                 <Link href={`/fan-zone/movie/${movie.id}/quiz/start`}>
                   <Gamepad2 className="mr-2" /> Activate Quiz
