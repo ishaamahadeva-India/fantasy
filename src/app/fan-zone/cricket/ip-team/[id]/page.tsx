@@ -135,10 +135,11 @@ export default function IpTeamProfilePage() {
   return (
     <div className="max-w-6xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="-ml-2 md:-ml-0">
                 <Link href="/fan-zone/cricket">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Cricket Fan Zone
+                    <span className="hidden sm:inline">Back to Cricket Fan Zone</span>
+                    <span className="sm:hidden">Back</span>
                 </Link>
             </Button>
             {team && (

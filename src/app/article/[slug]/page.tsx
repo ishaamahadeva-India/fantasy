@@ -115,10 +115,11 @@ export default function ArticlePage() {
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12">
         <div className='mb-6'>
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="-ml-2 md:-ml-0">
                 <Link href="/">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Intel Hub
+                    <span className="hidden sm:inline">Back to Intel Hub</span>
+                    <span className="sm:hidden">Back</span>
                 </Link>
             </Button>
         </div>

@@ -110,11 +110,12 @@ export default function FantasyMovieCampaignPage() {
 
   return (
     <div className="space-y-8">
-        <div className='flex items-center justify-between mb-2 -ml-4'>
+        <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2 -ml-2 md:-ml-4'>
             <Button variant="ghost" asChild>
                 <Link href="/fantasy/movie">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to All Campaigns
+                    <span className="hidden sm:inline">Back to All Campaigns</span>
+                    <span className="sm:hidden">Back</span>
                 </Link>
             </Button>
             <SocialShare

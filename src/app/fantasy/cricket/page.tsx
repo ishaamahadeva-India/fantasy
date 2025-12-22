@@ -16,7 +16,7 @@ type FantasyMatchWithId = FantasyMatch & { id: string };
 
 // Matches will be fetched from Firestore
 
-function TournamentsTab() {
+function SeriesTab() {
     const firestore = useFirestore();
     const tournamentsQuery = firestore ? collection(firestore, 'cricket-tournaments') : null;
     const { data: tournaments, isLoading } = useCollection(tournamentsQuery);
@@ -44,8 +44,8 @@ function TournamentsTab() {
             <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                     <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-semibold">No Tournaments Available</p>
-                    <p className="text-sm mt-2">Check back soon for upcoming tournaments like T20 World Cup and IPL 2026!</p>
+                    <p className="text-lg font-semibold">No Series Available</p>
+                    <p className="text-sm mt-2">Check back soon for upcoming series like T20 World Cup and IPL 2026!</p>
                     <Button asChild className="mt-4" variant="outline">
                         <Link href="/fantasy">Back to Fantasy Hub</Link>
                     </Button>
@@ -251,19 +251,19 @@ function CricketFantasyContent() {
                 </p>
             </div>
 
-            <Tabs defaultValue="tournaments" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="tournaments">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Tournaments
+            <Tabs defaultValue="series" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 md:gap-2">
+                <TabsTrigger value="series" className="text-xs sm:text-sm">
+                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  Series
                 </TabsTrigger>
-                <TabsTrigger value="all">All Matches</TabsTrigger>
-                <TabsTrigger value="t20">T20 / IPL</TabsTrigger>
-                <TabsTrigger value="odi">ODI</TabsTrigger>
-                <TabsTrigger value="test">Test</TabsTrigger>
+                <TabsTrigger value="all" className="text-xs sm:text-sm">All Matches</TabsTrigger>
+                <TabsTrigger value="t20" className="text-xs sm:text-sm">T20 / IPL</TabsTrigger>
+                <TabsTrigger value="odi" className="text-xs sm:text-sm">ODI</TabsTrigger>
+                <TabsTrigger value="test" className="text-xs sm:text-sm">Test</TabsTrigger>
                 </TabsList>
-                <TabsContent value="tournaments" className="mt-6">
-                    <TournamentsTab />
+                <TabsContent value="series" className="mt-6">
+                    <SeriesTab />
                 </TabsContent>
                 <TabsContent value="all" className="mt-6">
                     <MatchList matches={allMatches ? filterMatches(null) : null} isLoading={isLoading} />

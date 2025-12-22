@@ -725,12 +725,13 @@ export default function CricketMatchPage() {
 
   return (
     <div className="space-y-8">
-       <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
+       <div className="flex flex-col md:flex-row justify-between md:items-start gap-4 md:gap-8">
             <div className="flex-1">
-                <Button variant="ghost" asChild className='mb-2 -ml-4'>
+                <Button variant="ghost" asChild className='mb-2 -ml-2 md:-ml-4'>
                     <Link href="/fantasy/cricket">
                         <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to All Matches
+                        <span className="hidden sm:inline">Back to All Matches</span>
+                        <span className="sm:hidden">Back</span>
                     </Link>
                 </Button>
                  <h1 className="text-3xl font-bold md:text-4xl font-headline">

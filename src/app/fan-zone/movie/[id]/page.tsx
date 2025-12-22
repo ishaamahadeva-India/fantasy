@@ -161,11 +161,12 @@ export default function MovieProfilePage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
-            <Button variant="ghost" asChild>
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Button variant="ghost" asChild className="-ml-2 md:-ml-0">
                 <Link href="/fan-zone/movies">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Movie Zone
+                    <span className="hidden sm:inline">Back to Movie Zone</span>
+                    <span className="sm:hidden">Back</span>
                 </Link>
             </Button>
             <SocialShare
