@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, FileSpreadsheet, Loader2, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +36,8 @@ export function CSVUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number } | null>(null);
+  const [isCancelled, setIsCancelled] = useState(false);
+  const uploadAbortRef = useRef<{ cancelled: boolean }>({ cancelled: false });
   const { toast } = useToast();
 
   const parseCSV = (text: string): any[] => {
@@ -139,6 +141,8 @@ export function CSVUpload({
 
     setIsUploading(true);
     setProgress(0);
+    setIsCancelled(false);
+    uploadAbortRef.current.cancelled = false;
     setUploadStatus({ current: 0, total: 0 });
 
     try {
@@ -146,7 +150,9 @@ export function CSVUpload({
       const rows = parseCSV(text);
 
       console.log(`📊 Parsed CSV: Found ${rows.length} rows`);
-      console.log('First row sample:', rows[0]);
+      if (rows.length > 0) {
+        console.log('First row sample:', rows[0]);
+      }
 
       if (rows.length === 0) {
         toast({
@@ -167,21 +173,47 @@ export function CSVUpload({
       let errorCount = 0;
       const errors: string[] = [];
       
-      // Use a callback-based approach to update progress per item
+      // Process each item sequentially
       for (let i = 0; i < rows.length; i++) {
+        // Check if cancelled
+        if (uploadAbortRef.current.cancelled) {
+          console.log(`⏹️ Upload cancelled at item ${i + 1}`);
+          toast({
+            variant: 'default',
+            title: 'Upload Cancelled',
+            description: `Upload stopped. ${successCount} items uploaded before cancellation.`,
+          });
+          break;
+        }
+
         try {
           // Update progress before processing
           setUploadStatus({ current: i + 1, total: rows.length });
           setProgress(Math.round(((i + 1) / rows.length) * 100));
           
-          // Process single item
-          await onUpload([rows[i]], i + 1, rows.length);
+          console.log(`📤 Uploading item ${i + 1}/${rows.length}: "${rows[i].title || 'Untitled'}"`);
+          
+          // Process single item with timeout
+          await Promise.race([
+            onUpload([rows[i]], i + 1, rows.length),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Upload timeout after 30 seconds')), 30000)
+            )
+          ]);
+          
           successCount++;
+          console.log(`✅ Successfully uploaded item ${i + 1}/${rows.length}`);
         } catch (error: any) {
           // Continue processing even if an item fails
           errorCount++;
-          errors.push(`Row ${i + 1}: ${error.message || 'Unknown error'}`);
-          console.error(`Error processing row ${i + 1}:`, error);
+          const errorMsg = error.message || 'Unknown error';
+          errors.push(`Row ${i + 1}: ${errorMsg}`);
+          console.error(`❌ Error processing row ${i + 1}:`, error);
+          
+          // Don't stop on individual errors, but log them
+          if (error.message?.includes('timeout')) {
+            console.warn(`⏱️ Timeout on row ${i + 1}, continuing...`);
+          }
         }
       }
 
@@ -209,20 +241,25 @@ export function CSVUpload({
         throw new Error(`All ${errorCount} items failed to upload`);
       }
 
-      setFile(null);
-      setIsOpen(false);
+      if (!uploadAbortRef.current.cancelled) {
+        setFile(null);
+        setIsOpen(false);
+      }
       setProgress(0);
       setUploadStatus(null);
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Upload Failed',
-        description: error.message || 'An error occurred while uploading the file.',
-      });
+      if (!uploadAbortRef.current.cancelled) {
+        toast({
+          variant: 'destructive',
+          title: 'Upload Failed',
+          description: error.message || 'An error occurred while uploading the file.',
+        });
+      }
       setUploadStatus(null);
     } finally {
       setIsUploading(false);
+      uploadAbortRef.current.cancelled = false;
     }
   };
 
@@ -315,12 +352,22 @@ export function CSVUpload({
             <Button
               variant="outline"
               onClick={() => {
-                setIsOpen(false);
-                setFile(null);
+                if (isUploading) {
+                  uploadAbortRef.current.cancelled = true;
+                  setIsCancelled(true);
+                  setIsUploading(false);
+                  setUploadStatus(null);
+                  toast({
+                    title: 'Upload Cancelled',
+                    description: 'The upload has been cancelled.',
+                  });
+                } else {
+                  setIsOpen(false);
+                  setFile(null);
+                }
               }}
-              disabled={isUploading}
             >
-              Cancel
+              {isUploading ? 'Cancel Upload' : 'Cancel'}
             </Button>
             <Button
               onClick={handleUpload}

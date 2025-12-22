@@ -94,7 +94,9 @@ export default function AdminContentPage() {
   };
 
   const handleArticlesCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
-    if (!firestore) return;
+    if (!firestore) {
+      throw new Error('Firestore not initialized');
+    }
     
     // Process single row (rows array should have only one item when called sequentially)
     const row = rows[0];
@@ -111,21 +113,26 @@ export default function AdminContentPage() {
     // Generate slug from title if not provided
     const slug = row.slug || row.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     
-    // Add article to Firestore
-    await addArticle(firestore, {
-      title: row.title.trim(),
-      slug: slug,
-      category: row.category?.trim() || 'general',
-      excerpt: row.excerpt?.trim() || row.content?.substring(0, 200) || '',
-      content: row.content?.trim() || '',
-      imageUrl: row.imageUrl?.trim() || undefined,
-    });
-    
-    // Log success
-    if (currentIndex && total) {
-      console.log(`✓ Uploaded article ${currentIndex}/${total}: "${row.title}"`);
-    } else {
-      console.log(`✓ Uploaded article: "${row.title}"`);
+    try {
+      // Add article to Firestore
+      await addArticle(firestore, {
+        title: row.title.trim(),
+        slug: slug,
+        category: row.category?.trim() || 'general',
+        excerpt: row.excerpt?.trim() || row.content?.substring(0, 200) || '',
+        content: row.content?.trim() || '',
+        imageUrl: row.imageUrl?.trim() || undefined,
+      });
+      
+      // Log success
+      if (currentIndex && total) {
+        console.log(`✅ Uploaded article ${currentIndex}/${total}: "${row.title}"`);
+      } else {
+        console.log(`✅ Uploaded article: "${row.title}"`);
+      }
+    } catch (error: any) {
+      console.error(`❌ Failed to upload article "${row.title}":`, error);
+      throw error;
     }
   };
 
