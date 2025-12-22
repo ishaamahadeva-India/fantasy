@@ -93,125 +93,65 @@ export default function AdminContentPage() {
     }
   };
 
-  const handleArticlesCSVUpload = async (rows: any[]) => {
+  const handleArticlesCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
     if (!firestore) return;
     
-    // Process each row individually to continue on errors
-    const results = await Promise.allSettled(
-      rows.map(async (row) => {
-        try {
-          // Validate required fields
-          if (!row.title || row.title.trim() === '') {
-            throw new Error(`Row missing title: ${JSON.stringify(row)}`);
-          }
-
-          // Generate slug from title if not provided
-          const slug = row.slug || row.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-          
-          await addArticle(firestore, {
-            title: row.title.trim(),
-            slug: slug,
-            category: row.category?.trim() || 'general',
-            excerpt: row.excerpt?.trim() || row.content?.substring(0, 200) || '',
-            content: row.content?.trim() || '',
-            imageUrl: row.imageUrl?.trim() || undefined,
-          });
-          
-          return { success: true, title: row.title };
-        } catch (error: any) {
-          console.error(`Error uploading article "${row.title}":`, error);
-          return { success: false, title: row.title, error: error.message };
-        }
-      })
-    );
-
-    // Check if all failed
-    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
-    if (failed.length === rows.length) {
-      const errors = results.map((r, i) => {
-        if (r.status === 'rejected') {
-          return `Row ${i + 1}: ${r.reason?.message || 'Unknown error'}`;
-        }
-        if (r.status === 'fulfilled' && !r.value.success) {
-          return `Row ${i + 1} (${r.value.title}): ${r.value.error}`;
-        }
-        return null;
-      }).filter(Boolean);
-      
-      throw new Error(`All articles failed to upload:\n${errors.join('\n')}`);
+    // Process single row (rows array should have only one item when called sequentially)
+    const row = rows[0];
+    
+    if (!row) {
+      throw new Error('No row data provided');
     }
 
-    // Log any failures but don't throw if some succeeded
-    const failures = results
-      .map((r, i) => {
-        if (r.status === 'rejected') {
-          return { index: i + 1, error: r.reason?.message || 'Unknown error' };
-        }
-        if (r.status === 'fulfilled' && !r.value.success) {
-          return { index: i + 1, title: r.value.title, error: r.value.error };
-        }
-        return null;
-      })
-      .filter(Boolean);
+    // Validate required fields
+    if (!row.title || row.title.trim() === '') {
+      throw new Error(`Row ${currentIndex || '?'} missing title`);
+    }
 
-    if (failures.length > 0) {
-      console.warn('Some articles failed to upload:', failures);
+    // Generate slug from title if not provided
+    const slug = row.slug || row.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    
+    // Add article to Firestore
+    await addArticle(firestore, {
+      title: row.title.trim(),
+      slug: slug,
+      category: row.category?.trim() || 'general',
+      excerpt: row.excerpt?.trim() || row.content?.substring(0, 200) || '',
+      content: row.content?.trim() || '',
+      imageUrl: row.imageUrl?.trim() || undefined,
+    });
+    
+    // Log success
+    if (currentIndex && total) {
+      console.log(`✓ Uploaded article ${currentIndex}/${total}: "${row.title}"`);
+    } else {
+      console.log(`✓ Uploaded article: "${row.title}"`);
     }
   };
 
-  const handleGossipsCSVUpload = async (rows: any[]) => {
+  const handleGossipsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
     if (!firestore) return;
     
-    const results = await Promise.allSettled(
-      rows.map(async (row) => {
-        try {
-          if (!row.title || row.title.trim() === '') {
-            throw new Error(`Row missing title: ${JSON.stringify(row)}`);
-          }
-
-          await addGossip(firestore, {
-            title: row.title.trim(),
-            source: row.source?.trim() || '',
-            imageUrl: row.imageUrl?.trim() || undefined,
-          });
-          
-          return { success: true, title: row.title };
-        } catch (error: any) {
-          console.error(`Error uploading gossip "${row.title}":`, error);
-          return { success: false, title: row.title, error: error.message };
-        }
-      })
-    );
-
-    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
-    if (failed.length === rows.length) {
-      const errors = results.map((r, i) => {
-        if (r.status === 'rejected') {
-          return `Row ${i + 1}: ${r.reason?.message || 'Unknown error'}`;
-        }
-        if (r.status === 'fulfilled' && !r.value.success) {
-          return `Row ${i + 1} (${r.value.title}): ${r.value.error}`;
-        }
-        return null;
-      }).filter(Boolean);
-      
-      throw new Error(`All gossips failed to upload:\n${errors.join('\n')}`);
+    const row = rows[0];
+    
+    if (!row) {
+      throw new Error('No row data provided');
     }
 
-    const failures = results
-      .map((r, i) => {
-        if (r.status === 'rejected') {
-          return { index: i + 1, error: r.reason?.message || 'Unknown error' };
-        }
-        if (r.status === 'fulfilled' && !r.value.success) {
-          return { index: i + 1, title: r.value.title, error: r.value.error };
-        }
-        return null;
-      })
-      .filter(Boolean);
+    if (!row.title || row.title.trim() === '') {
+      throw new Error(`Row ${currentIndex || '?'} missing title`);
+    }
 
-    if (failures.length > 0) {
-      console.warn('Some gossips failed to upload:', failures);
+    await addGossip(firestore, {
+      title: row.title.trim(),
+      source: row.source?.trim() || '',
+      imageUrl: row.imageUrl?.trim() || undefined,
+    });
+    
+    if (currentIndex && total) {
+      console.log(`✓ Uploaded gossip ${currentIndex}/${total}: "${row.title}"`);
+    } else {
+      console.log(`✓ Uploaded gossip: "${row.title}"`);
     }
   };
 

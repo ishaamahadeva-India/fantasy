@@ -15,7 +15,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 
 interface CSVUploadProps {
-  onUpload: (rows: any[]) => Promise<void>;
+  onUpload: (rows: any[], currentIndex?: number, total?: number) => Promise<void>;
   title: string;
   description: string;
   exampleHeaders?: string[];
@@ -130,6 +130,9 @@ export function CSVUpload({
       const text = await file.text();
       const rows = parseCSV(text);
 
+      console.log(`📊 Parsed CSV: Found ${rows.length} rows`);
+      console.log('First row sample:', rows[0]);
+
       if (rows.length === 0) {
         toast({
           variant: 'destructive',
@@ -142,50 +145,53 @@ export function CSVUpload({
       }
 
       setUploadStatus({ current: 0, total: rows.length });
+      console.log(`🚀 Starting upload of ${rows.length} items...`);
 
-      // Upload in batches to show progress
-      const batchSize = 5; // Smaller batches for better progress tracking
+      // Process items one by one for better progress tracking and error handling
       let successCount = 0;
       let errorCount = 0;
       const errors: string[] = [];
-      let processedCount = 0;
       
-      for (let i = 0; i < rows.length; i += batchSize) {
-        const batch = rows.slice(i, i + batchSize);
+      // Use a callback-based approach to update progress per item
+      for (let i = 0; i < rows.length; i++) {
         try {
-          await onUpload(batch);
-          successCount += batch.length;
-          processedCount += batch.length;
+          // Update progress before processing
+          setUploadStatus({ current: i + 1, total: rows.length });
+          setProgress(Math.round(((i + 1) / rows.length) * 100));
+          
+          // Process single item
+          await onUpload([rows[i]], i + 1, rows.length);
+          successCount++;
         } catch (error: any) {
-          // Continue processing even if a batch fails
-          errorCount += batch.length;
-          processedCount += batch.length;
-          errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message || 'Unknown error'}`);
+          // Continue processing even if an item fails
+          errorCount++;
+          errors.push(`Row ${i + 1}: ${error.message || 'Unknown error'}`);
+          console.error(`Error processing row ${i + 1}:`, error);
         }
-        setUploadStatus({ current: processedCount, total: rows.length });
-        setProgress(Math.round((processedCount / rows.length) * 100));
       }
 
+      console.log(`✅ Upload complete: ${successCount} succeeded, ${errorCount} failed`);
+      
       if (errorCount === 0) {
         toast({
           title: 'Upload Successful',
-          description: `Successfully uploaded ${successCount} items.`,
+          description: `Successfully uploaded ${successCount} of ${rows.length} items.`,
         });
       } else if (successCount > 0) {
         toast({
           variant: 'destructive',
           title: 'Partial Upload',
-          description: `Uploaded ${successCount} items. ${errorCount} items failed. Check console for details.`,
+          description: `Uploaded ${successCount} of ${rows.length} items. ${errorCount} failed. Check console for details.`,
         });
-        console.error('Upload errors:', errors);
+        console.error('❌ Upload errors:', errors);
       } else {
         toast({
           variant: 'destructive',
           title: 'Upload Failed',
-          description: `Failed to upload ${errorCount} items. Check console for details.`,
+          description: `Failed to upload all ${errorCount} items. Check console for details.`,
         });
-        console.error('Upload errors:', errors);
-        throw new Error('All items failed to upload');
+        console.error('❌ Upload errors:', errors);
+        throw new Error(`All ${errorCount} items failed to upload`);
       }
 
       setFile(null);
@@ -276,16 +282,17 @@ export function CSVUpload({
           {isUploading && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>
+                <span className="font-medium">
                   {uploadStatus ? `Uploading ${uploadStatus.current} of ${uploadStatus.total} items...` : 'Uploading...'}
                 </span>
-                <span>{progress}%</span>
+                <span className="font-semibold">{progress}%</span>
               </div>
-              <Progress value={progress} />
+              <Progress value={progress} className="h-2" />
               {uploadStatus && (
-                <p className="text-xs text-muted-foreground text-center">
-                  Processing item {uploadStatus.current} of {uploadStatus.total}
-                </p>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Processing item {uploadStatus.current} of {uploadStatus.total}</span>
+                  <span>{Math.round((uploadStatus.current / uploadStatus.total) * 100)}% complete</span>
+                </div>
               )}
             </div>
           )}
