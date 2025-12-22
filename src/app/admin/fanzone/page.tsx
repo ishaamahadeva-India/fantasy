@@ -143,72 +143,140 @@ export default function AdminFanZonePage() {
         }
     };
 
-    const handleCricketersCSVUpload = async (rows: any[]) => {
-        if (!firestore) return;
-        for (const row of rows) {
-            try {
-                const roles = row.roles ? row.roles.split(',').map((r: string) => r.trim()) : [];
-                await addCricketer(firestore, {
-                    name: row.name || '',
-                    country: row.country || '',
-                    roles: roles,
-                    avatarUrl: row.avatarUrl || undefined,
-                });
-            } catch (error) {
-                console.error('Error uploading cricketer:', error);
-                throw error;
+    const handleCricketersCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+        if (!firestore) {
+            throw new Error('Firestore not initialized');
+        }
+        
+        const row = rows[0];
+        
+        if (!row) {
+            throw new Error('No row data provided');
+        }
+
+        if (!row.name || row.name.trim() === '') {
+            throw new Error(`Row ${currentIndex || '?'} missing name`);
+        }
+
+        try {
+            const roles = row.roles ? row.roles.split(',').map((r: string) => r.trim()) : [];
+            await addCricketer(firestore, {
+                name: row.name.trim(),
+                country: row.country?.trim() || '',
+                roles: roles,
+                avatarUrl: row.avatarUrl?.trim() || undefined,
+            });
+            
+            if (currentIndex && total) {
+                console.log(`✅ Uploaded cricketer ${currentIndex}/${total}: "${row.name}"`);
+            } else {
+                console.log(`✅ Uploaded cricketer: "${row.name}"`);
             }
+        } catch (error: any) {
+            console.error(`❌ Failed to upload cricketer "${row.name}":`, error);
+            throw error;
         }
     };
 
-    const handleTeamsCSVUpload = async (rows: any[]) => {
-        if (!firestore) return;
-        for (const row of rows) {
-            try {
-                await addTeam(firestore, {
-                    name: row.name || '',
-                    type: (row.type || 'ip') as 'ip' | 'national',
-                    logoUrl: row.logoUrl || undefined,
-                });
-            } catch (error) {
-                console.error('Error uploading team:', error);
-                throw error;
+    const handleTeamsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+        if (!firestore) {
+            throw new Error('Firestore not initialized');
+        }
+        
+        const row = rows[0];
+        
+        if (!row) {
+            throw new Error('No row data provided');
+        }
+
+        if (!row.name || row.name.trim() === '') {
+            throw new Error(`Row ${currentIndex || '?'} missing name`);
+        }
+
+        try {
+            await addTeam(firestore, {
+                name: row.name.trim(),
+                type: (row.type || 'ip') as 'ip' | 'national',
+                logoUrl: row.logoUrl?.trim() || undefined,
+            });
+            
+            if (currentIndex && total) {
+                console.log(`✅ Uploaded team ${currentIndex}/${total}: "${row.name}"`);
+            } else {
+                console.log(`✅ Uploaded team: "${row.name}"`);
             }
+        } catch (error: any) {
+            console.error(`❌ Failed to upload team "${row.name}":`, error);
+            throw error;
         }
     };
 
-    const handleMoviesCSVUpload = async (rows: any[]) => {
-        if (!firestore) return;
-        for (const row of rows) {
-            try {
-                await addMovie(firestore, {
-                    title: row.title || '',
-                    releaseYear: row.releaseYear ? parseInt(row.releaseYear) : new Date().getFullYear(),
-                    genre: row.genre || '',
-                    description: row.description || '',
-                    posterUrl: row.posterUrl || undefined,
-                });
-            } catch (error) {
-                console.error('Error uploading movie:', error);
-                throw error;
+    const handleMoviesCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+        if (!firestore) {
+            throw new Error('Firestore not initialized');
+        }
+        
+        const row = rows[0];
+        
+        if (!row) {
+            throw new Error('No row data provided');
+        }
+
+        if (!row.title || row.title.trim() === '') {
+            throw new Error(`Row ${currentIndex || '?'} missing title`);
+        }
+
+        try {
+            await addMovie(firestore, {
+                title: row.title.trim(),
+                releaseYear: row.releaseYear ? parseInt(row.releaseYear) : new Date().getFullYear(),
+                genre: row.genre?.trim() || '',
+                description: row.description?.trim() || '',
+                posterUrl: row.posterUrl?.trim() || undefined,
+            });
+            
+            if (currentIndex && total) {
+                console.log(`✅ Uploaded movie ${currentIndex}/${total}: "${row.title}"`);
+            } else {
+                console.log(`✅ Uploaded movie: "${row.title}"`);
             }
+        } catch (error: any) {
+            console.error(`❌ Failed to upload movie "${row.title}":`, error);
+            throw error;
         }
     };
 
-    const handleStarsCSVUpload = async (rows: any[]) => {
-        if (!firestore) return;
-        for (const row of rows) {
-            try {
-                const genres = row.genre ? row.genre.split(',').map((g: string) => g.trim()) : [];
-                await addStar(firestore, {
-                    name: row.name || '',
-                    genre: genres,
-                    avatar: row.avatar || undefined,
-                });
-            } catch (error) {
-                console.error('Error uploading star:', error);
-                throw error;
+    const handleStarsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+        if (!firestore) {
+            throw new Error('Firestore not initialized');
+        }
+        
+        const row = rows[0];
+        
+        if (!row) {
+            throw new Error('No row data provided');
+        }
+
+        if (!row.name || row.name.trim() === '') {
+            throw new Error(`Row ${currentIndex || '?'} missing name`);
+        }
+
+        try {
+            const genres = row.genre ? row.genre.split(',').map((g: string) => g.trim()) : [];
+            await addStar(firestore, {
+                name: row.name.trim(),
+                genre: genres,
+                avatar: row.avatar?.trim() || undefined,
+            });
+            
+            if (currentIndex && total) {
+                console.log(`✅ Uploaded star ${currentIndex}/${total}: "${row.name}"`);
+            } else {
+                console.log(`✅ Uploaded star: "${row.name}"`);
             }
+        } catch (error: any) {
+            console.error(`❌ Failed to upload star "${row.name}":`, error);
+            throw error;
         }
     };
 

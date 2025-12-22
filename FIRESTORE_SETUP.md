@@ -167,6 +167,56 @@ service cloud.firestore {
                       resource.data.userId == request.auth.uid;
     }
     
+    // Tournament Entries - authenticated users can create, read own
+    match /tournament-entries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+    }
+    
+    // Tournament Predictions - authenticated users can create, read own
+    match /tournament-predictions/{predictionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+    }
+    
+    // Campaign Entries - authenticated users can create, read own
+    match /campaign-entries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+    }
+    
+    // Participations - authenticated users can create, read own
+    match /participations/{participationId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+    }
+    
+    // Team Eras - public read, admin write
+    match /team-eras/{eraId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Performances - public read, admin write
+    match /performances/{performanceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Star Eras - public read, admin write
+    match /star-eras/{eraId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
     // Ratings - authenticated users can read/write
     match /ratings/{ratingId} {
       allow read: if isAuthenticated();

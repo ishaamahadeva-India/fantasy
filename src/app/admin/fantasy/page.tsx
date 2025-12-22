@@ -73,93 +73,144 @@ export default function AdminFantasyPage() {
     }
   };
 
-  const handleCampaignsCSVUpload = async (rows: any[]) => {
-    if (!firestore) return;
-    for (const row of rows) {
-      try {
-        await addFantasyCampaign(firestore, {
-          title: row.title || '',
-          campaignType: (row.campaignType || 'single_movie') as 'single_movie' | 'multiple_movies',
-          description: row.description || undefined,
-          prizePool: row.prizePool || undefined,
-          sponsorName: row.sponsorName || undefined,
-          sponsorLogo: row.sponsorLogo || undefined,
-          movieId: row.movieId || undefined,
-          movieTitle: row.movieTitle || undefined,
-          movieLanguage: row.movieLanguage || undefined,
-          startDate: row.startDate ? new Date(row.startDate) : new Date(),
-          endDate: row.endDate ? new Date(row.endDate) : undefined,
-          status: (row.status || 'upcoming') as 'upcoming' | 'active' | 'completed',
-          visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
-          maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
-          entryFee: {
-            type: (row.entryFeeType || 'free') as 'free' | 'paid',
-            amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
-          },
-        });
-      } catch (error) {
-        console.error('Error uploading campaign:', error);
-        throw error;
+  const handleCampaignsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+    if (!firestore) {
+      throw new Error('Firestore not initialized');
+    }
+    
+    const row = rows[0];
+    
+    if (!row) {
+      throw new Error('No row data provided');
+    }
+
+    if (!row.title || row.title.trim() === '') {
+      throw new Error(`Row ${currentIndex || '?'} missing title`);
+    }
+
+    try {
+      await addFantasyCampaign(firestore, {
+        title: row.title.trim(),
+        campaignType: (row.campaignType || 'single_movie') as 'single_movie' | 'multiple_movies',
+        description: row.description?.trim() || undefined,
+        prizePool: row.prizePool?.trim() || undefined,
+        sponsorName: row.sponsorName?.trim() || undefined,
+        sponsorLogo: row.sponsorLogo?.trim() || undefined,
+        movieId: row.movieId?.trim() || undefined,
+        movieTitle: row.movieTitle?.trim() || undefined,
+        movieLanguage: row.movieLanguage?.trim() || undefined,
+        startDate: row.startDate ? new Date(row.startDate) : new Date(),
+        endDate: row.endDate ? new Date(row.endDate) : undefined,
+        status: (row.status || 'upcoming') as 'upcoming' | 'active' | 'completed',
+        visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
+        maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
+        entryFee: {
+          type: (row.entryFeeType || 'free') as 'free' | 'paid',
+          amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
+        },
+      });
+      
+      if (currentIndex && total) {
+        console.log(`✅ Uploaded campaign ${currentIndex}/${total}: "${row.title}"`);
+      } else {
+        console.log(`✅ Uploaded campaign: "${row.title}"`);
       }
+    } catch (error: any) {
+      console.error(`❌ Failed to upload campaign "${row.title}":`, error);
+      throw error;
     }
   };
 
-  const handleMatchesCSVUpload = async (rows: any[]) => {
-    if (!firestore) return;
-    for (const row of rows) {
-      try {
-        const teams = row.teams ? row.teams.split(',').map((t: string) => t.trim()) : [];
-        await addCricketMatch(firestore, {
-          matchName: row.matchName || '',
-          format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
-          teams: teams,
-          team1: row.team1 || teams[0] || '',
-          team2: row.team2 || teams[1] || '',
-          venue: row.venue || undefined,
-          startTime: row.startTime ? new Date(row.startTime) : new Date(),
-          status: (row.status || 'upcoming') as "upcoming" | "live" | "completed",
-          description: row.description || undefined,
-          entryFee: row.entryFeeType ? {
-            type: row.entryFeeType as 'free' | 'paid',
-            amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
-          } : undefined,
-          maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
-        });
-      } catch (error) {
-        console.error('Error uploading match:', error);
-        throw error;
+  const handleMatchesCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+    if (!firestore) {
+      throw new Error('Firestore not initialized');
+    }
+    
+    const row = rows[0];
+    
+    if (!row) {
+      throw new Error('No row data provided');
+    }
+
+    if (!row.matchName || row.matchName.trim() === '') {
+      throw new Error(`Row ${currentIndex || '?'} missing matchName`);
+    }
+
+    try {
+      const teams = row.teams ? row.teams.split(',').map((t: string) => t.trim()) : [];
+      await addCricketMatch(firestore, {
+        matchName: row.matchName.trim(),
+        format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
+        teams: teams,
+        team1: row.team1?.trim() || teams[0] || '',
+        team2: row.team2?.trim() || teams[1] || '',
+        venue: row.venue?.trim() || undefined,
+        startTime: row.startTime ? new Date(row.startTime) : new Date(),
+        status: (row.status || 'upcoming') as "upcoming" | "live" | "completed",
+        description: row.description?.trim() || undefined,
+        entryFee: row.entryFeeType ? {
+          type: row.entryFeeType as 'free' | 'paid',
+          amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
+        } : undefined,
+        maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
+      });
+      
+      if (currentIndex && total) {
+        console.log(`✅ Uploaded match ${currentIndex}/${total}: "${row.matchName}"`);
+      } else {
+        console.log(`✅ Uploaded match: "${row.matchName}"`);
       }
+    } catch (error: any) {
+      console.error(`❌ Failed to upload match "${row.matchName}":`, error);
+      throw error;
     }
   };
 
-  const handleTournamentsCSVUpload = async (rows: any[]) => {
-    if (!firestore) return;
-    for (const row of rows) {
-      try {
-        const teams = row.teams ? row.teams.split(',').map((t: string) => t.trim()) : [];
-        await addCricketTournament(firestore, {
-          name: row.name || '',
-          format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
-          description: row.description || undefined,
-          startDate: row.startDate ? new Date(row.startDate) : new Date(),
-          endDate: row.endDate ? new Date(row.endDate) : new Date(),
-          status: (row.status || 'upcoming') as 'upcoming' | 'live' | 'completed',
-          teams: teams,
-          venue: row.venue || undefined,
-          entryFee: {
-            type: (row.entryFeeType || 'free') as 'free' | 'paid',
-            amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
-          },
-          maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
-          prizePool: row.prizePool || undefined,
-          sponsorName: row.sponsorName || undefined,
-          sponsorLogo: row.sponsorLogo || undefined,
-          visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
-        });
-      } catch (error) {
-        console.error('Error uploading tournament:', error);
-        throw error;
+  const handleTournamentsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
+    if (!firestore) {
+      throw new Error('Firestore not initialized');
+    }
+    
+    const row = rows[0];
+    
+    if (!row) {
+      throw new Error('No row data provided');
+    }
+
+    if (!row.name || row.name.trim() === '') {
+      throw new Error(`Row ${currentIndex || '?'} missing name`);
+    }
+
+    try {
+      const teams = row.teams ? row.teams.split(',').map((t: string) => t.trim()) : [];
+      await addCricketTournament(firestore, {
+        name: row.name.trim(),
+        format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
+        description: row.description?.trim() || undefined,
+        startDate: row.startDate ? new Date(row.startDate) : new Date(),
+        endDate: row.endDate ? new Date(row.endDate) : new Date(),
+        status: (row.status || 'upcoming') as 'upcoming' | 'live' | 'completed',
+        teams: teams,
+        venue: row.venue?.trim() || undefined,
+        entryFee: {
+          type: (row.entryFeeType || 'free') as 'free' | 'paid',
+          amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
+        },
+        maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
+        prizePool: row.prizePool?.trim() || undefined,
+        sponsorName: row.sponsorName?.trim() || undefined,
+        sponsorLogo: row.sponsorLogo?.trim() || undefined,
+        visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
+      });
+      
+      if (currentIndex && total) {
+        console.log(`✅ Uploaded tournament ${currentIndex}/${total}: "${row.name}"`);
+      } else {
+        console.log(`✅ Uploaded tournament: "${row.name}"`);
       }
+    } catch (error: any) {
+      console.error(`❌ Failed to upload tournament "${row.name}":`, error);
+      throw error;
     }
   };
 
