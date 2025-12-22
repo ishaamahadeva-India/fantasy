@@ -1,0 +1,53 @@
+# ============================================
+# Environment Variables Template
+# ============================================
+# INSTRUCTIONS:
+# 1. Copy this file to .env.local in the root directory
+# 2. Update all the values below with your actual keys
+# 3. Save the file
+# 4. Restart your development server (npm run dev)
+
+# ============================================
+# Firebase Configuration (REQUIRED)
+# ============================================
+# Get these values from Firebase Console:
+# 1. Go to Firebase Console (https://console.firebase.google.com/)
+# 2. Select your project
+# 3. Go to Project Settings (gear icon)
+# 4. Scroll to "Your apps" section
+# 5. Click on Web app icon (</>) or "Add app" → Web
+# 6. Copy the config values below
+
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCjMSpm8FbBxUZ9ZRjt_7nDbAHlnw8g0QI
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=studio-4972782117-39fa2.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=studio-4972782117-39fa2
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=studio-4972782117-39fa2.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=601096056382
+NEXT_PUBLIC_FIREBASE_APP_ID=1:601096056382:web:05389fdcbcf3ab2e7deb6f
+
+# ============================================
+# Admin Configuration (REQUIRED)
+# ============================================
+# Email address of the super admin user
+# This user will have full admin access to the application
+# IMPORTANT: Use the same email you use to sign in to the app
+
+NEXT_PUBLIC_SUPER_ADMIN_EMAIL=your-admin-email@example.com
+
+# ============================================
+# Sentry Error Monitoring (OPTIONAL)
+# ============================================
+# Get your Sentry DSN from: https://sentry.io/settings/YOUR-ORG/projects/YOUR-PROJECT/keys/
+# Format: https://YOUR-KEY@YOUR-ORG.ingest.sentry.io/YOUR-PROJECT-ID
+# Leave empty if you don't want to use Sentry
+
+NEXT_PUBLIC_SENTRY_DSN=
+
+# ============================================
+# AI/Genkit Configuration (OPTIONAL)
+# ============================================
+# Required only if you're using AI features (quizzes, summaries, etc.)
+# Get your API key from: https://makersuite.google.com/app/apikey
+
+GEMINI_API_KEY=
+
