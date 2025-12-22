@@ -185,6 +185,7 @@ export default function MovieProfilePage() {
                 src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/400/600`}
                 alt={movie.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover"
               />
             </div>

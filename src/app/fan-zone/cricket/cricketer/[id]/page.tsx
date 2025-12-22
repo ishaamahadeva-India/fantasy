@@ -195,6 +195,7 @@ export default function CricketerProfilePage() {
                 src={cricketer.avatarUrl || `https://picsum.photos/seed/${id}/400/400`}
                 alt={cricketer.name}
                 fill
+                sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover"
               />
             </div>

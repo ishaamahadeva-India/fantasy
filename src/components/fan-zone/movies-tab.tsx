@@ -66,6 +66,7 @@ export function MoviesTab({ searchTerm, industry }: { searchTerm: string, indust
                   src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/400/600`}
                   alt={movie.title}
                   fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>

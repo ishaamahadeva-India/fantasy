@@ -106,6 +106,7 @@ export function ImageUpload({ value, onChange, folder, label = 'Image' }: ImageU
                   src={preview}
                   alt="Preview"
                   fill
+                  sizes="(max-width: 768px) 100vw, 512px"
                   className="object-cover"
                   unoptimized
                 />

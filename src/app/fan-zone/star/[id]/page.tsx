@@ -201,6 +201,7 @@ export default function StarProfilePage() {
                         src={star.avatar || `https://picsum.photos/seed/${star.id}/400/400`}
                         alt={star.name}
                         fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover"
                         />
                     </div>

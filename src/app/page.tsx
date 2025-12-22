@@ -140,7 +140,7 @@ function WatchlistSidebar() {
                         <li key={movie.id}>
                             <Link href={`/fan-zone/movie/${movie.id}`} className="flex items-center gap-4 group">
                                 <div className="relative w-12 h-16 shrink-0">
-                                    <Image src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/200/300`} alt={movie.title} fill className="object-cover rounded-sm" />
+                                    <Image src={movie.posterUrl || `https://picsum.photos/seed/${movie.id}/200/300`} alt={movie.title} fill sizes="48px" className="object-cover rounded-sm" />
                                 </div>
                                 <div>
                                     <p className="font-semibold group-hover:text-primary">{movie.title}</p>
