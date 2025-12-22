@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
-import { useUser as useFirebaseUser } from '@/firebase';
 import { collection, query, orderBy, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -455,8 +454,8 @@ export default function CouponsPage() {
     return query(collection(firestore, 'coupon-redemptions'), orderBy('redeemedAt', 'desc'));
   }, [firestore]);
 
-  const { data: coupons, isLoading: couponsLoading } = useCollection<CouponCode>(couponsQuery);
-  const { data: redemptions, isLoading: redemptionsLoading } = useCollection<CouponRedemption>(redemptionsQuery);
+  const { data: coupons, isLoading: couponsLoading } = useCollection<CouponCode>(couponsQuery as any);
+  const { data: redemptions, isLoading: redemptionsLoading } = useCollection<CouponRedemption>(redemptionsQuery as any);
 
   const handleEdit = (coupon: CouponCode) => {
     setEditingCoupon(coupon);

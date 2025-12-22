@@ -14,6 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
+import { SocialShare } from '@/components/social-share';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import { PulseCheck } from '@/components/fan-zone/pulse-check';
 import { useCollection, useFirestore, useDoc, useUser } from '@/firebase';

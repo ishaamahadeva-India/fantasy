@@ -760,7 +760,6 @@ export default function CricketMatchPage() {
                     </CardTitle>
                 </Card>
             </div>
-        </div>
 
        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
