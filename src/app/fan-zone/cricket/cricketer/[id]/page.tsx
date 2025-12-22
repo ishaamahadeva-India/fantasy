@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useEffect, useState } from 'react';
+import { SocialShare } from '@/components/social-share';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import { FavoriteButton } from '@/components/fan-zone/favorite-button';
 import { useCollection, useFirestore, useDoc, useUser } from '@/firebase';
@@ -170,13 +171,20 @@ export default function CricketerProfilePage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <Button variant="ghost" asChild>
           <Link href="/fan-zone/cricket">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Cricket Fan Zone
           </Link>
         </Button>
+        <SocialShare
+          url={typeof window !== 'undefined' ? window.location.href : ''}
+          title={`${cricketer.name} - Cricket Profile`}
+          description={`Check out ${cricketer.name}'s profile and stats${cricketer.country ? ` from ${cricketer.country}` : ''}`}
+          imageUrl={cricketer.avatarUrl}
+          variant="outline"
+        />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
         <div className="md:col-span-1">

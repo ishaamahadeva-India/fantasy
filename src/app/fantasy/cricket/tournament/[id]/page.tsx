@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Trophy, Calendar, MapPin, Users, DollarSign, Play, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { SocialShare } from '@/components/social-share';
 import type { CricketTournament, TournamentEvent, UserProfile } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
@@ -159,13 +160,22 @@ export default function TournamentPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <Button variant="ghost" asChild>
           <Link href="/fantasy/cricket">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Cricket Fantasy
           </Link>
         </Button>
+        {tournament && (
+          <SocialShare
+            url={typeof window !== 'undefined' ? window.location.href : ''}
+            title={`${tournament.name} - Cricket Tournament`}
+            description={tournament.description || `Join the ${tournament.name} fantasy tournament!`}
+            imageUrl={tournament.sponsorLogo}
+            variant="outline"
+          />
+        )}
       </div>
 
       <div className="space-y-6">

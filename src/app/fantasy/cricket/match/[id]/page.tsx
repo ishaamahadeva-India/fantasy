@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Check, Lock, Users, Flame, Zap, Trophy, BarChart, HelpCircle, User, Award } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+// import { SocialShare } from '@/components/social-share';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -725,7 +726,7 @@ export default function CricketMatchPage() {
   return (
     <div className="space-y-8">
        <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
-            <div>
+            <div className="flex-1">
                 <Button variant="ghost" asChild className='mb-2 -ml-4'>
                     <Link href="/fantasy/cricket">
                         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -739,7 +740,14 @@ export default function CricketMatchPage() {
                     {matchDetails.series}
                 </p>
             </div>
-             <div className='grid grid-cols-2 gap-4'>
+            {/* <SocialShare
+              url={typeof window !== 'undefined' ? window.location.href : ''}
+              title={matchDetails.title + ' - Live Fantasy Match'}
+              description={'Join the live fantasy match: ' + matchDetails.series}
+              variant="outline"
+            /> */}
+       </div>
+       <div className='grid grid-cols-2 gap-4'>
                 <Card className="text-center p-4">
                     <CardDescription>Total Score</CardDescription>
                     <CardTitle className="font-code text-4xl text-primary">{currentScore}</CardTitle>

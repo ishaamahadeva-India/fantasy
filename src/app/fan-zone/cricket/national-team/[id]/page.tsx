@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ArrowLeft, Users, Trophy, Percent } from 'lucide-react';
 import Link from 'next/link';
+import { SocialShare } from '@/components/social-share';
 import {
   Select,
   SelectContent,

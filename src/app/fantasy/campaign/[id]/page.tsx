@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Check, Clock, ListOrdered, Lock, Trophy, ArrowLeft, User, Award, Building } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { SocialShare } from '@/components/social-share';
 
 // Placeholder Data
 const campaignDetails = {
@@ -109,13 +110,20 @@ export default function FantasyMovieCampaignPage() {
 
   return (
     <div className="space-y-8">
-        <div className='flex-1'>
-            <Button variant="ghost" asChild className='mb-2 -ml-4'>
+        <div className='flex items-center justify-between mb-2 -ml-4'>
+            <Button variant="ghost" asChild>
                 <Link href="/fantasy/movie">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to All Campaigns
                 </Link>
             </Button>
+            <SocialShare
+              url={typeof window !== 'undefined' ? window.location.href : ''}
+              title={campaignDetails.title}
+              description={`Join the ${campaignDetails.movie.title} fantasy campaign! Prize Pool: ${campaignDetails.prizePool}`}
+              imageUrl={campaignDetails.sponsor.logo}
+              variant="outline"
+            />
         </div>
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-8">
             <div>

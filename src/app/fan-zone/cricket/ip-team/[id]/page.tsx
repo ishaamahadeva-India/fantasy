@@ -133,14 +133,23 @@ export default function IpTeamProfilePage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6">
-        <Button variant="ghost" asChild>
-          <Link href="/fan-zone/cricket">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Cricket Fan Zone
-          </Link>
-        </Button>
-      </div>
+        <div className="mb-6 flex items-center justify-between">
+            <Button variant="ghost" asChild>
+                <Link href="/fan-zone/cricket">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Cricket Fan Zone
+                </Link>
+            </Button>
+            {team && (
+                <SocialShare
+                  url={typeof window !== 'undefined' ? window.location.href : ''}
+                  title={`${team.name} - ${team.type === 'ip' ? 'IPL Team' : 'National Team'} Profile`}
+                  description={`Check out ${team.name}'s team profile`}
+                  imageUrl={team.logoUrl}
+                  variant="outline"
+                />
+            )}
+        </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
         <div className="md:col-span-1">
           <Card className="overflow-hidden">

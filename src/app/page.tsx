@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
 import type { Article, UserProfile, Movie, Gossip } from '@/lib/types';
 import { MessageSquareText } from 'lucide-react';
+import { SocialShare } from '@/components/social-share';
 
 
 function AdBanner() {
@@ -77,13 +78,26 @@ function GossipList() {
             </CardHeader>
             <CardContent>
                 <ul className="space-y-4">
-                    {gossips.map((gossip, index) => (
-                        <li key={gossip.id}>
-                            <p className="font-medium">{gossip.title}</p>
-                            <p className="text-xs text-muted-foreground">Source: {gossip.source}</p>
-                             {index < gossips.length - 1 && <Separator className="mt-4" />}
-                        </li>
-                    ))}
+                    {gossips.map((gossip, index) => {
+                        const gossipUrl = typeof window !== 'undefined' ? `${window.location.origin}/gossip/${gossip.id}` : '';
+                        return (
+                            <li key={gossip.id} className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                    <p className="font-medium">{gossip.title}</p>
+                                    <p className="text-xs text-muted-foreground">Source: {gossip.source}</p>
+                                </div>
+                                <SocialShare
+                                    url={gossipUrl}
+                                    title={gossip.title}
+                                    description={`From ${gossip.source}`}
+                                    imageUrl={gossip.imageUrl}
+                                    variant="ghost"
+                                    size="sm"
+                                />
+                                {index < gossips.length - 1 && <Separator className="mt-4" />}
+                            </li>
+                        );
+                    })}
                 </ul>
             </CardContent>
         </Card>
@@ -193,37 +207,49 @@ function ArticleList({ category }: { category: string }) {
           const showAd = (index + 1) % 2 === 0;
           return (
             <div key={article.id}>
-              <Link href={`/article/${article.slug}`} className="group block py-6">
-                <div className="flex items-start gap-4">
-                  <div className="relative w-24 h-24 shrink-0">
-                    <Image
-                      src={`https://picsum.photos/seed/${article.id}/150/150`}
-                      alt={article.title}
-                      fill
-                      className="object-cover rounded-md"
-                      data-ai-hint="news article"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
-                      {article.title}
-                    </h3>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      <span>
-                        Published on{' '}
-                        {new Date().toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </span>
+              <div className="group block py-6">
+                <Link href={`/article/${article.slug}`} className="block">
+                  <div className="flex items-start gap-4">
+                    <div className="relative w-24 h-24 shrink-0">
+                      <Image
+                        src={`https://picsum.photos/seed/${article.id}/150/150`}
+                        alt={article.title}
+                        fill
+                        className="object-cover rounded-md"
+                        data-ai-hint="news article"
+                      />
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                      {article.excerpt}
-                    </p>
+                    <div className="flex-grow">
+                      <h3 className="text-lg font-bold leading-snug transition-colors duration-300 font-headline group-hover:text-primary">
+                        {article.title}
+                      </h3>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        <span>
+                          Published on{' '}
+                          {new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                    </div>
                   </div>
+                </Link>
+                <div className="mt-2 flex justify-end">
+                  <SocialShare
+                    url={`${typeof window !== 'undefined' ? window.location.origin : ''}/article/${article.slug}`}
+                    title={article.title}
+                    description={article.excerpt}
+                    imageUrl={article.imageUrl || `https://picsum.photos/seed/${article.id}/1200/600`}
+                    variant="ghost"
+                    size="sm"
+                  />
                 </div>
-              </Link>
+              </div>
               {showAd && <AdBanner />}
               {!showAd && index < articles.length - 1 && <Separator />}
             </div>

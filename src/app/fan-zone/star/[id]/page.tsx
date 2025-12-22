@@ -11,6 +11,7 @@ import { ArrowUp, BrainCircuit, Gamepad2, PieChart, Star, ArrowLeft } from 'luci
 import { Separator } from '@/components/ui/separator';
 import { AttributeRating } from '@/components/fan-zone/attribute-rating';
 import Link from 'next/link';
+import { SocialShare } from '@/components/social-share';
 import { useCollection, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import type { FanRating, Star as StarType, UserProfile } from '@/lib/types';
@@ -174,13 +175,22 @@ export default function StarProfilePage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
             <Button variant="ghost" asChild>
                 <Link href="/fan-zone/movies">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Movie Zone
                 </Link>
             </Button>
+            {star && (
+                <SocialShare
+                  url={typeof window !== 'undefined' ? window.location.href : ''}
+                  title={`${star.name} - Star Profile`}
+                  description={star.bio || `Check out ${star.name}'s profile`}
+                  imageUrl={star.avatar}
+                  variant="outline"
+                />
+            )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             <div className="md:col-span-1">

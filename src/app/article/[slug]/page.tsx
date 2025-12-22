@@ -8,6 +8,8 @@ import { AudioPlayer } from '@/components/article/audio-player';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { SocialShare } from '@/components/social-share';
+import { useEffect } from 'react';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, type Query } from 'firebase/firestore';
 import type { Article } from '@/lib/types';
@@ -73,6 +75,42 @@ export default function ArticlePage() {
   // Note: hasNarration and article length are not in the DB model. Defaulting for now.
   const hasNarration = false;
   const readLength = "Medium";
+  
+  const articleUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const articleImage = article.imageUrl || `https://picsum.photos/seed/${article.id}/1200/600`;
+
+  // Set Open Graph meta tags for social sharing
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      // Remove existing meta tags
+      const existingTags = document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]');
+      existingTags.forEach(tag => tag.remove());
+
+      // Add Open Graph tags
+      const ogTags = [
+        { property: 'og:title', content: article.title },
+        { property: 'og:description', content: article.excerpt },
+        { property: 'og:image', content: articleImage },
+        { property: 'og:url', content: articleUrl },
+        { property: 'og:type', content: 'article' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: article.title },
+        { name: 'twitter:description', content: article.excerpt },
+        { name: 'twitter:image', content: articleImage },
+      ];
+
+      ogTags.forEach(tag => {
+        const meta = document.createElement('meta');
+        if (tag.property) {
+          meta.setAttribute('property', tag.property);
+        } else {
+          meta.setAttribute('name', tag.name!);
+        }
+        meta.setAttribute('content', tag.content);
+        document.head.appendChild(meta);
+      });
+    }
+  }, [article, articleUrl, articleImage]);
 
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12">
@@ -106,10 +144,13 @@ export default function ArticlePage() {
                     <Star className="w-4 h-4 mr-2" />
                     Rate
                 </Button>
-                 <Button variant="outline">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                </Button>
+                 <SocialShare
+                    url={articleUrl}
+                    title={article.title}
+                    description={article.excerpt}
+                    imageUrl={articleImage}
+                    variant="outline"
+                />
             </div>
         </div>
         
