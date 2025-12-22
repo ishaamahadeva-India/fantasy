@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { onSnapshot, type Query, type DocumentData } from 'firebase/firestore';
 import { useAuth } from '@/firebase/provider';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -12,7 +12,13 @@ export function useCollection<T>(query: Query<T, DocumentData> | null) {
   const [error, setError] = useState<Error | null>(null);
   const auth = useAuth(); // Using auth to re-trigger on auth state change
 
+  // Create a stable identifier for the query using its path
+  const queryId = query 
+    ? (query as any)._query?.path?.segments?.join('/') || 'unknown'
+    : 'null';
+
   useEffect(() => {
+
     if (!query) {
       setData(null);
       setIsLoading(false);
@@ -56,7 +62,7 @@ export function useCollection<T>(query: Query<T, DocumentData> | null) {
     );
 
     return () => unsubscribe();
-  }, [query, auth]); // Use query directly - React will handle reference equality
+  }, [queryId, auth]); // Use stable queryId instead of query object
 
   return { data, isLoading, error };
 }

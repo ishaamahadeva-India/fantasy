@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { onSnapshot, type DocumentReference, type DocumentData } from 'firebase/firestore';
 import { useAuth } from '@/firebase/provider';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -10,6 +10,7 @@ export function useDoc<T>(ref: DocumentReference<T, DocumentData> | null) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const auth = useAuth(); // Using auth to re-trigger on auth state change
+  const refPath = ref?.path || 'null';
 
   useEffect(() => {
     if (!ref) {
@@ -58,7 +59,7 @@ export function useDoc<T>(ref: DocumentReference<T, DocumentData> | null) {
     );
 
     return () => unsubscribe();
-  }, [ref, auth]); // Use ref directly instead of ref?.path to ensure consistent hook calls
+  }, [refPath, auth]); // Use refPath (string) instead of ref object for stable dependency
 
   return { data, isLoading, error };
 }
