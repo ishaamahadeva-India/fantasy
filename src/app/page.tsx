@@ -119,7 +119,11 @@ function WatchlistSidebar() {
 
     const { data: movies, isLoading: moviesLoading } = useCollection(moviesQuery);
     
-    if (!user && !profileLoading) return <GossipList />;
+    // All hooks must be called before any conditional returns
+    // Early returns AFTER all hooks
+    if (!user && !profileLoading) {
+        return <GossipList />;
+    }
 
     if (profileLoading || !user) {
         return <Card><CardHeader><Skeleton className="h-8 w-32" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
