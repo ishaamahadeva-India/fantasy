@@ -8,16 +8,22 @@ import Link from 'next/link';
 
 export function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Mark as mounted to prevent hydration mismatch
+    setMounted(true);
+    
     // Check if user has already consented
-    const consent = localStorage.getItem('cookie-consent');
-    if (!consent) {
-      // Show banner after a short delay
-      const timer = setTimeout(() => {
-        setShowBanner(true);
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem('cookie-consent');
+      if (!consent) {
+        // Show banner after a short delay
+        const timer = setTimeout(() => {
+          setShowBanner(true);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
     }
   }, []);
 
@@ -33,7 +39,8 @@ export function CookieConsent() {
     setShowBanner(false);
   };
 
-  if (!showBanner) return null;
+  // Don't render until mounted to prevent hydration mismatch
+  if (!mounted || !showBanner) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">

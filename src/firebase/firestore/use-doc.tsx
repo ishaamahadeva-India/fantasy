@@ -58,7 +58,7 @@ export function useDoc<T>(ref: DocumentReference<T, DocumentData> | null) {
     );
 
     return () => unsubscribe();
-  }, [ref?.path, auth]); // Using path for dependency
+  }, [ref, auth]); // Use ref directly instead of ref?.path to ensure consistent hook calls
 
   return { data, isLoading, error };
 }

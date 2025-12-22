@@ -56,7 +56,7 @@ export function useCollection<T>(query: Query<T, DocumentData> | null) {
     );
 
     return () => unsubscribe();
-  }, [JSON.stringify(query), auth]); // Simple serialization for dependency
+  }, [query, auth]); // Use query directly - React will handle reference equality
 
   return { data, isLoading, error };
 }
