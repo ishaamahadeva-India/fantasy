@@ -141,32 +141,26 @@ export default function SignupPage() {
                 name="acceptTerms"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <div className="flex items-start space-x-2">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          className="mt-1"
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                          <FormLabel className="text-sm font-normal cursor-pointer">
-                            I accept the{' '}
-                            <Link href="/terms" className="text-primary hover:underline" target="_blank">
-                              Terms and Conditions
-                            </Link>
-                            {' '}and{' '}
-                            <Link href="/privacy" className="text-primary hover:underline" target="_blank">
-                              Privacy Policy
-                            </Link>
-                            {' '}and confirm that:
+                        <FormLabel className="text-sm font-normal cursor-pointer">
+                          I accept the{' '}
+                          <Link href="/terms" className="text-primary hover:underline" target="_blank">
+                            Terms and Conditions
+                          </Link>
+                          {' '}and{' '}
+                          <Link href="/privacy" className="text-primary hover:underline" target="_blank">
+                            Privacy Policy
+                          </Link>
+                          {' '}and confirm that I am 18+ years old, understand this is a skill-based platform with NO real money transactions, NOT gambling, and comply with all applicable regulations.
                         </FormLabel>
-                        <div className="text-xs text-muted-foreground space-y-1 mt-2">
-                          <p>• I am 18 years of age or older</p>
-                          <p>• This is a skill-based platform with NO real money transactions</p>
-                          <p>• This is NOT gambling - outcomes depend on knowledge and analysis</p>
-                          <p>• I understand and comply with all applicable government regulations</p>
-                          <p>• I acknowledge that no element of chance or randomness is involved</p>
-                        </div>
                       </div>
                     </div>
                     <FormMessage />
