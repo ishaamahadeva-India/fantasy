@@ -66,11 +66,17 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-        const auth = getAuth(app);
-        const firestore = getFirestore(app);
-        const storage = getStorage(app);
-        setInstances({ app, auth, firestore, storage });
+        try {
+            const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+            const auth = getAuth(app);
+            const firestore = getFirestore(app);
+            const storage = getStorage(app);
+            setInstances({ app, auth, firestore, storage });
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            // Set instances to null on error to prevent further errors
+            setInstances({ app: null, auth: null, firestore: null, storage: null });
+        }
     }
   }, []);
 

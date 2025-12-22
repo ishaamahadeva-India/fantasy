@@ -30,6 +30,20 @@ export function useCollection<T>(query: Query<T, DocumentData> | null) {
         setError(null);
       },
       (err) => {
+        // Check if it's a CORS error
+        const isCorsError = err?.message?.includes('CORS') || 
+                           err?.code === 'unavailable' ||
+                           err?.message?.includes('network') ||
+                           err?.message?.includes('Failed to fetch');
+        
+        if (isCorsError) {
+          console.error('Firestore CORS Error:', {
+            message: err.message,
+            code: err.code,
+            hint: 'Check FIREBASE_CORS_FIX.md for solutions. Make sure Firestore is enabled and your domain is authorized in Firebase Console.'
+          });
+        }
+        
         const permissionError = new FirestorePermissionError({
             path: (query as any)._query.path.segments.join('/'),
             operation: 'list',
