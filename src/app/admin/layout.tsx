@@ -9,6 +9,7 @@ import {
   Shield,
   Loader2,
   TriangleAlert,
+  Ticket,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -28,6 +29,7 @@ const adminNavItems = [
   { href: '/admin/ads', label: 'Advertisements', icon: BadgePercent },
   { href: '/admin/fantasy', label: 'Fantasy Games', icon: Gamepad2 },
   { href: '/admin/fanzone', label: 'Fan Zone', icon: Shield },
+  { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
 ];
 
 function AdminSidebar() {

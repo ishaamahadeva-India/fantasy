@@ -577,3 +577,36 @@ export type FraudFlag = {
     resolvedAt?: Date;
     notes?: string;
 }
+
+export type CouponCode = {
+  id: string;
+  code: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed' | 'points';
+  discountValue: number;
+  minPurchaseAmount?: number;
+  maxDiscountAmount?: number;
+  validFrom: Date;
+  validUntil: Date;
+  maxRedemptions?: number;
+  currentRedemptions: number;
+  isActive: boolean;
+  applicableTo?: string[]; // Categories, products, etc.
+  createdAt: Date;
+  createdBy: string; // Admin user ID
+  updatedAt: Date;
+};
+
+export type CouponRedemption = {
+  id: string;
+  couponId: string;
+  couponCode: string;
+  userId: string;
+  userEmail?: string;
+  userName?: string;
+  redeemedAt: Date;
+  orderId?: string;
+  discountAmount: number;
+  originalAmount?: number;
+  finalAmount?: number;
+};

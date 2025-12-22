@@ -362,3 +362,22 @@ If you encounter issues:
 - [ ] Tested connection by accessing admin panel
 - [ ] Tested CSV upload functionality
 
+## Coupons Collection Security Rules
+
+Add these rules to your Firestore security rules (before the final closing brace):
+
+```javascript
+    // Coupons collection
+    match /coupons/{couponId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Coupon redemptions collection
+    match /coupon-redemptions/{redemptionId} {
+      allow read: if isAdmin();
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+```
+
