@@ -35,6 +35,11 @@ function FirebaseErrorListener() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Only listen to errors in development
+    if (process.env.NODE_ENV !== 'development') {
+      return;
+    }
+
     const handleError = (error: FirestorePermissionError) => {
       console.error(error); // Log the full contextual error to the console
       toast({
@@ -83,7 +88,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   return (
     <FirebaseContext.Provider value={instances}>
       {children}
-      {process.env.NODE_ENV === 'development' && <FirebaseErrorListener />}
+      <FirebaseErrorListener />
     </FirebaseContext.Provider>
   );
 }
