@@ -39,27 +39,42 @@ export function CSVUpload({
   const { toast } = useToast();
 
   const parseCSV = (text: string): any[] => {
-    const lines = text.split('\n').filter((line) => line.trim());
-    if (lines.length === 0) return [];
+    // Normalize line endings (handle Windows \r\n, Mac \r, Unix \n)
+    const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = normalizedText.split('\n').filter((line) => line.trim());
+    
+    if (lines.length === 0) {
+      console.warn('⚠️ CSV file appears to be empty');
+      return [];
+    }
+
+    console.log(`📄 CSV file has ${lines.length} lines (including header)`);
 
     // Parse header
     const headers = parseCSVLine(lines[0]);
+    console.log(`📋 Found ${headers.length} columns:`, headers);
 
     // Parse rows
     const rows: any[] = [];
     for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i]);
+      const line = lines[i].trim();
+      if (!line) continue; // Skip empty lines
       
-      if (values.some((v) => v)) {
-        // Only add non-empty rows
+      const values = parseCSVLine(line);
+      
+      // Check if row has any non-empty values
+      if (values.some((v) => v && v.trim())) {
         const row: any = {};
         headers.forEach((header, index) => {
-          row[header] = values[index] || '';
+          row[header] = (values[index] || '').trim();
         });
         rows.push(row);
+      } else {
+        console.warn(`⚠️ Skipping empty row ${i + 1}`);
       }
     }
 
+    console.log(`✅ Parsed ${rows.length} data rows from CSV`);
     return rows;
   };
 
