@@ -113,12 +113,29 @@ export default function AdminContentPage() {
     // Generate slug from title if not provided
     const slug = row.slug || row.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     
+    // Normalize category to match expected format (capitalize first letter)
+    const normalizeCategory = (cat: string): string => {
+      if (!cat) return 'general';
+      const trimmed = cat.trim();
+      // Valid categories from the app
+      const validCategories = ['Cricket', 'Movies', 'Reviews', 'Gallery', 'Opinion', 'Latest'];
+      // Check if it matches any valid category (case-insensitive)
+      const matched = validCategories.find(
+        valid => valid.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (matched) return matched;
+      // If not matched, capitalize first letter
+      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+    };
+    
+    const normalizedCategory = normalizeCategory(row.category || 'general');
+    
     try {
       // Add article to Firestore
       await addArticle(firestore, {
         title: row.title.trim(),
         slug: slug,
-        category: row.category?.trim() || 'general',
+        category: normalizedCategory,
         excerpt: row.excerpt?.trim() || row.content?.substring(0, 200) || '',
         content: row.content?.trim() || '',
         imageUrl: row.imageUrl?.trim() || undefined,

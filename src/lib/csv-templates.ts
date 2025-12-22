@@ -31,7 +31,7 @@ export function downloadArticlesTemplate() {
     [
       'Top 10 Movies of 2024',
       'top-10-movies-2024',
-      'entertainment',
+      'Movies',
       'Discover the most popular movies of 2024...',
       'This article covers the top 10 movies that dominated the box office in 2024...',
       'https://example.com/image.jpg'
@@ -39,9 +39,17 @@ export function downloadArticlesTemplate() {
     [
       'Cricket World Cup Preview',
       'cricket-world-cup-preview',
-      'sports',
+      'Cricket',
       'Everything you need to know about the upcoming World Cup...',
       'The Cricket World Cup is set to begin next month...',
+      ''
+    ],
+    [
+      'Movie Review: Action Hero 2',
+      'movie-review-action-hero-2',
+      'Reviews',
+      'A detailed review of the latest blockbuster...',
+      'Action Hero 2 delivers on all fronts with stunning visuals...',
       ''
     ]
   ];

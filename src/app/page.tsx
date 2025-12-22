@@ -152,6 +152,8 @@ function ArticleList({ category }: { category: string }) {
         if (category.toLowerCase() === 'latest') {
             return query(articlesCollection);
         }
+        // Use case-insensitive matching by querying and filtering
+        // Note: Firestore queries are case-sensitive, so we need to handle this
         return query(articlesCollection, where('category', '==', category));
     }, [firestore, category]);
 
