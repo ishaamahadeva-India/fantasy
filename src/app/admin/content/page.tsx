@@ -34,8 +34,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { deleteGossip } from '@/firebase/firestore/gossips';
+import { deleteGossip, addGossip } from '@/firebase/firestore/gossips';
+import { addArticle } from '@/firebase/firestore/articles';
 import type { Gossip } from '@/lib/types';
+import { CSVUpload } from '@/components/admin/csv-upload';
+import { downloadArticlesTemplate, downloadGossipsTemplate } from '@/lib/csv-templates';
 
 
 type ArticleWithId = {
@@ -90,6 +93,43 @@ export default function AdminContentPage() {
     }
   };
 
+  const handleArticlesCSVUpload = async (rows: any[]) => {
+    if (!firestore) return;
+    for (const row of rows) {
+      try {
+        // Generate slug from title if not provided
+        const slug = row.slug || row.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        await addArticle(firestore, {
+          title: row.title || '',
+          slug: slug,
+          category: row.category || 'general',
+          excerpt: row.excerpt || row.content?.substring(0, 200) || '',
+          content: row.content || '',
+          imageUrl: row.imageUrl || undefined,
+        });
+      } catch (error) {
+        console.error('Error uploading article:', error);
+        throw error;
+      }
+    }
+  };
+
+  const handleGossipsCSVUpload = async (rows: any[]) => {
+    if (!firestore) return;
+    for (const row of rows) {
+      try {
+        await addGossip(firestore, {
+          title: row.title || '',
+          source: row.source || '',
+          imageUrl: row.imageUrl || undefined,
+        });
+      } catch (error) {
+        console.error('Error uploading gossip:', error);
+        throw error;
+      }
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -116,12 +156,22 @@ export default function AdminContentPage() {
                         <CardTitle>All Articles</CardTitle>
                         <CardDescription>A list of all published articles.</CardDescription>
                     </div>
-                    <Button asChild>
-                    <Link href="/admin/content/new">
-                        <PlusCircle className="w-4 h-4 mr-2" />
-                        Create New Article
-                    </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      <CSVUpload
+                        onUpload={handleArticlesCSVUpload}
+                        title="Upload Articles CSV"
+                        description="Upload multiple articles at once. CSV should have columns: title, slug, category, excerpt, content, imageUrl"
+                        exampleHeaders={['title', 'slug', 'category', 'excerpt', 'content', 'imageUrl']}
+                        buttonText="Upload Articles CSV"
+                        onDownloadTemplate={downloadArticlesTemplate}
+                      />
+                      <Button asChild>
+                        <Link href="/admin/content/new">
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Create New Article
+                        </Link>
+                      </Button>
+                    </div>
                 </div>
                 </CardHeader>
                 <CardContent>
@@ -209,12 +259,22 @@ export default function AdminContentPage() {
                         <CardTitle>Gossip Mill</CardTitle>
                         <CardDescription>A list of all gossip items.</CardDescription>
                     </div>
-                    <Button asChild>
-                    <Link href="/admin/content/gossip/new">
-                        <PlusCircle className="w-4 h-4 mr-2" />
-                        Create New Gossip
-                    </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      <CSVUpload
+                        onUpload={handleGossipsCSVUpload}
+                        title="Upload Gossips CSV"
+                        description="Upload multiple gossip items at once. CSV should have columns: title, source, imageUrl"
+                        exampleHeaders={['title', 'source', 'imageUrl']}
+                        buttonText="Upload Gossips CSV"
+                        onDownloadTemplate={downloadGossipsTemplate}
+                      />
+                      <Button asChild>
+                        <Link href="/admin/content/gossip/new">
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Create New Gossip
+                        </Link>
+                      </Button>
+                    </div>
                 </div>
                 </CardHeader>
                 <CardContent>

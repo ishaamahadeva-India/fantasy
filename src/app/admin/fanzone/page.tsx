@@ -34,12 +34,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { deleteCricketer } from '@/firebase/firestore/cricketers';
-import { deleteTeam } from '@/firebase/firestore/teams';
-import { deleteMovie } from '@/firebase/firestore/movies';
-import { deleteStar } from '@/firebase/firestore/stars';
+import { deleteCricketer, addCricketer } from '@/firebase/firestore/cricketers';
+import { deleteTeam, addTeam } from '@/firebase/firestore/teams';
+import { deleteMovie, addMovie } from '@/firebase/firestore/movies';
+import { deleteStar, addStar } from '@/firebase/firestore/stars';
 import type { Movie, Star as StarType } from '@/lib/types';
 import { BarChart3 } from 'lucide-react';
+import { CSVUpload } from '@/components/admin/csv-upload';
+import { downloadCricketersTemplate, downloadTeamsTemplate, downloadMoviesTemplate, downloadStarsTemplate } from '@/lib/csv-templates';
 
 type CricketerProfile = {
     id: string;
@@ -141,6 +143,74 @@ export default function AdminFanZonePage() {
         }
     };
 
+    const handleCricketersCSVUpload = async (rows: any[]) => {
+        if (!firestore) return;
+        for (const row of rows) {
+            try {
+                const roles = row.roles ? row.roles.split(',').map((r: string) => r.trim()) : [];
+                await addCricketer(firestore, {
+                    name: row.name || '',
+                    country: row.country || '',
+                    roles: roles,
+                    avatarUrl: row.avatarUrl || undefined,
+                });
+            } catch (error) {
+                console.error('Error uploading cricketer:', error);
+                throw error;
+            }
+        }
+    };
+
+    const handleTeamsCSVUpload = async (rows: any[]) => {
+        if (!firestore) return;
+        for (const row of rows) {
+            try {
+                await addTeam(firestore, {
+                    name: row.name || '',
+                    type: (row.type || 'ip') as 'ip' | 'national',
+                    logoUrl: row.logoUrl || undefined,
+                });
+            } catch (error) {
+                console.error('Error uploading team:', error);
+                throw error;
+            }
+        }
+    };
+
+    const handleMoviesCSVUpload = async (rows: any[]) => {
+        if (!firestore) return;
+        for (const row of rows) {
+            try {
+                await addMovie(firestore, {
+                    title: row.title || '',
+                    releaseYear: row.releaseYear ? parseInt(row.releaseYear) : new Date().getFullYear(),
+                    genre: row.genre || '',
+                    description: row.description || '',
+                    posterUrl: row.posterUrl || undefined,
+                });
+            } catch (error) {
+                console.error('Error uploading movie:', error);
+                throw error;
+            }
+        }
+    };
+
+    const handleStarsCSVUpload = async (rows: any[]) => {
+        if (!firestore) return;
+        for (const row of rows) {
+            try {
+                const genres = row.genre ? row.genre.split(',').map((g: string) => g.trim()) : [];
+                await addStar(firestore, {
+                    name: row.name || '',
+                    genre: genres,
+                    avatar: row.avatar || undefined,
+                });
+            } catch (error) {
+                console.error('Error uploading star:', error);
+                throw error;
+            }
+        }
+    };
 
   return (
     <div className="space-y-8">
@@ -184,12 +254,22 @@ export default function AdminFanZonePage() {
               <div className="p-6">
                 <div className='flex justify-between items-center mb-4'>
                     <h3 className="text-lg font-semibold">Cricketers</h3>
-                    <Button size="sm" asChild>
-                       <Link href="/admin/fanzone/cricketers/new">
-                        <PlusCircle className="w-4 h-4 mr-2" />
-                        Add Cricketer
-                       </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      <CSVUpload
+                        onUpload={handleCricketersCSVUpload}
+                        title="Upload Cricketers CSV"
+                        description="Upload multiple cricketers at once. CSV should have columns: name, country, roles (comma-separated), avatarUrl"
+                        exampleHeaders={['name', 'country', 'roles', 'avatarUrl']}
+                        buttonText="Upload CSV"
+                        onDownloadTemplate={downloadCricketersTemplate}
+                      />
+                      <Button size="sm" asChild>
+                        <Link href="/admin/fanzone/cricketers/new">
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Add Cricketer
+                        </Link>
+                      </Button>
+                    </div>
                 </div>
               <Table>
                 <TableHeader>
@@ -263,12 +343,22 @@ export default function AdminFanZonePage() {
               <div className="p-6">
                 <div className='flex justify-between items-center mb-4'>
                     <h3 className="text-lg font-semibold">Teams (IP & National)</h3>
-                    <Button size="sm" asChild>
+                    <div className="flex gap-2">
+                      <CSVUpload
+                        onUpload={handleTeamsCSVUpload}
+                        title="Upload Teams CSV"
+                        description="Upload multiple teams at once. CSV should have columns: name, type (ip/national), logoUrl"
+                        exampleHeaders={['name', 'type', 'logoUrl']}
+                        buttonText="Upload CSV"
+                        onDownloadTemplate={downloadTeamsTemplate}
+                      />
+                      <Button size="sm" asChild>
                         <Link href="/admin/fanzone/teams/new">
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            Add Team
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Add Team
                         </Link>
-                    </Button>
+                      </Button>
+                    </div>
                 </div>
                     <Table>
                         <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
@@ -333,12 +423,22 @@ export default function AdminFanZonePage() {
               <div className="p-6">
                 <div className='flex justify-between items-center mb-4'>
                     <h3 className="text-lg font-semibold">Movies</h3>
-                    <Button size="sm" asChild>
+                    <div className="flex gap-2">
+                      <CSVUpload
+                        onUpload={handleMoviesCSVUpload}
+                        title="Upload Movies CSV"
+                        description="Upload multiple movies at once. CSV should have columns: title, releaseYear, genre, description, posterUrl"
+                        exampleHeaders={['title', 'releaseYear', 'genre', 'description', 'posterUrl']}
+                        buttonText="Upload CSV"
+                        onDownloadTemplate={downloadMoviesTemplate}
+                      />
+                      <Button size="sm" asChild>
                         <Link href="/admin/fanzone/movies/new">
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            Add Movie
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Add Movie
                         </Link>
-                    </Button>
+                      </Button>
+                    </div>
                 </div>
                     <Table>
                         <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Year</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
@@ -383,12 +483,22 @@ export default function AdminFanZonePage() {
               <div className="p-6">
                 <div className='flex justify-between items-center mb-4'>
                     <h3 className="text-lg font-semibold">Stars</h3>
-                    <Button size="sm" asChild>
+                    <div className="flex gap-2">
+                      <CSVUpload
+                        onUpload={handleStarsCSVUpload}
+                        title="Upload Stars CSV"
+                        description="Upload multiple stars at once. CSV should have columns: name, genre (comma-separated), avatar"
+                        exampleHeaders={['name', 'genre', 'avatar']}
+                        buttonText="Upload CSV"
+                        onDownloadTemplate={downloadStarsTemplate}
+                      />
+                      <Button size="sm" asChild>
                         <Link href="/admin/fanzone/stars/new">
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            Add Star
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Add Star
                         </Link>
-                    </Button>
+                      </Button>
+                    </div>
                 </div>
                     <Table>
                         <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Genre</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>

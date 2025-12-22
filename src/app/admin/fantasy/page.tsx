@@ -14,10 +14,12 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FantasyCampaign, FantasyMatch } from '@/lib/types';
-import { deleteFantasyCampaign } from '@/firebase/firestore/fantasy-campaigns';
-import { deleteCricketMatch } from '@/firebase/firestore/cricket-matches';
-import { deleteCricketTournament } from '@/firebase/firestore/cricket-tournaments';
+import { deleteFantasyCampaign, addFantasyCampaign } from '@/firebase/firestore/fantasy-campaigns';
+import { deleteCricketMatch, addCricketMatch } from '@/firebase/firestore/cricket-matches';
+import { deleteCricketTournament, addCricketTournament } from '@/firebase/firestore/cricket-tournaments';
 import Link from 'next/link';
+import { CSVUpload } from '@/components/admin/csv-upload';
+import { downloadCampaignsTemplate, downloadMatchesTemplate, downloadTournamentsTemplate } from '@/lib/csv-templates';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +73,95 @@ export default function AdminFantasyPage() {
     }
   };
 
+  const handleCampaignsCSVUpload = async (rows: any[]) => {
+    if (!firestore) return;
+    for (const row of rows) {
+      try {
+        await addFantasyCampaign(firestore, {
+          title: row.title || '',
+          campaignType: (row.campaignType || 'single_movie') as 'single_movie' | 'multiple_movies',
+          description: row.description || undefined,
+          prizePool: row.prizePool || undefined,
+          sponsorName: row.sponsorName || undefined,
+          sponsorLogo: row.sponsorLogo || undefined,
+          movieId: row.movieId || undefined,
+          movieTitle: row.movieTitle || undefined,
+          movieLanguage: row.movieLanguage || undefined,
+          startDate: row.startDate ? new Date(row.startDate) : new Date(),
+          endDate: row.endDate ? new Date(row.endDate) : undefined,
+          status: (row.status || 'upcoming') as 'upcoming' | 'active' | 'completed',
+          visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
+          maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
+          entryFee: {
+            type: (row.entryFeeType || 'free') as 'free' | 'paid',
+            amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
+          },
+        });
+      } catch (error) {
+        console.error('Error uploading campaign:', error);
+        throw error;
+      }
+    }
+  };
+
+  const handleMatchesCSVUpload = async (rows: any[]) => {
+    if (!firestore) return;
+    for (const row of rows) {
+      try {
+        const teams = row.teams ? row.teams.split(',').map((t: string) => t.trim()) : [];
+        await addCricketMatch(firestore, {
+          matchName: row.matchName || '',
+          format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
+          teams: teams,
+          team1: row.team1 || teams[0] || '',
+          team2: row.team2 || teams[1] || '',
+          venue: row.venue || undefined,
+          startTime: row.startTime ? new Date(row.startTime) : new Date(),
+          status: (row.status || 'upcoming') as "upcoming" | "live" | "completed",
+          description: row.description || undefined,
+          entryFee: row.entryFeeType ? {
+            type: row.entryFeeType as 'free' | 'paid',
+            amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
+          } : undefined,
+          maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
+        });
+      } catch (error) {
+        console.error('Error uploading match:', error);
+        throw error;
+      }
+    }
+  };
+
+  const handleTournamentsCSVUpload = async (rows: any[]) => {
+    if (!firestore) return;
+    for (const row of rows) {
+      try {
+        const teams = row.teams ? row.teams.split(',').map((t: string) => t.trim()) : [];
+        await addCricketTournament(firestore, {
+          name: row.name || '',
+          format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
+          description: row.description || undefined,
+          startDate: row.startDate ? new Date(row.startDate) : new Date(),
+          endDate: row.endDate ? new Date(row.endDate) : new Date(),
+          status: (row.status || 'upcoming') as 'upcoming' | 'live' | 'completed',
+          teams: teams,
+          venue: row.venue || undefined,
+          entryFee: {
+            type: (row.entryFeeType || 'free') as 'free' | 'paid',
+            amount: row.entryFeeAmount ? parseFloat(row.entryFeeAmount) : undefined,
+          },
+          maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
+          prizePool: row.prizePool || undefined,
+          sponsorName: row.sponsorName || undefined,
+          sponsorLogo: row.sponsorLogo || undefined,
+          visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
+        });
+      } catch (error) {
+        console.error('Error uploading tournament:', error);
+        throw error;
+      }
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -116,12 +207,22 @@ export default function AdminFantasyPage() {
                 Create and manage tournament-level fantasy (IPL, World Cup, Series, etc.).
               </CardDescription>
             </div>
-            <Button size="sm" asChild>
-              <Link href="/admin/fantasy/tournament/new">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                New Tournament
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <CSVUpload
+                onUpload={handleTournamentsCSVUpload}
+                title="Upload Tournaments CSV"
+                description="Upload multiple tournaments at once. CSV should have columns: name, format, description, startDate, endDate, status, teams (comma-separated), venue, entryFeeType, entryFeeAmount, maxParticipants, prizePool, sponsorName, sponsorLogo, visibility"
+                exampleHeaders={['name', 'format', 'startDate', 'endDate', 'status', 'teams', 'entryFeeType']}
+                buttonText="Upload CSV"
+                onDownloadTemplate={downloadTournamentsTemplate}
+              />
+              <Button size="sm" asChild>
+                <Link href="/admin/fantasy/tournament/new">
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  New Tournament
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -213,12 +314,22 @@ export default function AdminFantasyPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Movie Fantasy Campaigns</CardTitle>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/fantasy/campaign/new">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                New Campaign
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <CSVUpload
+                onUpload={handleCampaignsCSVUpload}
+                title="Upload Campaigns CSV"
+                description="Upload multiple campaigns at once. CSV should have columns: title, campaignType, description, startDate, endDate, status, visibility, movieId, movieTitle, movieLanguage, entryFeeType, entryFeeAmount, maxParticipants, prizePool, sponsorName, sponsorLogo"
+                exampleHeaders={['title', 'campaignType', 'startDate', 'endDate', 'status', 'entryFeeType']}
+                buttonText="Upload CSV"
+                onDownloadTemplate={downloadCampaignsTemplate}
+              />
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/fantasy/campaign/new">
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  New Campaign
+                </Link>
+              </Button>
+            </div>
           </div>
           <CardDescription>
             Create and manage long-running movie prediction campaigns.
@@ -293,12 +404,22 @@ export default function AdminFantasyPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Live Cricket Matches</CardTitle>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/fantasy/match/new">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                New Match
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <CSVUpload
+                onUpload={handleMatchesCSVUpload}
+                title="Upload Matches CSV"
+                description="Upload multiple matches at once. CSV should have columns: matchName, format, team1, team2, teams (comma-separated), venue, startTime, status, description, entryFeeType, entryFeeAmount, maxParticipants"
+                exampleHeaders={['matchName', 'format', 'team1', 'team2', 'startTime', 'status']}
+                buttonText="Upload CSV"
+                onDownloadTemplate={downloadMatchesTemplate}
+              />
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/fantasy/match/new">
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  New Match
+                </Link>
+              </Button>
+            </div>
           </div>
           <CardDescription>
             Manage live, role-based fantasy cricket matches.
