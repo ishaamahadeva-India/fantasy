@@ -35,6 +35,7 @@ export function CSVUpload({
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<{ current: number; total: number } | null>(null);
   const { toast } = useToast();
 
   const parseCSV = (text: string): any[] => {
@@ -42,16 +43,12 @@ export function CSVUpload({
     if (lines.length === 0) return [];
 
     // Parse header
-    const headers = lines[0]
-      .split(',')
-      .map((h) => h.trim().replace(/^"|"$/g, ''));
+    const headers = parseCSVLine(lines[0]);
 
     // Parse rows
     const rows: any[] = [];
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i]
-        .split(',')
-        .map((v) => v.trim().replace(/^"|"$/g, ''));
+      const values = parseCSVLine(lines[i]);
       
       if (values.some((v) => v)) {
         // Only add non-empty rows
@@ -64,6 +61,40 @@ export function CSVUpload({
     }
 
     return rows;
+  };
+
+  // Proper CSV line parser that handles quoted fields with commas
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Escaped quote
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add last field
+    result.push(current.trim());
+    
+    return result;
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +124,7 @@ export function CSVUpload({
 
     setIsUploading(true);
     setProgress(0);
+    setUploadStatus({ current: 0, total: 0 });
 
     try {
       const text = await file.text();
@@ -105,27 +137,61 @@ export function CSVUpload({
           description: 'The CSV file appears to be empty or invalid.',
         });
         setIsUploading(false);
+        setUploadStatus(null);
         return;
       }
 
+      setUploadStatus({ current: 0, total: rows.length });
+
       // Upload in batches to show progress
-      const batchSize = 10;
-      const totalBatches = Math.ceil(rows.length / batchSize);
+      const batchSize = 5; // Smaller batches for better progress tracking
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+      let processedCount = 0;
       
       for (let i = 0; i < rows.length; i += batchSize) {
         const batch = rows.slice(i, i + batchSize);
-        await onUpload(batch);
-        setProgress(Math.round(((i + batch.length) / rows.length) * 100));
+        try {
+          await onUpload(batch);
+          successCount += batch.length;
+          processedCount += batch.length;
+        } catch (error: any) {
+          // Continue processing even if a batch fails
+          errorCount += batch.length;
+          processedCount += batch.length;
+          errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message || 'Unknown error'}`);
+        }
+        setUploadStatus({ current: processedCount, total: rows.length });
+        setProgress(Math.round((processedCount / rows.length) * 100));
       }
 
-      toast({
-        title: 'Upload Successful',
-        description: `Successfully uploaded ${rows.length} items.`,
-      });
+      if (errorCount === 0) {
+        toast({
+          title: 'Upload Successful',
+          description: `Successfully uploaded ${successCount} items.`,
+        });
+      } else if (successCount > 0) {
+        toast({
+          variant: 'destructive',
+          title: 'Partial Upload',
+          description: `Uploaded ${successCount} items. ${errorCount} items failed. Check console for details.`,
+        });
+        console.error('Upload errors:', errors);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Upload Failed',
+          description: `Failed to upload ${errorCount} items. Check console for details.`,
+        });
+        console.error('Upload errors:', errors);
+        throw new Error('All items failed to upload');
+      }
 
       setFile(null);
       setIsOpen(false);
       setProgress(0);
+      setUploadStatus(null);
     } catch (error: any) {
       console.error('Upload error:', error);
       toast({
@@ -133,6 +199,7 @@ export function CSVUpload({
         title: 'Upload Failed',
         description: error.message || 'An error occurred while uploading the file.',
       });
+      setUploadStatus(null);
     } finally {
       setIsUploading(false);
     }
@@ -209,10 +276,17 @@ export function CSVUpload({
           {isUploading && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Uploading...</span>
+                <span>
+                  {uploadStatus ? `Uploading ${uploadStatus.current} of ${uploadStatus.total} items...` : 'Uploading...'}
+                </span>
                 <span>{progress}%</span>
               </div>
               <Progress value={progress} />
+              {uploadStatus && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Processing item {uploadStatus.current} of {uploadStatus.total}
+                </p>
+              )}
             </div>
           )}
           <div className="flex justify-end gap-2">
