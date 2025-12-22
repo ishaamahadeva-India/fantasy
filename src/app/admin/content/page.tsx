@@ -187,7 +187,7 @@ export default function AdminContentPage() {
             Content Management
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Manage articles and gossip for the Intel Hub.
+            Manage articles and gossip for quizzbuzz.
           </p>
         </div>
       </div>

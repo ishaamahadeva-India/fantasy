@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
-                <TableHead>Intel Points</TableHead>
+                <TableHead>quizzbuzz Points</TableHead>
                 <TableHead>Admin</TableHead>
               </TableRow>
             </TableHeader>

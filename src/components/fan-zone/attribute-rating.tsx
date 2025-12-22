@@ -72,7 +72,7 @@ export function AttributeRating({
 
     toast({
         title: "Rating Submitted!",
-        description: "Thanks for sharing your opinion. You've earned 25 Intel Points!",
+        description: "Thanks for sharing your opinion. You've earned 25 quizzbuzz Points!",
     });
 
     setIsOpen(false);

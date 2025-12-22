@@ -83,7 +83,7 @@ export default function RedemptionPage() {
           Redemption Center
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Use your Intel Points to claim exclusive rewards.
+          Use your quizzbuzz Points to claim exclusive rewards.
         </p>
       </div>
 
@@ -101,7 +101,7 @@ export default function RedemptionPage() {
                 <p className="text-4xl font-bold font-code text-primary">
                   {userPoints}
                 </p>
-                <p className="text-sm text-muted-foreground">Intel Points</p>
+                <p className="text-sm text-muted-foreground">quizzbuzz Points</p>
               </div>
             </div>
           )}

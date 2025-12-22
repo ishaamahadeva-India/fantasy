@@ -15,7 +15,7 @@ const campaignDetails = {
     movie: {
         title: 'Devara: Part 1',
     },
-    prizePool: 'Vouchers & 1,00,000 Intel Points',
+    prizePool: 'Vouchers & 1,00,000 quizzbuzz Points',
     sponsor: {
         name: 'Kingfisher',
         logo: 'https://picsum.photos/seed/kingfisher/100/100'

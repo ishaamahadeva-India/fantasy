@@ -8,7 +8,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { CookieConsent } from '@/components/cookie-consent';
 
 export const metadata: Metadata = {
-  title: 'Ultra-Posh',
+  title: 'quizzbuzz',
   description: 'The premier subscription platform for discerning learners.',
   manifest: '/manifest.json',
 };

@@ -17,7 +17,7 @@ const upcomingCampaigns = [
         id: 'campaign-devara',
         title: 'Devara: Part 1 - The Full Campaign',
         movies: ['Devara: Part 1'],
-        prizePool: 'Vouchers & 1,00,000 Intel Points',
+        prizePool: 'Vouchers & 1,00,000 quizzbuzz Points',
         status: 'Ongoing',
         events: 8,
     },

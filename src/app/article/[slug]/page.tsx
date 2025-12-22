@@ -118,7 +118,7 @@ export default function ArticlePage() {
             <Button variant="ghost" asChild className="-ml-2 md:-ml-0">
                 <Link href="/">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Back to Intel Hub</span>
+                    <span className="hidden sm:inline">Back to quizzbuzz</span>
                     <span className="sm:hidden">Back</span>
                 </Link>
             </Button>

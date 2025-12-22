@@ -1,4 +1,4 @@
-# **App Name**: Ultra-Posh
+# **App Name**: quizzbuzz
 
 ## Core Features:
 

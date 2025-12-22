@@ -573,7 +573,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                 <FormItem>
                   <FormLabel>Prize Pool (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Vouchers & 1,00,000 Intel Points" {...field} />
+                    <Input placeholder="e.g., Vouchers & 1,00,000 quizzbuzz Points" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

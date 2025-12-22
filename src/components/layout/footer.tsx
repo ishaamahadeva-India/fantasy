@@ -51,7 +51,7 @@ export function Footer() {
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
           <p>
-            © {currentYear} Fantasy Gaming Platform. All rights reserved.
+            © {currentYear} quizzbuzz. All rights reserved.
           </p>
           <p className="mt-2 text-xs">
             This is a skill-based platform. Outcomes depend on knowledge and analysis, not chance.

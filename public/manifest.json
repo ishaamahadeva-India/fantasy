@@ -1,6 +1,6 @@
 {
-  "name": "Ultra-Posh",
-  "short_name": "Ultra-Posh",
+  "name": "quizzbuzz",
+  "short_name": "quizzbuzz",
   "description": "The premier subscription platform for discerning learners.",
   "start_url": "/",
   "display": "standalone",

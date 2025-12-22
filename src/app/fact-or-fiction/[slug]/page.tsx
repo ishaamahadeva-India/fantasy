@@ -134,7 +134,7 @@ export default function FactOrFictionPage() {
                         </p>
                     </div>
                     <div>
-                        <p className="text-muted-foreground">Intel Points Earned</p>
+                        <p className="text-muted-foreground">quizzbuzz Points Earned</p>
                         <p className="text-6xl font-bold font-code text-primary flex items-center justify-center gap-2">
                             <Award className="w-12 h-12 text-amber-400" />
                             {pointsEarned}

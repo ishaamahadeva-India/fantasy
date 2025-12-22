@@ -448,7 +448,7 @@
       "schema": {
         "$ref": "#/entities/Article"
       },
-      "description": "Stores all articles for the Intel Hub."
+      "description": "Stores all articles for quizzbuzz."
     },
     "/gossips/{gossipId}": {
         "schema": {

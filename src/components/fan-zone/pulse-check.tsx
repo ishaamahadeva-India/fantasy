@@ -57,7 +57,7 @@ export function PulseCheck({ question, options, entityId, entityType }: PulseChe
 
     toast({
         title: "Vote Recorded!",
-        description: "Thanks for your input. You've earned 25 Intel Points!",
+        description: "Thanks for your input. You've earned 25 quizzbuzz Points!",
     });
 
     setHasVoted(true);

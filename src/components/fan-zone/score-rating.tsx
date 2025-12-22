@@ -37,7 +37,7 @@ export function ScoreRating({ entityId, entityType }: { entityId: string, entity
 
     toast({
         title: "Rating Submitted!",
-        description: `You gave a score of ${score.toFixed(1)}. You've earned 10 Intel Points!`,
+        description: `You gave a score of ${score.toFixed(1)}. You've earned 10 quizzbuzz Points!`,
     });
 
     setIsOpen(false);

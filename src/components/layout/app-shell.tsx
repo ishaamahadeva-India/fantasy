@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2 px-2 py-1">
               <BookHeart className="w-8 h-8 text-primary" />
               <h1 className="text-xl font-bold font-headline text-foreground">
-                Ultra-Posh
+                quizzbuzz
               </h1>
             </div>
           </SidebarHeader>

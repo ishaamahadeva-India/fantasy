@@ -110,7 +110,7 @@ export default function BriefingResultsPage() {
                     <p className="text-7xl font-bold font-code text-primary mb-2">{results.overallScore}</p>
                 </div>
                  <div className='text-center'>
-                    <p className="text-muted-foreground">Intel Points Earned</p>
+                    <p className="text-muted-foreground">quizzbuzz Points Earned</p>
                     <p className="text-7xl font-bold font-code text-primary flex items-center justify-center gap-2">
                         <Award className="w-16 h-16 text-amber-400" />
                         {pointsEarned}
