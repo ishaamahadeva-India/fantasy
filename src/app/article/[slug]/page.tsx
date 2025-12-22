@@ -64,24 +64,16 @@ export default function ArticlePage() {
   const { data: articles, isLoading } = useCollection<ArticleWithId>(articleQuery as Query<ArticleWithId>);
   const article = articles?.[0];
   
-  if (isLoading) {
-    return <ArticleSkeleton />;
-  }
-
-  if (!article) {
-    notFound();
-  }
-  
   // Note: hasNarration and article length are not in the DB model. Defaulting for now.
   const hasNarration = false;
   const readLength = "Medium";
   
   const articleUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const articleImage = article.imageUrl || `https://picsum.photos/seed/${article.id}/1200/600`;
+  const articleImage = article?.imageUrl || (article?.id ? `https://picsum.photos/seed/${article.id}/1200/600` : '');
 
-  // Set Open Graph meta tags for social sharing
+  // Set Open Graph meta tags for social sharing - MUST be called before any early returns
   useEffect(() => {
-    if (typeof document !== 'undefined') {
+    if (typeof document !== 'undefined' && article) {
       // Remove existing meta tags
       const existingTags = document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]');
       existingTags.forEach(tag => tag.remove());
@@ -111,6 +103,15 @@ export default function ArticlePage() {
       });
     }
   }, [article, articleUrl, articleImage]);
+
+  // Early returns AFTER all hooks are called
+  if (isLoading) {
+    return <ArticleSkeleton />;
+  }
+
+  if (!article) {
+    notFound();
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12">
