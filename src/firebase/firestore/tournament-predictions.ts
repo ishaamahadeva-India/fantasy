@@ -32,6 +32,19 @@ export type TournamentPrediction = {
 
 type NewTournamentPrediction = Omit<TournamentPrediction, 'id' | 'createdAt' | 'updatedAt'>;
 
+// Helper function to remove undefined values from an object
+function removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Skip undefined and null values
+    if (value === undefined || value === null) {
+      continue;
+    }
+    cleaned[key] = value;
+  }
+  return cleaned as Partial<T>;
+}
+
 /**
  * Creates a new tournament prediction
  */
@@ -40,11 +53,27 @@ export async function addTournamentPrediction(
   predictionData: NewTournamentPrediction
 ) {
   const predictionsCollection = collection(firestore, 'tournament-predictions');
-  const docToSave = {
-    ...predictionData,
+  
+  // Build document with only defined values
+  const docToSave: any = {
+    userId: predictionData.userId,
+    tournamentId: predictionData.tournamentId,
+    eventId: predictionData.eventId,
+    eventType: predictionData.eventType,
+    prediction: predictionData.prediction,
+    points: predictionData.points,
+    status: predictionData.status,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  
+  // Only include optional fields if they have values
+  if (predictionData.notes !== undefined && predictionData.notes !== null && predictionData.notes.trim() !== '') {
+    docToSave.notes = predictionData.notes.trim();
+  }
+  if (predictionData.score !== undefined && predictionData.score !== null) {
+    docToSave.score = predictionData.score;
+  }
 
   return addDoc(predictionsCollection, docToSave)
     .catch(async (serverError) => {
@@ -67,10 +96,32 @@ export async function updateTournamentPrediction(
   predictionData: Partial<NewTournamentPrediction>
 ) {
   const predictionDocRef = doc(firestore, 'tournament-predictions', predictionId);
-  const updateData = {
-    ...predictionData,
+  
+  // Build update object with only defined values
+  const updateData: any = {
     updatedAt: serverTimestamp(),
   };
+  
+  // Only include fields that are actually provided and not undefined/null
+  if (predictionData.prediction !== undefined) {
+    updateData.prediction = predictionData.prediction;
+  }
+  if (predictionData.status !== undefined) {
+    updateData.status = predictionData.status;
+  }
+  if (predictionData.score !== undefined && predictionData.score !== null) {
+    updateData.score = predictionData.score;
+  }
+  
+  // Handle notes - only include if provided and not empty
+  if (predictionData.notes !== undefined) {
+    if (predictionData.notes !== null && predictionData.notes.trim() !== '') {
+      updateData.notes = predictionData.notes.trim();
+    } else {
+      // Explicitly remove notes if set to empty/null
+      updateData.notes = null;
+    }
+  }
 
   return updateDoc(predictionDocRef, updateData)
     .catch(async (serverError) => {

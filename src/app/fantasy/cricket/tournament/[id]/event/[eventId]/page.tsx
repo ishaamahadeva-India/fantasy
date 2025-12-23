@@ -168,22 +168,30 @@ export default function TournamentEventPage() {
         ? selectedOptions 
         : selectedOption;
         
-      const predictionData = {
+      const predictionData: any = {
         userId: user.uid,
         tournamentId,
         eventId,
         eventType: event.eventType,
         prediction: predictionValue,
-        notes: notes.trim() || undefined,
         points: event.points,
         status: 'pending' as const,
       };
+      
+      // Only include notes if it has a value
+      if (notes.trim()) {
+        predictionData.notes = notes.trim();
+      }
 
       if (existingPrediction && existingPrediction.id) {
-        await updateTournamentPrediction(firestore, existingPrediction.id, {
+        const updateData: any = {
           prediction: predictionValue,
-          notes: notes.trim() || undefined,
-        });
+        };
+        // Only include notes if it has a value
+        if (notes.trim()) {
+          updateData.notes = notes.trim();
+        }
+        await updateTournamentPrediction(firestore, existingPrediction.id, updateData);
       } else {
         await addTournamentPrediction(firestore, predictionData);
       }
