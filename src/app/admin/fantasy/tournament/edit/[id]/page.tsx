@@ -1,7 +1,7 @@
 'use client';
 
 import { CricketTournamentForm } from '@/components/admin/cricket-tournament-form';
-import { updateCricketTournament, addTournamentEvent, updateTournamentEvent, deleteTournamentEvent } from '@/firebase/firestore/cricket-tournaments';
+import { updateCricketTournament, addTournamentEvent, updateTournamentEvent, deleteTournamentEvent, type NewTournamentEvent } from '@/firebase/firestore/cricket-tournaments';
 import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { doc, collection, Timestamp } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
@@ -51,8 +51,8 @@ export default function EditCricketTournamentPage() {
       }
 
       // Helper to remove undefined values and validate dates
-      const cleanEventData = (event: any) => {
-        const cleaned: any = {
+      const cleanEventData = (event: any): NewTournamentEvent => {
+        const cleaned: NewTournamentEvent = {
           title: event.title,
           description: event.description,
           eventType: event.eventType,
@@ -67,7 +67,7 @@ export default function EditCricketTournamentPage() {
           cleaned.lockTime = event.lockTime;
         }
         if (event.difficultyLevel && event.difficultyLevel !== '') {
-          cleaned.difficultyLevel = event.difficultyLevel;
+          cleaned.difficultyLevel = event.difficultyLevel as 'easy' | 'medium' | 'hard';
         }
         if (event.options && Array.isArray(event.options) && event.options.length > 0) {
           cleaned.options = event.options;
@@ -85,10 +85,7 @@ export default function EditCricketTournamentPage() {
           cleaned.groupId = event.groupId;
         }
         
-        // Remove any remaining undefined/null values
-        return Object.fromEntries(
-          Object.entries(cleaned).filter(([_, value]) => value !== undefined && value !== null)
-        );
+        return cleaned;
       };
 
       // Add or update events

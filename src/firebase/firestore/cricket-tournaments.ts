@@ -37,7 +37,7 @@ type NewCricketTournament = {
   visibility: 'public' | 'private' | 'invite_only';
 };
 
-type NewTournamentEvent = {
+export type NewTournamentEvent = {
   title: string;
   description: string;
   eventType: TournamentEvent['eventType'];

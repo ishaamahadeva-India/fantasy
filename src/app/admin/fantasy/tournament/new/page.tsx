@@ -1,7 +1,7 @@
 'use client';
 
 import { CricketTournamentForm } from '@/components/admin/cricket-tournament-form';
-import { addCricketTournament, addTournamentEvent } from '@/firebase/firestore/cricket-tournaments';
+import { addCricketTournament, addTournamentEvent, type NewTournamentEvent } from '@/firebase/firestore/cricket-tournaments';
 import { useFirestore } from '@/firebase';
 import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -34,7 +34,7 @@ export default function NewCricketTournamentPage() {
       if (events && events.length > 0) {
         for (const event of events) {
           // Clean event data - remove undefined values and validate dates
-          const cleanedEvent: any = {
+          const cleanedEvent: NewTournamentEvent = {
             title: event.title,
             description: event.description,
             eventType: event.eventType,
@@ -49,7 +49,7 @@ export default function NewCricketTournamentPage() {
             cleanedEvent.lockTime = event.lockTime;
           }
           if (event.difficultyLevel && event.difficultyLevel !== '') {
-            cleanedEvent.difficultyLevel = event.difficultyLevel;
+            cleanedEvent.difficultyLevel = event.difficultyLevel as 'easy' | 'medium' | 'hard';
           }
           if (event.options && Array.isArray(event.options) && event.options.length > 0) {
             cleanedEvent.options = event.options;
@@ -67,12 +67,7 @@ export default function NewCricketTournamentPage() {
             cleanedEvent.groupId = event.groupId;
           }
           
-          // Remove any remaining undefined/null values
-          const finalEvent = Object.fromEntries(
-            Object.entries(cleanedEvent).filter(([_, value]) => value !== undefined && value !== null)
-          );
-          
-          await addTournamentEvent(firestore, tournamentId, finalEvent);
+          await addTournamentEvent(firestore, tournamentId, cleanedEvent);
         }
       }
 
