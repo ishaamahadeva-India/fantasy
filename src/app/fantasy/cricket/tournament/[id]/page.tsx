@@ -670,11 +670,23 @@ export default function TournamentPage() {
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline">{event.points} pts</Badge>
                                 {event.lockTime && (
                                   <Badge variant="outline" className="text-xs">
                                     Locks: {new Date(event.lockTime).toLocaleString()}
+                                  </Badge>
+                                )}
+                                {event.sponsorName && (
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    {event.sponsorLogo && (
+                                      <img 
+                                        src={event.sponsorLogo} 
+                                        alt={event.sponsorName}
+                                        className="w-3 h-3 rounded object-cover"
+                                      />
+                                    )}
+                                    <span className="text-xs">Sponsored: {event.sponsorName}</span>
                                   </Badge>
                                 )}
                               </div>
@@ -737,6 +749,18 @@ export default function TournamentPage() {
                                 {event.lockTime && (
                                   <Badge variant="outline" className="text-xs">
                                     Locks: {new Date(event.lockTime).toLocaleString()}
+                                  </Badge>
+                                )}
+                                {event.sponsorName && (
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    {event.sponsorLogo && (
+                                      <img 
+                                        src={event.sponsorLogo} 
+                                        alt={event.sponsorName}
+                                        className="w-3 h-3 rounded object-cover"
+                                      />
+                                    )}
+                                    <span className="text-xs">Sponsored: {event.sponsorName}</span>
                                   </Badge>
                                 )}
                               </div>
