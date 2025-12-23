@@ -1,7 +1,7 @@
 'use client';
 
 import { CricketTournamentForm } from '@/components/admin/cricket-tournament-form';
-import { updateCricketTournament } from '@/firebase/firestore/cricket-tournaments';
+import { updateCricketTournament, addTournamentEvent, updateTournamentEvent, deleteTournamentEvent } from '@/firebase/firestore/cricket-tournaments';
 import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { doc, collection, Timestamp } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
@@ -35,11 +35,65 @@ export default function EditCricketTournamentPage() {
     if (!firestore) return;
     try {
       const { events: formEvents, ...tournamentData } = data;
+      
+      // Update the tournament
       await updateCricketTournament(firestore, tournamentId, tournamentData);
+
+      // Handle events: add new, update existing, delete removed
+      const existingEventIds = new Set((events || []).map((e: any) => e.id));
+      const formEventIds = new Set((formEvents || []).map((e: any) => e.id).filter(Boolean));
+
+      // Delete events that were removed
+      for (const existingEvent of events || []) {
+        if (!formEventIds.has(existingEvent.id)) {
+          await deleteTournamentEvent(firestore, tournamentId, existingEvent.id);
+        }
+      }
+
+      // Add or update events
+      for (const formEvent of formEvents || []) {
+        if (formEvent.id && existingEventIds.has(formEvent.id)) {
+          // Update existing event
+          await updateTournamentEvent(firestore, tournamentId, formEvent.id, {
+            title: formEvent.title,
+            description: formEvent.description,
+            eventType: formEvent.eventType,
+            status: formEvent.status,
+            startDate: formEvent.startDate,
+            endDate: formEvent.endDate,
+            lockTime: formEvent.lockTime,
+            points: formEvent.points,
+            difficultyLevel: formEvent.difficultyLevel,
+            options: formEvent.options,
+            multiSelect: formEvent.multiSelect,
+            maxSelections: formEvent.maxSelections,
+            rules: formEvent.rules,
+            groupId: formEvent.groupId,
+          });
+        } else {
+          // Add new event
+          await addTournamentEvent(firestore, tournamentId, {
+            title: formEvent.title,
+            description: formEvent.description,
+            eventType: formEvent.eventType,
+            status: formEvent.status,
+            startDate: formEvent.startDate,
+            endDate: formEvent.endDate,
+            lockTime: formEvent.lockTime,
+            points: formEvent.points,
+            difficultyLevel: formEvent.difficultyLevel,
+            options: formEvent.options,
+            multiSelect: formEvent.multiSelect,
+            maxSelections: formEvent.maxSelections,
+            rules: formEvent.rules,
+            groupId: formEvent.groupId,
+          });
+        }
+      }
 
       toast({
         title: 'Tournament Updated',
-        description: 'The tournament has been successfully updated.',
+        description: `Tournament and ${formEvents?.length || 0} events updated successfully.`,
       });
       router.push('/admin/fantasy');
     } catch (error) {
@@ -76,8 +130,9 @@ export default function EditCricketTournamentPage() {
     ...tournament,
     startDate: toDate(tournament.startDate),
     endDate: toDate(tournament.endDate),
-    events: events?.map((event) => ({
+    events: events?.map((event: any) => ({
       ...event,
+      id: event.id, // Ensure ID is included
       startDate: toDate(event.startDate),
       endDate: toDate(event.endDate),
       lockTime: event.lockTime ? toDate(event.lockTime) : undefined,

@@ -413,10 +413,10 @@ export default function TournamentPage() {
         {events && events.length > 0 ? (
           <Card>
             <CardHeader>
-              <CardTitle>Tournament Events</CardTitle>
+              <CardTitle>Tournament Events ({events.length} total)</CardTitle>
               <CardDescription>
                 {hasEntry 
-                  ? "Make predictions on live events to earn points and climb the leaderboard!"
+                  ? `Make predictions on live events to earn points! ${events.filter((e: any) => e.status === 'live').length} live event(s) available.`
                   : "Register above to participate in tournament events and make predictions"}
               </CardDescription>
             </CardHeader>
@@ -582,14 +582,21 @@ export default function TournamentPage() {
               </Tabs>
             </CardContent>
           </Card>
-        ) : hasEntry && (
+        ) : (
           <Card>
             <CardContent className="py-12 text-center">
               <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-lg font-semibold mb-2">No Events Yet</h3>
-              <p className="text-muted-foreground">
-                Events for this tournament will appear here when they are created. Check back soon!
+              <p className="text-muted-foreground mb-2">
+                {hasEntry 
+                  ? "Events for this tournament will appear here when they are created and set to 'Live' status."
+                  : "Events for this tournament will appear here when they are created. Register first to participate!"}
               </p>
+              {hasEntry && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Admin Note: Make sure events are added to this tournament and their status is set to "Live" for them to appear here.
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
