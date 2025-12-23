@@ -136,9 +136,7 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
           <Label htmlFor="sponsorId">Sponsor *</Label>
           <Select value={formData.sponsorId || undefined} onValueChange={handleSponsorChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select sponsor">
-                {formData.sponsorId && sponsors.find(s => s.id === formData.sponsorId)?.name}
-              </SelectValue>
+              <SelectValue placeholder="Select sponsor" />
             </SelectTrigger>
             <SelectContent>
               {sponsors.map((sponsor) => (
