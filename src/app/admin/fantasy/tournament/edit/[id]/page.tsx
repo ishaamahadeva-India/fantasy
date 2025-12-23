@@ -50,44 +50,40 @@ export default function EditCricketTournamentPage() {
         }
       }
 
+      // Helper to remove undefined values
+      const cleanEventData = (event: any) => {
+        const cleaned: any = {
+          title: event.title,
+          description: event.description,
+          eventType: event.eventType,
+          status: event.status,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          points: event.points,
+        };
+        
+        // Only include optional fields if they have values
+        if (event.lockTime) cleaned.lockTime = event.lockTime;
+        if (event.difficultyLevel) cleaned.difficultyLevel = event.difficultyLevel;
+        if (event.options && event.options.length > 0) cleaned.options = event.options;
+        if (event.multiSelect !== undefined) cleaned.multiSelect = event.multiSelect;
+        if (event.maxSelections) cleaned.maxSelections = event.maxSelections;
+        if (event.rules && event.rules.length > 0) cleaned.rules = event.rules;
+        if (event.groupId) cleaned.groupId = event.groupId;
+        
+        return cleaned;
+      };
+
       // Add or update events
       for (const formEvent of formEvents || []) {
+        const cleanedData = cleanEventData(formEvent);
+        
         if (formEvent.id && existingEventIds.has(formEvent.id)) {
           // Update existing event
-          await updateTournamentEvent(firestore, tournamentId, formEvent.id, {
-            title: formEvent.title,
-            description: formEvent.description,
-            eventType: formEvent.eventType,
-            status: formEvent.status,
-            startDate: formEvent.startDate,
-            endDate: formEvent.endDate,
-            lockTime: formEvent.lockTime,
-            points: formEvent.points,
-            difficultyLevel: formEvent.difficultyLevel,
-            options: formEvent.options,
-            multiSelect: formEvent.multiSelect,
-            maxSelections: formEvent.maxSelections,
-            rules: formEvent.rules,
-            groupId: formEvent.groupId,
-          });
+          await updateTournamentEvent(firestore, tournamentId, formEvent.id, cleanedData);
         } else {
           // Add new event
-          await addTournamentEvent(firestore, tournamentId, {
-            title: formEvent.title,
-            description: formEvent.description,
-            eventType: formEvent.eventType,
-            status: formEvent.status,
-            startDate: formEvent.startDate,
-            endDate: formEvent.endDate,
-            lockTime: formEvent.lockTime,
-            points: formEvent.points,
-            difficultyLevel: formEvent.difficultyLevel,
-            options: formEvent.options,
-            multiSelect: formEvent.multiSelect,
-            maxSelections: formEvent.maxSelections,
-            rules: formEvent.rules,
-            groupId: formEvent.groupId,
-          });
+          await addTournamentEvent(firestore, tournamentId, cleanedData);
         }
       }
 

@@ -33,7 +33,27 @@ export default function NewCricketTournamentPage() {
       // Add events if any
       if (events && events.length > 0) {
         for (const event of events) {
-          await addTournamentEvent(firestore, tournamentId, event);
+          // Clean event data - remove undefined values
+          const cleanedEvent: any = {
+            title: event.title,
+            description: event.description,
+            eventType: event.eventType,
+            status: event.status,
+            startDate: event.startDate,
+            endDate: event.endDate,
+            points: event.points,
+          };
+          
+          // Only include optional fields if they have values
+          if (event.lockTime) cleanedEvent.lockTime = event.lockTime;
+          if (event.difficultyLevel) cleanedEvent.difficultyLevel = event.difficultyLevel;
+          if (event.options && event.options.length > 0) cleanedEvent.options = event.options;
+          if (event.multiSelect !== undefined) cleanedEvent.multiSelect = event.multiSelect;
+          if (event.maxSelections) cleanedEvent.maxSelections = event.maxSelections;
+          if (event.rules && event.rules.length > 0) cleanedEvent.rules = event.rules;
+          if (event.groupId) cleanedEvent.groupId = event.groupId;
+          
+          await addTournamentEvent(firestore, tournamentId, cleanedEvent);
         }
       }
 

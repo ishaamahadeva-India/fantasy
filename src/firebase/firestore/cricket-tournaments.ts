@@ -123,18 +123,25 @@ export function deleteCricketTournament(firestore: Firestore, tournamentId: stri
 /**
  * Adds an event to a tournament.
  */
+// Helper function to remove undefined values from an object
+function removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, value]) => value !== undefined)
+  ) as Partial<T>;
+}
+
 export function addTournamentEvent(
   firestore: Firestore,
   tournamentId: string,
   eventData: NewTournamentEvent
 ) {
   const eventsCollection = collection(firestore, 'cricket-tournaments', tournamentId, 'events');
-  const docToSave = {
+  const docToSave = removeUndefined({
     ...eventData,
     tournamentId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  };
+  });
 
   return addDoc(eventsCollection, docToSave)
     .catch(async (serverError) => {
@@ -158,10 +165,10 @@ export function updateTournamentEvent(
   eventData: Partial<NewTournamentEvent>
 ) {
   const eventDocRef = doc(firestore, 'cricket-tournaments', tournamentId, 'events', eventId);
-  const docToUpdate = {
+  const docToUpdate = removeUndefined({
     ...eventData,
     updatedAt: serverTimestamp(),
-  };
+  });
 
   return updateDoc(eventDocRef, docToUpdate)
     .catch(async (serverError) => {
