@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,6 +40,8 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react';
 
 const tournamentEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -105,6 +108,9 @@ type CricketTournamentFormProps = {
 };
 
 export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTournamentFormProps) {
+  const [selectedEventIndices, setSelectedEventIndices] = useState<Set<number>>(new Set());
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentSchema),
     defaultValues: {
@@ -138,6 +144,14 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
   const entryFeeType = form.watch('entryFee.type');
   const hasGroups = groupFields.length > 0;
 
+  // Filter templates by format
+  const availableTemplates = TOURNAMENT_EVENT_TEMPLATES.filter((template) => {
+    if (!template.applicableFormats || template.applicableFormats.length === 0) {
+      return true; // Event applies to all formats
+    }
+    return template.applicableFormats.includes(selectedFormat as 'T20' | 'ODI' | 'Test' | 'IPL');
+  });
+
   const addEventFromTemplate = (template: typeof TOURNAMENT_EVENT_TEMPLATES[0]) => {
     appendEvent({
       title: template.title,
@@ -153,6 +167,34 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
       maxSelections: template.maxSelections,
       rules: template.defaultRules || [],
     });
+  };
+
+  const handleSelectAllEvents = () => {
+    if (selectedEventIndices.size === availableTemplates.length) {
+      // Deselect all
+      setSelectedEventIndices(new Set());
+    } else {
+      // Select all
+      setSelectedEventIndices(new Set(availableTemplates.map((_, index) => index)));
+    }
+  };
+
+  const handleToggleEvent = (index: number) => {
+    const newSelected = new Set(selectedEventIndices);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedEventIndices(newSelected);
+  };
+
+  const handleAddSelectedEvents = () => {
+    selectedEventIndices.forEach((index) => {
+      addEventFromTemplate(availableTemplates[index]);
+    });
+    setSelectedEventIndices(new Set());
+    setIsEventDialogOpen(false);
   };
 
   const addGroup = () => {
@@ -677,50 +719,88 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Tournament Events ({eventFields.length} added)</CardTitle>
-              <Dialog>
+              <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
                 <DialogTrigger asChild>
                   <Button type="button" variant="outline">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Event
+                    Add Event(s)
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Add Tournament Event from Template</DialogTitle>
+                    <DialogTitle>Add Tournament Events from Templates</DialogTitle>
                     <DialogDescription>
-                      Select from {TOURNAMENT_EVENT_TEMPLATES.length} predefined tournament events.
+                      Select one or multiple events from {availableTemplates.length} predefined tournament events.
+                      {selectedEventIndices.size > 0 && (
+                        <span className="block mt-1 text-primary font-semibold">
+                          {selectedEventIndices.size} event(s) selected
+                        </span>
+                      )}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid grid-cols-1 gap-2 mt-4">
-                    {TOURNAMENT_EVENT_TEMPLATES.map((template, index) => (
+                  <div className="flex items-center justify-between mb-4 pt-2 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSelectAllEvents}
+                    >
+                      {selectedEventIndices.size === availableTemplates.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                    {selectedEventIndices.size > 0 && (
                       <Button
-                        key={index}
                         type="button"
-                        variant="outline"
-                        className="h-auto p-4 justify-start text-left"
-                        onClick={() => {
-                          addEventFromTemplate(template);
-                        }}
+                        onClick={handleAddSelectedEvents}
+                        className="ml-auto"
                       >
-                        <div className="flex-1">
-                          <div className="font-semibold">{template.title}</div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {template.description}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary">{template.eventType}</Badge>
-                            <Badge variant="outline">{template.defaultPoints} points</Badge>
-                            {template.difficultyLevel && (
-                              <Badge variant="outline">{template.difficultyLevel}</Badge>
-                            )}
-                            {template.multiSelect && (
-                              <Badge variant="default">Multi-select</Badge>
-                            )}
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add {selectedEventIndices.size} Selected Event(s)
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 mt-2">
+                    {availableTemplates.map((template, index) => {
+                      const isSelected = selectedEventIndices.has(index);
+                      return (
+                        <div
+                          key={index}
+                          className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                            isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+                          }`}
+                          onClick={() => handleToggleEvent(index)}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleToggleEvent(index)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="font-semibold">{template.title}</div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {template.description}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="secondary">{template.eventType}</Badge>
+                              <Badge variant="outline">{template.defaultPoints} points</Badge>
+                              {template.difficultyLevel && (
+                                <Badge variant="outline">{template.difficultyLevel}</Badge>
+                              )}
+                              {template.multiSelect && (
+                                <Badge variant="default">Multi-select</Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </Button>
-                    ))}
+                      );
+                    })}
                   </div>
+                  {selectedEventIndices.size === 0 && (
+                    <div className="pt-4 border-t mt-4">
+                      <p className="text-sm text-muted-foreground text-center">
+                        Select events using checkboxes above, or click on an event card to add it individually.
+                      </p>
+                    </div>
+                  )}
                 </DialogContent>
               </Dialog>
             </div>
