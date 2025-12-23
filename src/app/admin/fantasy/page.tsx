@@ -490,11 +490,23 @@ export default function AdminFantasyPage() {
                 </div>
             </>
           )}
-          {matches && matches.map((match) => (
+          {matches && matches.map((match) => {
+            const linkedTournament = tournaments?.find((t: any) => t.id === match.tournamentId);
+            return (
             <div key={match.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                     <p className="font-semibold">{match.matchName}</p>
-                    <p className="text-sm text-muted-foreground">{match.format} • {match.team1} vs {match.team2}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {match.format} • {match.team1} vs {match.team2}
+                      {linkedTournament && (
+                        <span className="ml-2">
+                          • <Badge variant="outline" className="text-xs">
+                            <Trophy className="w-3 h-3 mr-1 inline" />
+                            {linkedTournament.name}
+                          </Badge>
+                        </span>
+                      )}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant={match.status === 'live' ? 'destructive' : 'secondary'}>{match.status}</Badge>

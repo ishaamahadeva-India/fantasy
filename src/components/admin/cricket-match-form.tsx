@@ -25,10 +25,13 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2, Check, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CRICKET_EVENT_TEMPLATES } from '@/firebase/firestore/cricket-matches';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -84,6 +87,7 @@ const matchSchema = z.object({
     amount: z.number().optional(),
   }).optional(),
   maxParticipants: z.number().optional(),
+  tournamentId: z.string().optional(), // Link to tournament
   events: z.array(cricketEventSchema).optional(),
 });
 
@@ -95,6 +99,10 @@ type CricketMatchFormProps = {
 };
 
 export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormProps) {
+  const firestore = useFirestore();
+  const tournamentsQuery = firestore ? collection(firestore, 'cricket-tournaments') : null;
+  const { data: tournaments } = useCollection(tournamentsQuery);
+
   const form = useForm<MatchFormValues>({
     resolver: zodResolver(matchSchema),
     defaultValues: {
@@ -102,6 +110,7 @@ export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormPr
       format: 'T20',
       events: [],
       entryFee: { type: 'free' },
+      tournamentId: defaultValues?.tournamentId || '',
       ...defaultValues,
     },
   });
@@ -112,6 +121,7 @@ export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormPr
   });
 
   const selectedFormat = form.watch('format');
+  const selectedTournamentId = form.watch('tournamentId');
 
   // Filter events by format
   const availableTemplates = CRICKET_EVENT_TEMPLATES.filter((template) => {
@@ -299,6 +309,61 @@ export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormPr
                   <FormControl>
                     <Textarea placeholder="Match description" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tournamentId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Link to Tournament (Optional)</FormLabel>
+                  <FormDescription>
+                    Select a tournament to link this match to. This helps organize matches within tournaments.
+                  </FormDescription>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value || ''}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a tournament (optional)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">None (Standalone Match)</SelectItem>
+                      {tournaments && tournaments.length > 0 ? (
+                        tournaments.map((tournament: any) => (
+                          <SelectItem key={tournament.id} value={tournament.id}>
+                            {tournament.name} ({tournament.format})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>No tournaments available</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {selectedTournamentId && (
+                    <div className="mt-2 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">
+                          Linked to: {tournaments?.find((t: any) => t.id === selectedTournamentId)?.name || 'Tournament'}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => field.onChange('')}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
