@@ -150,29 +150,30 @@ export default function ImageAdsPage() {
             </Link>
           </Button>
           <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleCreateAd}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Ad
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingAd ? 'Edit Advertisement' : 'Create Advertisement'}</DialogTitle>
-              <DialogDescription>
-                {editingAd 
-                  ? 'Update the advertisement details below.'
-                  : 'Create a new image advertisement for tournament entry requirements.'}
-              </DialogDescription>
-            </DialogHeader>
-            <ImageAdForm
-              ad={editingAd || undefined}
-              sponsors={sponsors}
-              onSuccess={handleFormSuccess}
-              onCancel={() => setIsFormOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+            <DialogTrigger asChild>
+              <Button onClick={handleCreateAd}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Ad
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{editingAd ? 'Edit Advertisement' : 'Create Advertisement'}</DialogTitle>
+                <DialogDescription>
+                  {editingAd 
+                    ? 'Update the advertisement details below.'
+                    : 'Create a new image advertisement for tournament entry requirements.'}
+                </DialogDescription>
+              </DialogHeader>
+              <ImageAdForm
+                ad={editingAd || undefined}
+                sponsors={sponsors}
+                onSuccess={handleFormSuccess}
+                onCancel={() => setIsFormOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="all" className="space-y-4">

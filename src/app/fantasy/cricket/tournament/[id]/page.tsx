@@ -252,7 +252,18 @@ export default function TournamentPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <>
+      {/* Image Ad Gate - shows when user clicks join for ad_watch tournaments */}
+      {showAdGate && (
+        <ImageAdGate
+          tournamentId={tournamentId}
+          onComplete={handleAdGateComplete}
+          onCancel={handleAdGateCancel}
+          required={true}
+        />
+      )}
+      
+      <div className="max-w-6xl mx-auto p-6">
       <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Button variant="ghost" asChild className="-ml-2 md:-ml-0">
           <Link href="/fantasy/cricket">
