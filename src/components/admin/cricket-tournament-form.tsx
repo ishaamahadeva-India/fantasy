@@ -1088,7 +1088,7 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">None</SelectItem>
+                              <SelectItem value="none">None (No Sponsor)</SelectItem>
                               {sponsors.map((sponsor) => (
                                 <SelectItem key={sponsor.id} value={sponsor.id}>
                                   {sponsor.name}
