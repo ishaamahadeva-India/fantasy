@@ -370,21 +370,76 @@ export default function TournamentPage() {
           </CardContent>
         </Card>
 
+        {/* Participation Guide for Registered Users */}
+        {hasEntry && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                <CardTitle>You're Registered! Here's How to Participate:</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-primary">1.</span>
+                  <p><strong>Wait for Events to Start:</strong> Events will appear below when they become "Live". Check the "Upcoming" tab to see scheduled events.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-primary">2.</span>
+                  <p><strong>Click "Predict Now":</strong> When an event status changes to "Live", click the "Predict Now" button to make your prediction.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-primary">3.</span>
+                  <p><strong>Submit Your Prediction:</strong> Select your answer, add optional notes, and submit before the event locks.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-primary">4.</span>
+                  <p><strong>Earn Points:</strong> Correct predictions earn points based on the event's point value. Check the leaderboard to see your ranking!</p>
+                </div>
+              </div>
+              {events && events.length > 0 && (
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Tip:</strong> Events lock at their specified lock time. Make sure to submit predictions before then!
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Tournament Events */}
-        {events && events.length > 0 && (
+        {events && events.length > 0 ? (
           <Card>
             <CardHeader>
               <CardTitle>Tournament Events</CardTitle>
               <CardDescription>
-                Predict and compete in various tournament-level events
+                {hasEntry 
+                  ? "Make predictions on live events to earn points and climb the leaderboard!"
+                  : "Register above to participate in tournament events and make predictions"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="all" className="w-full">
+              <Tabs defaultValue="live" className="w-full">
                 <TabsList>
+                  <TabsTrigger value="live">
+                    Live Events
+                    {events.filter((e) => e.status === 'live').length > 0 && (
+                      <Badge variant="destructive" className="ml-2 px-1.5 py-0 text-xs">
+                        {events.filter((e) => e.status === 'live').length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="upcoming">
+                    Upcoming
+                    {events.filter((e) => e.status === 'upcoming').length > 0 && (
+                      <Badge variant="secondary" className="ml-2 px-1.5 py-0 text-xs">
+                        {events.filter((e) => e.status === 'upcoming').length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
                   <TabsTrigger value="all">All Events</TabsTrigger>
-                  <TabsTrigger value="live">Live</TabsTrigger>
-                  <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
                   <div className="space-y-3">
@@ -434,19 +489,40 @@ export default function TournamentPage() {
                       .map((event) => (
                         <div
                           key={event.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="flex items-center justify-between p-4 border-2 border-primary/30 rounded-lg hover:bg-primary/5 transition-colors bg-primary/5"
                         >
-                          <div>
-                            <h4 className="font-semibold">{event.title}</h4>
-                            <p className="text-sm text-muted-foreground">{event.description}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold">{event.title}</h4>
+                              <Badge variant="destructive" className="animate-pulse">LIVE</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{event.points} pts</Badge>
+                              {event.lockTime && (
+                                <Badge variant="outline" className="text-xs">
+                                  Locks: {new Date(event.lockTime).toLocaleString()}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <Button size="sm">Predict Now</Button>
+                          <Button size="sm" asChild className="ml-4">
+                            <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                              Predict Now
+                            </Link>
+                          </Button>
                         </div>
                       ))}
                     {events.filter((e) => e.status === 'live').length === 0 && (
-                      <p className="text-center text-muted-foreground py-8">
-                        No live events at the moment
-                      </p>
+                      <div className="text-center py-12">
+                        <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                        <p className="text-lg font-semibold text-muted-foreground mb-2">
+                          No live events at the moment
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Check the "Upcoming" tab to see when events will start
+                        </p>
+                      </div>
                     )}
                   </div>
                 </TabsContent>
@@ -454,26 +530,66 @@ export default function TournamentPage() {
                   <div className="space-y-3">
                     {events
                       .filter((e) => e.status === 'upcoming')
-                      .map((event) => (
-                        <div
-                          key={event.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                        >
-                          <div>
-                            <h4 className="font-semibold">{event.title}</h4>
-                            <p className="text-sm text-muted-foreground">{event.description}</p>
+                      .map((event) => {
+                        const startDate = event.startDate instanceof Date 
+                          ? event.startDate 
+                          : (event.startDate as any)?.seconds 
+                          ? new Date((event.startDate as any).seconds * 1000)
+                          : null;
+                        return (
+                          <div
+                            key={event.id}
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex-1">
+                              <h4 className="font-semibold">{event.title}</h4>
+                              <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline">{event.points} pts</Badge>
+                                {startDate && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Starts: {startDate.toLocaleString()}
+                                  </Badge>
+                                )}
+                                {event.lockTime && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Locks: {new Date(event.lockTime).toLocaleString()}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm" asChild className="ml-4">
+                              <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                                View Details
+                              </Link>
+                            </Button>
                           </div>
-                          <Button variant="outline" size="sm">View Details</Button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     {events.filter((e) => e.status === 'upcoming').length === 0 && (
-                      <p className="text-center text-muted-foreground py-8">
-                        No upcoming events
-                      </p>
+                      <div className="text-center py-12">
+                        <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                        <p className="text-lg font-semibold text-muted-foreground mb-2">
+                          No upcoming events
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          New events will appear here when they are scheduled
+                        </p>
+                      </div>
                     )}
                   </div>
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+        ) : hasEntry && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">No Events Yet</h3>
+              <p className="text-muted-foreground">
+                Events for this tournament will appear here when they are created. Check back soon!
+              </p>
             </CardContent>
           </Card>
         )}
