@@ -973,19 +973,27 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Group (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value === 'all-groups' ? undefined : value);
+                            }} 
+                            value={field.value || 'all-groups'}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select group" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">All Groups</SelectItem>
-                              {groupFields.map((g, idx) => (
-                                <SelectItem key={g.id} value={form.watch(`groups.${idx}.name`) || ''}>
-                                  {form.watch(`groups.${idx}.name`) || `Group ${idx + 1}`}
-                                </SelectItem>
-                              ))}
+                              <SelectItem value="all-groups">All Groups</SelectItem>
+                              {groupFields.map((g, idx) => {
+                                const groupName = form.watch(`groups.${idx}.name`) || `Group ${idx + 1}`;
+                                return (
+                                  <SelectItem key={g.id} value={groupName}>
+                                    {groupName}
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                           <FormMessage />
