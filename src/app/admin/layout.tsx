@@ -10,6 +10,7 @@ import {
   Loader2,
   TriangleAlert,
   Ticket,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -27,6 +28,7 @@ const adminNavItems = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/ads', label: 'Advertisements', icon: BadgePercent },
+  { href: '/admin/image-ads', label: 'Image Ads', icon: ImageIcon },
   { href: '/admin/fantasy', label: 'Fantasy Games', icon: Gamepad2 },
   { href: '/admin/fanzone', label: 'Fan Zone', icon: Shield },
   { href: '/admin/coupons', label: 'Coupons', icon: Ticket },

@@ -19,10 +19,13 @@ export type TournamentEntry = {
   id?: string;
   userId: string;
   tournamentId: string;
+  entryMethod?: 'free' | 'paid' | 'ad_watch';
   entryFee?: number;
   entryFeeTier?: string;
   paymentStatus?: 'pending' | 'paid' | 'refunded';
   paymentMethod?: 'upi' | 'bank' | 'wallet';
+  adViewId?: string; // Reference to image-ad-views collection if entryMethod is 'ad_watch'
+  advertisementId?: string; // Reference to image-advertisements collection
   joinedAt: Date;
   city?: string;
   state?: string;

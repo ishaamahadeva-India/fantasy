@@ -323,6 +323,37 @@ export default function TournamentEventPage() {
                 </ul>
               </div>
             )}
+
+            {/* Event Sponsor Display */}
+            {event.sponsorName && (
+              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {event.sponsorLogo && (
+                      <img 
+                        src={event.sponsorLogo} 
+                        alt={event.sponsorName}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                    )}
+                    <div>
+                      <p className="text-xs text-muted-foreground">Event Sponsored by</p>
+                      <p className="font-semibold text-lg">{event.sponsorName}</p>
+                      {event.sponsorWebsite && (
+                        <a 
+                          href={event.sponsorWebsite} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline mt-1 inline-block"
+                        >
+                          Visit Sponsor Website →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

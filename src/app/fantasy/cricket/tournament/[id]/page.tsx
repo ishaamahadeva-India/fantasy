@@ -15,6 +15,7 @@ import type { CricketTournament, TournamentEvent, UserProfile } from '@/lib/type
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { addTournamentEntry, getUserTournamentEntry } from '@/firebase/firestore/tournament-entries';
+import { ImageAdGate } from '@/components/ads/image-ad-gate';
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,7 @@ export default function TournamentPage() {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>('');
   const [isJoining, setIsJoining] = useState(false);
+  const [showAdGate, setShowAdGate] = useState(false);
 
   // Check if user has already joined
   useEffect(() => {
@@ -125,6 +127,16 @@ export default function TournamentPage() {
       return;
     }
 
+    // Check entry method
+    const entryMethod = tournament.entryMethod || tournament.entryFee?.type || 'free';
+
+    // If ad_watch, show ad gate instead of dialog
+    if (entryMethod === 'ad_watch') {
+      setShowAdGate(true);
+      setJoinDialogOpen(false);
+      return;
+    }
+
     if (tournament.entryFee?.type === 'paid' && !selectedTier) {
       toast({
         variant: 'destructive',
@@ -140,6 +152,7 @@ export default function TournamentPage() {
       const entryData: any = {
         userId: user.uid,
         tournamentId,
+        entryMethod: entryMethod,
         paymentStatus: tournament.entryFee?.type === 'free' ? 'paid' as const : 'pending' as const,
       };
 
@@ -181,6 +194,61 @@ export default function TournamentPage() {
     } finally {
       setIsJoining(false);
     }
+  };
+
+  const handleAdGateComplete = async (adViewId?: string, advertisementId?: string) => {
+    if (!firestore || !user) return;
+
+    setShowAdGate(false);
+    setIsJoining(true);
+
+    try {
+      const entryData: any = {
+        userId: user.uid,
+        tournamentId,
+        entryMethod: 'ad_watch',
+        paymentStatus: 'paid' as const,
+      };
+
+      // Link ad view if available
+      if (adViewId) {
+        entryData.adViewId = adViewId;
+      }
+      if (advertisementId) {
+        entryData.advertisementId = advertisementId;
+      }
+
+      // Add location if available
+      if (userProfile?.city) {
+        entryData.city = userProfile.city;
+      }
+      if (userProfile?.state) {
+        entryData.state = userProfile.state;
+      }
+
+      await addTournamentEntry(firestore, entryData);
+
+      toast({
+        title: 'Successfully Joined!',
+        description: 'You have successfully registered for this tournament by viewing the sponsor ad.',
+      });
+
+      setHasEntry(true);
+      router.refresh();
+    } catch (error) {
+      console.error('Error joining tournament after ad:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: 'There was an error joining the tournament. Please try again.',
+      });
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleAdGateCancel = () => {
+    setShowAdGate(false);
   };
 
   return (
@@ -278,19 +346,54 @@ export default function TournamentPage() {
                     <p className="text-2xl font-bold text-primary">{tournament.prizePool}</p>
                   </div>
                   {tournament.sponsorName && (
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">Sponsored by</p>
-                      <p className="font-semibold">{tournament.sponsorName}</p>
+                    <div className="text-right flex items-center gap-2">
+                      {tournament.sponsorLogo && (
+                        <img 
+                          src={tournament.sponsorLogo} 
+                          alt={tournament.sponsorName}
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Sponsored by</p>
+                        <p className="font-semibold">{tournament.sponsorName}</p>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
+            {/* Main Tournament Sponsor Display */}
+            {tournament.sponsorName && !tournament.prizePool && (
+              <div className="p-4 rounded-lg bg-muted/50 border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {tournament.sponsorLogo && (
+                      <img 
+                        src={tournament.sponsorLogo} 
+                        alt={tournament.sponsorName}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                    )}
+                    <div>
+                      <p className="text-xs text-muted-foreground">Tournament Sponsor</p>
+                      <p className="font-semibold">{tournament.sponsorName}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between pt-4 border-t">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Entry Fee</p>
-                {tournament.entryFee?.type === 'free' ? (
+                <p className="text-sm text-muted-foreground mb-1">Entry Method</p>
+                {(tournament.entryMethod === 'ad_watch' || tournament.entryFee?.type === 'ad_watch') ? (
+                  <div>
+                    <p className="text-lg font-bold text-primary">Watch Ad to Join</p>
+                    <p className="text-xs text-muted-foreground mt-1">Free entry by viewing sponsor ad</p>
+                  </div>
+                ) : tournament.entryFee?.type === 'free' ? (
                   <p className="text-lg font-bold text-green-600">Free Entry</p>
                 ) : tournament.entryFee?.tiers ? (
                   <div className="flex gap-2">
@@ -330,7 +433,9 @@ export default function TournamentPage() {
                         <DialogHeader>
                           <DialogTitle>Join Tournament</DialogTitle>
                           <DialogDescription>
-                            {tournament.entryFee?.type === 'free' 
+                            {(tournament.entryMethod === 'ad_watch' || tournament.entryFee?.type === 'ad_watch')
+                              ? 'You will need to watch a sponsor ad to join this tournament.'
+                              : tournament.entryFee?.type === 'free' 
                               ? 'This tournament is free to join. Click confirm to register.'
                               : 'Select your entry tier and complete registration.'}
                           </DialogDescription>
@@ -354,7 +459,17 @@ export default function TournamentPage() {
                               </RadioGroup>
                             </div>
                           )}
-                          {tournament.entryFee?.type === 'free' && (
+                          {(tournament.entryMethod === 'ad_watch' || tournament.entryFee?.type === 'ad_watch') && (
+                            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                              <p className="text-primary font-semibold mb-2">
+                                Watch Ad to Join
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                You'll need to view a sponsor advertisement (5 seconds) to join this tournament for free.
+                              </p>
+                            </div>
+                          )}
+                          {tournament.entryFee?.type === 'free' && !tournament.entryMethod && (
                             <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
                               <p className="text-green-700 dark:text-green-300 font-semibold">
                                 Free Entry - No payment required
@@ -488,7 +603,7 @@ export default function TournamentPage() {
                               )}
                             </div>
                             <p className="text-sm text-muted-foreground">{event.description}</p>
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
                               <Badge variant="outline">{event.points} pts</Badge>
                               <Badge
                                 variant={
@@ -501,6 +616,18 @@ export default function TournamentPage() {
                               >
                                 {event.status}
                               </Badge>
+                              {event.sponsorName && (
+                                <Badge variant="outline" className="flex items-center gap-1">
+                                  {event.sponsorLogo && (
+                                    <img 
+                                      src={event.sponsorLogo} 
+                                      alt={event.sponsorName}
+                                      className="w-3 h-3 rounded object-cover"
+                                    />
+                                  )}
+                                  <span className="text-xs">Sponsored: {event.sponsorName}</span>
+                                </Badge>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -743,6 +870,7 @@ export default function TournamentPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

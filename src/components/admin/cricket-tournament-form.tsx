@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { getAllImageAdSponsors } from '@/firebase/firestore/image-ad-sponsors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -66,6 +69,11 @@ const tournamentEventSchema = z.object({
   multiSelect: z.boolean().optional(),
   maxSelections: z.number().optional(),
   rules: z.array(z.string()).optional(),
+  // Event-level sponsorship
+  sponsorId: z.string().optional(),
+  sponsorName: z.string().optional(),
+  sponsorLogo: z.string().optional(),
+  sponsorWebsite: z.string().optional(),
 });
 
 const groupSchema = z.object({
@@ -86,11 +94,13 @@ const tournamentSchema = z.object({
   groups: z.array(groupSchema).optional(),
   venue: z.string().optional(),
   entryFee: z.object({
-    type: z.enum(['free', 'paid']),
+    type: z.enum(['free', 'paid', 'ad_watch']),
     amount: z.number().optional(),
     tiers: z.array(z.object({ amount: z.number(), label: z.string() })).optional(),
     seasonPass: z.boolean().optional(),
   }).default({ type: 'free' }),
+  entryMethod: z.enum(['free', 'paid', 'ad_watch']).optional(),
+  advertisementId: z.string().optional(),
   maxParticipants: z.number().optional(),
   prizePool: z.string().optional(),
   sponsorName: z.string().optional(),
@@ -107,8 +117,24 @@ type CricketTournamentFormProps = {
 };
 
 export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTournamentFormProps) {
+  const firestore = useFirestore();
   const [selectedEventIndices, setSelectedEventIndices] = useState<Set<number>>(new Set());
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  const [sponsors, setSponsors] = useState<any[]>([]);
+
+  // Fetch sponsors for event sponsorship
+  useEffect(() => {
+    const loadSponsors = async () => {
+      if (!firestore) return;
+      try {
+        const allSponsors = await getAllImageAdSponsors(firestore);
+        setSponsors(allSponsors.filter(s => s.status === 'active'));
+      } catch (error) {
+        console.error('Error loading sponsors:', error);
+      }
+    };
+    loadSponsors();
+  }, [firestore]);
 
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentSchema),
@@ -533,12 +559,24 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
                     <SelectContent>
                       <SelectItem value="free">Free Entry</SelectItem>
                       <SelectItem value="paid">Paid Entry</SelectItem>
+                      <SelectItem value="ad_watch">Watch Ad to Join</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {entryFeeType === 'ad_watch' && (
+              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Users will need to view a sponsor advertisement to join this tournament for free.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Configure image ads in the Image Ads section to assign them to tournaments.
+                </p>
+              </div>
+            )}
 
             {entryFeeType === 'paid' && (
               <>
@@ -1021,6 +1059,67 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
                     </FormItem>
                   )}
                 />
+
+                {/* Event Sponsor Section */}
+                <div className="pt-4 border-t">
+                  <h5 className="text-sm font-semibold mb-3">Event Sponsor (Optional)</h5>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name={`events.${index}.sponsorId`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sponsor</FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              const sponsor = sponsors.find(s => s.id === value);
+                              if (sponsor) {
+                                form.setValue(`events.${index}.sponsorName`, sponsor.name);
+                                form.setValue(`events.${index}.sponsorLogo`, sponsor.logoUrl || '');
+                                form.setValue(`events.${index}.sponsorWebsite`, sponsor.website || '');
+                              }
+                            }}
+                            value={field.value || ''}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select sponsor (optional)" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">None</SelectItem>
+                              {sponsors.map((sponsor) => (
+                                <SelectItem key={sponsor.id} value={sponsor.id}>
+                                  {sponsor.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>Select a sponsor for this specific event</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {form.watch(`events.${index}.sponsorId`) && (
+                      <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                        {form.watch(`events.${index}.sponsorLogo`) && (
+                          <img 
+                            src={form.watch(`events.${index}.sponsorLogo`)} 
+                            alt={form.watch(`events.${index}.sponsorName`)}
+                            className="w-8 h-8 rounded object-cover"
+                          />
+                        )}
+                        <div>
+                          <p className="text-sm font-semibold">{form.watch(`events.${index}.sponsorName`)}</p>
+                          {form.watch(`events.${index}.sponsorWebsite`) && (
+                            <p className="text-xs text-muted-foreground">Website available</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </Card>
             ))}
           </CardContent>

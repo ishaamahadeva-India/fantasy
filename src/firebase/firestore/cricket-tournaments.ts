@@ -53,6 +53,11 @@ export type NewTournamentEvent = {
   maxSelections?: number;
   rules?: string[];
   applicableFormats?: ('T20' | 'ODI' | 'Test' | 'IPL')[];
+  // Event-level sponsorship (micro-level)
+  sponsorId?: string;
+  sponsorName?: string;
+  sponsorLogo?: string;
+  sponsorWebsite?: string;
 };
 
 /**

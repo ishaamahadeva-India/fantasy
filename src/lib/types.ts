@@ -484,6 +484,11 @@ export type TournamentEvent = {
     rules?: string[];
     result?: EventResult;
     applicableFormats?: ('T20' | 'ODI' | 'Test' | 'IPL')[];
+    // Event-level sponsorship (micro-level)
+    sponsorId?: string; // Reference to image-ad-sponsors collection
+    sponsorName?: string; // Sponsor name for display
+    sponsorLogo?: string; // Sponsor logo URL
+    sponsorWebsite?: string; // Sponsor website URL
     createdAt: Date;
     updatedAt: Date;
 }
@@ -501,11 +506,13 @@ export type CricketTournament = {
     groups?: TournamentGroup[]; // For tournaments with groups
     venue?: string; // Primary venue or "Multiple Venues"
     entryFee: {
-        type: 'free' | 'paid';
+        type: 'free' | 'paid' | 'ad_watch';
         amount?: number;
         tiers?: Array<{ amount: number; label: string }>; // e.g., ₹99, ₹199, ₹499
         seasonPass?: boolean; // For IPL full season
     };
+    entryMethod?: 'free' | 'paid' | 'ad_watch'; // How users can enter
+    advertisementId?: string; // If entryMethod is 'ad_watch', link to specific ad
     maxParticipants?: number;
     events?: TournamentEvent[];
     matches?: string[]; // Array of match IDs
@@ -609,4 +616,95 @@ export type CouponRedemption = {
   discountAmount: number;
   originalAmount?: number;
   finalAmount?: number;
+};
+
+// Image Advertisement Types
+export type ImageAdvertisement = {
+  id: string;
+  sponsorId: string;
+  sponsorName: string;
+  title: string;
+  description?: string;
+  
+  // Image instead of video
+  imageUrl: string;
+  thumbnailUrl?: string;
+  
+  // Display Settings
+  displayDuration: number; // Seconds to show (default: 5)
+  clickThroughUrl?: string; // URL when image is clicked
+  
+  // Targeting
+  targetTournaments?: string[];
+  targetCategories?: string[];
+  
+  // Status & Scheduling
+  status: 'active' | 'inactive' | 'scheduled' | 'expired';
+  startDate: Date;
+  endDate: Date;
+  priority: number; // Higher = shown first
+  
+  // Limits
+  maxViews?: number;
+  currentViews: number;
+  maxViewsPerUser?: number;
+  
+  // Tracking
+  trackingPixel?: string;
+  
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string; // Admin user ID
+};
+
+export type ImageAdView = {
+  id: string;
+  advertisementId: string;
+  userId: string;
+  tournamentId?: string;
+  
+  // View Details
+  viewedAt: Date;
+  viewedDuration: number; // Seconds viewed
+  wasCompleted: boolean; // Viewed for required duration
+  
+  // Interaction
+  clicked: boolean;
+  clickedAt?: Date;
+  clickThroughUrl?: string;
+  
+  // Device Info
+  deviceType: 'mobile' | 'tablet' | 'desktop';
+  browser: string;
+};
+
+export type ImageAdSponsor = {
+  id: string;
+  name: string;
+  companyName: string;
+  logoUrl?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  
+  // Social Links
+  website?: string;
+  instagram?: string;
+  twitter?: string;
+  facebook?: string;
+  
+  // Billing
+  billingAddress?: string;
+  paymentMethod?: string;
+  totalSpent: number;
+  totalViews: number;
+  
+  // Status
+  status: 'active' | 'inactive' | 'suspended';
+  contractStartDate?: Date;
+  contractEndDate?: Date;
+  
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
 };

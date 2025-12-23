@@ -1,0 +1,26 @@
+// Additional Firestore Security Rules for Image Ads Collections
+// Add these rules to your existing FIRESTORE_RULES_COMPLETE.txt file
+
+    // Image Advertisements - authenticated read, admin write
+    match /image-advertisements/{adId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Image Ad Views - users can create their own views, read own views, admin can read all
+    match /image-ad-views/{viewId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+    
+    // Image Ad Sponsors - authenticated read, admin write
+    match /image-ad-sponsors/{sponsorId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
