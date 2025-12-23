@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { SocialShare } from '@/components/social-share';
+import { StarRating } from '@/components/article/star-rating';
 import { useEffect } from 'react';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, type Query } from 'firebase/firestore';
@@ -137,22 +138,28 @@ export default function ArticlePage() {
                 </div>
             </div>
              <Separator className="my-6" />
-             <div className="flex items-center gap-4">
-                <Button variant="outline">
-                    <ThumbsUp className="w-4 h-4 mr-2" />
-                    Like
-                </Button>
-                 <Button variant="outline">
-                    <Star className="w-4 h-4 mr-2" />
-                    Rate
-                </Button>
-                 <SocialShare
-                    url={articleUrl}
-                    title={article.title}
-                    description={article.excerpt}
-                    imageUrl={articleImage}
-                    variant="outline"
-                />
+             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                    <Button variant="outline">
+                        <ThumbsUp className="w-4 h-4 mr-2" />
+                        Like
+                    </Button>
+                    <SocialShare
+                        url={articleUrl}
+                        title={article.title}
+                        description={article.excerpt}
+                        imageUrl={articleImage}
+                        variant="outline"
+                    />
+                </div>
+                <div className="flex items-center gap-2">
+                    <StarRating 
+                        articleId={article.id} 
+                        size="md" 
+                        showLabel={true}
+                        interactive={true}
+                    />
+                </div>
             </div>
         </div>
         
