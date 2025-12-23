@@ -73,7 +73,7 @@ export default function AdminFantasyPage() {
     }
   };
 
-  // Helper function to safely parse dates
+  // Helper function to safely parse dates with multiple format support
   const parseDate = (dateString: string | undefined, fieldName: string, required: boolean = false): Date => {
     if (!dateString || dateString.trim() === '') {
       if (required) {
@@ -82,12 +82,86 @@ export default function AdminFantasyPage() {
       return new Date();
     }
     
-    const date = new Date(dateString.trim());
-    if (isNaN(date.getTime())) {
-      throw new Error(`Invalid ${fieldName} format: "${dateString}". Expected format: YYYY-MM-DD or ISO 8601`);
+    const trimmed = dateString.trim();
+    
+    // Try parsing directly first (works for ISO 8601 and YYYY-MM-DD)
+    let date = new Date(trimmed);
+    if (!isNaN(date.getTime())) {
+      return date;
     }
     
-    return date;
+    // Try parsing DD-MM-YYYY or MM-DD-YYYY format (e.g., "18-01-2026" or "01-18-2026")
+    const dashMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dashMatch) {
+      const [, part1, part2, year] = dashMatch;
+      const num1 = parseInt(part1);
+      const num2 = parseInt(part2);
+      
+      // If first part > 12, it must be DD-MM-YYYY
+      if (num1 > 12) {
+        date = new Date(parseInt(year), num2 - 1, num1);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+      // If second part > 12, it must be MM-DD-YYYY
+      else if (num2 > 12) {
+        date = new Date(parseInt(year), num1 - 1, num2);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+      // Both <= 12, try DD-MM-YYYY first (international format)
+      else {
+        date = new Date(parseInt(year), num2 - 1, num1);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+        // If that fails, try MM-DD-YYYY
+        date = new Date(parseInt(year), num1 - 1, num2);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+    }
+    
+    // Try parsing DD/MM/YYYY or MM/DD/YYYY format (e.g., "18/01/2026" or "01/18/2026")
+    const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, part1, part2, year] = slashMatch;
+      const num1 = parseInt(part1);
+      const num2 = parseInt(part2);
+      
+      // If first part > 12, it must be DD/MM/YYYY
+      if (num1 > 12) {
+        date = new Date(parseInt(year), num2 - 1, num1);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+      // If second part > 12, it must be MM/DD/YYYY
+      else if (num2 > 12) {
+        date = new Date(parseInt(year), num1 - 1, num2);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+      // Both <= 12, try DD/MM/YYYY first (international format)
+      else {
+        date = new Date(parseInt(year), num2 - 1, num1);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+        // If that fails, try MM/DD/YYYY
+        date = new Date(parseInt(year), num1 - 1, num2);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+    }
+    
+    // If all parsing attempts failed, throw an error
+    throw new Error(`Invalid ${fieldName} format: "${dateString}". Supported formats: YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY, DD/MM/YYYY, MM/DD/YYYY, or ISO 8601`);
   };
 
   const handleCampaignsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
