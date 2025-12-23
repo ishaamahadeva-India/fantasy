@@ -1080,15 +1080,22 @@ export function CricketTournamentForm({ onSubmit, defaultValues }: CricketTourna
                           <FormLabel>Sponsor</FormLabel>
                           <Select 
                             onValueChange={(value) => {
-                              field.onChange(value);
-                              const sponsor = sponsors.find(s => s.id === value);
-                              if (sponsor) {
-                                form.setValue(`events.${index}.sponsorName`, sponsor.name);
-                                form.setValue(`events.${index}.sponsorLogo`, sponsor.logoUrl || '');
-                                form.setValue(`events.${index}.sponsorWebsite`, sponsor.website || '');
+                              if (value === 'none') {
+                                field.onChange(undefined);
+                                form.setValue(`events.${index}.sponsorName`, undefined);
+                                form.setValue(`events.${index}.sponsorLogo`, undefined);
+                                form.setValue(`events.${index}.sponsorWebsite`, undefined);
+                              } else {
+                                field.onChange(value);
+                                const sponsor = sponsors.find(s => s.id === value);
+                                if (sponsor) {
+                                  form.setValue(`events.${index}.sponsorName`, sponsor.name);
+                                  form.setValue(`events.${index}.sponsorLogo`, sponsor.logoUrl || '');
+                                  form.setValue(`events.${index}.sponsorWebsite`, sponsor.website || '');
+                                }
                               }
                             }}
-                            value={field.value || ''}
+                            value={field.value || 'none'}
                           >
                             <FormControl>
                               <SelectTrigger>
