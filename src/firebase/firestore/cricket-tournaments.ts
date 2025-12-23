@@ -123,11 +123,25 @@ export function deleteCricketTournament(firestore: Firestore, tournamentId: stri
 /**
  * Adds an event to a tournament.
  */
-// Helper function to remove undefined values from an object
+// Helper function to remove undefined and null values from an object
 function removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([_, value]) => value !== undefined)
-  ) as Partial<T>;
+  const cleaned: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Skip undefined, null, and empty arrays
+    if (value === undefined || value === null) {
+      continue;
+    }
+    // Skip empty arrays
+    if (Array.isArray(value) && value.length === 0) {
+      continue;
+    }
+    // Skip invalid Date objects
+    if (value instanceof Date && isNaN(value.getTime())) {
+      continue;
+    }
+    cleaned[key] = value;
+  }
+  return cleaned as Partial<T>;
 }
 
 export function addTournamentEvent(
