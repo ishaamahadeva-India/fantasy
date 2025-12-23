@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { addTournamentPrediction, updateTournamentPrediction } from '@/firebase/firestore/tournament-predictions';
 
 export default function TournamentEventPage() {
@@ -53,8 +54,36 @@ export default function TournamentEventPage() {
 
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // For multi-select
+  const [textInput, setTextInput] = useState<string>(''); // For text-based predictions (player names, etc.)
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Event types that require text input (player/team names)
+  const textInputEventTypes = [
+    'top_run_scorer',
+    'top_wicket_taker',
+    'tournament_mvp',
+    'tournament_winner',
+    'tournament_runner_up',
+    'most_sixes',
+    'best_strike_rate',
+    'most_centuries',
+    'most_fifties',
+    'best_bowling_average',
+    'highest_individual_score',
+    'fastest_fifty_tournament',
+    'fastest_hundred_tournament',
+    'points_table_topper',
+    'group_topper',
+    'group_second_place',
+    'semi_finalists',
+    'finalists',
+    'group_qualifiers',
+    'group_qualifier_live',
+    'top_2_after_matches',
+    'playoff_qualifier',
+    'mvp_as_of_today',
+  ];
 
   if (tournamentLoading || eventLoading) {
     return (
@@ -72,6 +101,7 @@ export default function TournamentEventPage() {
   const isLocked = event.status === 'locked' || (event.lockTime && new Date(event.lockTime) < new Date());
   const hasPrediction = existingPredictions && existingPredictions.length > 0;
   const existingPrediction = hasPrediction ? existingPredictions[0] : null;
+  const requiresTextInput = textInputEventTypes.includes(event.eventType);
 
   const handleSubmit = async () => {
     if (!user || !firestore) {
@@ -92,7 +122,16 @@ export default function TournamentEventPage() {
       return;
     }
 
-    if (event.multiSelect) {
+    if (requiresTextInput) {
+      if (!textInput.trim()) {
+        toast({
+          variant: 'destructive',
+          title: 'Input Required',
+          description: 'Please enter your prediction (e.g., player name, team name).',
+        });
+        return;
+      }
+    } else if (event.multiSelect) {
       if (selectedOptions.length === 0) {
         toast({
           variant: 'destructive',
@@ -123,12 +162,18 @@ export default function TournamentEventPage() {
     setIsSubmitting(true);
 
     try {
+      const predictionValue = requiresTextInput 
+        ? textInput.trim() 
+        : event.multiSelect 
+        ? selectedOptions 
+        : selectedOption;
+        
       const predictionData = {
         userId: user.uid,
         tournamentId,
         eventId,
         eventType: event.eventType,
-        prediction: event.multiSelect ? selectedOptions : selectedOption,
+        prediction: predictionValue,
         notes: notes.trim() || undefined,
         points: event.points,
         status: 'pending' as const,
@@ -136,7 +181,7 @@ export default function TournamentEventPage() {
 
       if (existingPrediction && existingPrediction.id) {
         await updateTournamentPrediction(firestore, existingPrediction.id, {
-          prediction: event.multiSelect ? selectedOptions : selectedOption,
+          prediction: predictionValue,
           notes: notes.trim() || undefined,
         });
       } else {
@@ -179,8 +224,10 @@ export default function TournamentEventPage() {
   };
 
   // Load existing prediction if available
-  if (existingPrediction && !selectedOption && selectedOptions.length === 0) {
-    if (event.multiSelect) {
+  if (existingPrediction && !selectedOption && selectedOptions.length === 0 && !textInput) {
+    if (requiresTextInput) {
+      setTextInput(typeof existingPrediction.prediction === 'string' ? existingPrediction.prediction : '');
+    } else if (event.multiSelect) {
       setSelectedOptions(Array.isArray(existingPrediction.prediction) ? existingPrediction.prediction : []);
     } else {
       setSelectedOption(existingPrediction.prediction || '');
@@ -283,7 +330,33 @@ export default function TournamentEventPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {event.options && event.options.length > 0 ? (
+              {requiresTextInput ? (
+                <div className="space-y-3">
+                  <Label htmlFor="prediction-input">
+                    {event.eventType.includes('player') || event.eventType.includes('scorer') || event.eventType.includes('wicket') || event.eventType.includes('mvp') || event.eventType.includes('strike') || event.eventType.includes('centuries') || event.eventType.includes('fifties') || event.eventType.includes('bowling') || event.eventType.includes('individual') || event.eventType.includes('fifty') || event.eventType.includes('hundred')
+                      ? 'Enter Player Name'
+                      : event.eventType.includes('team') || event.eventType.includes('winner') || event.eventType.includes('runner') || event.eventType.includes('finalist') || event.eventType.includes('qualifier') || event.eventType.includes('topper')
+                      ? 'Enter Team Name'
+                      : 'Enter Your Prediction'}
+                  </Label>
+                  <Input
+                    id="prediction-input"
+                    placeholder={
+                      event.eventType.includes('player') || event.eventType.includes('scorer') || event.eventType.includes('wicket') || event.eventType.includes('mvp') || event.eventType.includes('strike') || event.eventType.includes('centuries') || event.eventType.includes('fifties') || event.eventType.includes('bowling') || event.eventType.includes('individual') || event.eventType.includes('fifty') || event.eventType.includes('hundred')
+                        ? 'e.g., Virat Kohli, MS Dhoni, Rohit Sharma...'
+                        : event.eventType.includes('team') || event.eventType.includes('winner') || event.eventType.includes('runner') || event.eventType.includes('finalist') || event.eventType.includes('qualifier') || event.eventType.includes('topper')
+                        ? 'e.g., Mumbai Indians, Chennai Super Kings...'
+                        : 'Enter your prediction here...'
+                    }
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    className="text-lg"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {event.description || 'Enter the name of the player or team you are predicting.'}
+                  </p>
+                </div>
+              ) : event.options && event.options.length > 0 ? (
                 event.multiSelect ? (
                   <div className="space-y-3">
                     <Label>Select {event.maxSelections || 'Multiple'} Option(s)</Label>
@@ -361,7 +434,7 @@ export default function TournamentEventPage() {
                 className="w-full"
                 size="lg"
                 onClick={handleSubmit}
-                disabled={isSubmitting || isLocked || (!selectedOption && selectedOptions.length === 0)}
+                disabled={isSubmitting || isLocked || (requiresTextInput ? !textInput.trim() : (!selectedOption && selectedOptions.length === 0))}
               >
                 {isSubmitting
                   ? 'Submitting...'
