@@ -96,7 +96,29 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
     }
   };
 
+  // Sync sponsor name when sponsorId changes or when editing existing ad
+  useEffect(() => {
+    if (formData.sponsorId && sponsors.length > 0) {
+      const sponsor = sponsors.find(s => s.id === formData.sponsorId);
+      if (sponsor && sponsor.name !== formData.sponsorName) {
+        setFormData(prev => ({
+          ...prev,
+          sponsorName: sponsor.name,
+        }));
+      }
+    }
+  }, [formData.sponsorId, sponsors]);
+
   const handleSponsorChange = (sponsorId: string) => {
+    if (sponsorId === 'none' || !sponsorId) {
+      setFormData(prev => ({
+        ...prev,
+        sponsorId: '',
+        sponsorName: '',
+      }));
+      return;
+    }
+    
     const sponsor = sponsors.find(s => s.id === sponsorId);
     if (sponsor) {
       setFormData(prev => ({
@@ -112,9 +134,11 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="sponsorId">Sponsor *</Label>
-          <Select value={formData.sponsorId} onValueChange={handleSponsorChange}>
+          <Select value={formData.sponsorId || undefined} onValueChange={handleSponsorChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select sponsor" />
+              <SelectValue placeholder="Select sponsor">
+                {formData.sponsorId && sponsors.find(s => s.id === formData.sponsorId)?.name}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {sponsors.map((sponsor) => (
