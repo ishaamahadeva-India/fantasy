@@ -20,6 +20,7 @@ import { deleteCricketTournament, addCricketTournament } from '@/firebase/firest
 import Link from 'next/link';
 import { CSVUpload } from '@/components/admin/csv-upload';
 import { downloadCampaignsTemplate, downloadMatchesTemplate, downloadTournamentsTemplate } from '@/lib/csv-templates';
+import { parseCSVDate } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,96 +74,6 @@ export default function AdminFantasyPage() {
     }
   };
 
-  // Helper function to safely parse dates with multiple format support
-  const parseDate = (dateString: string | undefined, fieldName: string, required: boolean = false): Date => {
-    if (!dateString || dateString.trim() === '') {
-      if (required) {
-        throw new Error(`${fieldName} is required`);
-      }
-      return new Date();
-    }
-    
-    const trimmed = dateString.trim();
-    
-    // Try parsing directly first (works for ISO 8601 and YYYY-MM-DD)
-    let date = new Date(trimmed);
-    if (!isNaN(date.getTime())) {
-      return date;
-    }
-    
-    // Try parsing DD-MM-YYYY or MM-DD-YYYY format (e.g., "18-01-2026" or "01-18-2026")
-    const dashMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dashMatch) {
-      const [, part1, part2, year] = dashMatch;
-      const num1 = parseInt(part1);
-      const num2 = parseInt(part2);
-      
-      // If first part > 12, it must be DD-MM-YYYY
-      if (num1 > 12) {
-        date = new Date(parseInt(year), num2 - 1, num1);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-      // If second part > 12, it must be MM-DD-YYYY
-      else if (num2 > 12) {
-        date = new Date(parseInt(year), num1 - 1, num2);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-      // Both <= 12, try DD-MM-YYYY first (international format)
-      else {
-        date = new Date(parseInt(year), num2 - 1, num1);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-        // If that fails, try MM-DD-YYYY
-        date = new Date(parseInt(year), num1 - 1, num2);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-    }
-    
-    // Try parsing DD/MM/YYYY or MM/DD/YYYY format (e.g., "18/01/2026" or "01/18/2026")
-    const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (slashMatch) {
-      const [, part1, part2, year] = slashMatch;
-      const num1 = parseInt(part1);
-      const num2 = parseInt(part2);
-      
-      // If first part > 12, it must be DD/MM/YYYY
-      if (num1 > 12) {
-        date = new Date(parseInt(year), num2 - 1, num1);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-      // If second part > 12, it must be MM/DD/YYYY
-      else if (num2 > 12) {
-        date = new Date(parseInt(year), num1 - 1, num2);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-      // Both <= 12, try DD/MM/YYYY first (international format)
-      else {
-        date = new Date(parseInt(year), num2 - 1, num1);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-        // If that fails, try MM/DD/YYYY
-        date = new Date(parseInt(year), num1 - 1, num2);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-    }
-    
-    // If all parsing attempts failed, throw an error
-    throw new Error(`Invalid ${fieldName} format: "${dateString}". Supported formats: YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY, DD/MM/YYYY, MM/DD/YYYY, or ISO 8601`);
-  };
 
   const handleCampaignsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
     if (!firestore) {
@@ -190,8 +101,8 @@ export default function AdminFantasyPage() {
         movieId: row.movieId?.trim() || undefined,
         movieTitle: row.movieTitle?.trim() || undefined,
         movieLanguage: row.movieLanguage?.trim() || undefined,
-        startDate: parseDate(row.startDate, 'startDate'),
-        endDate: row.endDate ? parseDate(row.endDate, 'endDate') : undefined,
+        startDate: parseCSVDate(row.startDate, 'startDate'),
+        endDate: row.endDate ? parseCSVDate(row.endDate, 'endDate') : undefined,
         status: (row.status || 'upcoming') as 'upcoming' | 'active' | 'completed',
         visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
         maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
@@ -236,7 +147,7 @@ export default function AdminFantasyPage() {
         team1: row.team1?.trim() || teams[0] || '',
         team2: row.team2?.trim() || teams[1] || '',
         venue: row.venue?.trim() || undefined,
-        startTime: parseDate(row.startTime, 'startTime'),
+        startTime: parseCSVDate(row.startTime, 'startTime'),
         status: (row.status || 'upcoming') as "upcoming" | "live" | "completed",
         description: row.description?.trim() || undefined,
         entryFee: row.entryFeeType ? {
@@ -278,8 +189,8 @@ export default function AdminFantasyPage() {
         name: row.name.trim(),
         format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
         description: row.description?.trim() || undefined,
-        startDate: parseDate(row.startDate, 'startDate', true),
-        endDate: parseDate(row.endDate, 'endDate', true),
+        startDate: parseCSVDate(row.startDate, 'startDate', true),
+        endDate: parseCSVDate(row.endDate, 'endDate', true),
         status: (row.status || 'upcoming') as 'upcoming' | 'live' | 'completed',
         teams: teams,
         venue: row.venue?.trim() || undefined,
