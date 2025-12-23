@@ -97,7 +97,11 @@ export function ImageAdGate({
   }, [firestore, user, tournamentId, required, onComplete, onCancel]);
 
   const handleAdComplete = async (advertisementId: string) => {
-    if (!firestore || !user || !ad) return;
+    if (!firestore || !user || !ad) {
+      // If missing required data, still allow entry
+      onComplete();
+      return;
+    }
 
     try {
       // Create ad view record
@@ -133,7 +137,7 @@ export function ImageAdGate({
     } catch (error) {
       console.error('Error completing ad view:', error);
       // Still allow entry even if tracking fails
-      onComplete();
+      onComplete(undefined, ad.id);
     }
   };
 

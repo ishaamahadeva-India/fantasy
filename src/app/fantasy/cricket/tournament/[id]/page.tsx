@@ -197,7 +197,14 @@ export default function TournamentPage() {
   };
 
   const handleAdGateComplete = async (adViewId?: string, advertisementId?: string) => {
-    if (!firestore || !user) return;
+    if (!firestore || !user) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Required',
+        description: 'Please log in to join tournaments.',
+      });
+      return;
+    }
 
     setShowAdGate(false);
     setIsJoining(true);
@@ -240,7 +247,7 @@ export default function TournamentPage() {
       toast({
         variant: 'destructive',
         title: 'Registration Failed',
-        description: 'There was an error joining the tournament. Please try again.',
+        description: error instanceof Error ? error.message : 'There was an error joining the tournament. Please try again.',
       });
     } finally {
       setIsJoining(false);

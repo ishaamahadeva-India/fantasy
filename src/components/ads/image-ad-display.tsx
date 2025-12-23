@@ -9,7 +9,7 @@ import type { ImageAdvertisement } from '@/lib/types';
 
 type ImageAdDisplayProps = {
   advertisement: ImageAdvertisement;
-  onComplete: (viewId: string) => void;
+  onComplete: (advertisementId: string) => void;
   onCancel?: () => void;
   required?: boolean;
   displayDuration?: number; // Override default duration
