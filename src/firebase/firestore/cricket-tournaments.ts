@@ -150,12 +150,43 @@ export function addTournamentEvent(
   eventData: NewTournamentEvent
 ) {
   const eventsCollection = collection(firestore, 'cricket-tournaments', tournamentId, 'events');
-  const docToSave = removeUndefined({
-    ...eventData,
+  
+  // Build the document with only defined values
+  const docToSave: any = {
+    title: eventData.title,
+    description: eventData.description,
+    eventType: eventData.eventType,
     tournamentId,
+    status: eventData.status,
+    startDate: eventData.startDate,
+    endDate: eventData.endDate,
+    points: eventData.points,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+  
+  // Only add optional fields if they exist and are not undefined/null
+  if (eventData.lockTime !== undefined && eventData.lockTime !== null) {
+    docToSave.lockTime = eventData.lockTime;
+  }
+  if (eventData.difficultyLevel !== undefined && eventData.difficultyLevel !== null) {
+    docToSave.difficultyLevel = eventData.difficultyLevel;
+  }
+  if (eventData.options !== undefined && eventData.options !== null && Array.isArray(eventData.options) && eventData.options.length > 0) {
+    docToSave.options = eventData.options;
+  }
+  if (eventData.multiSelect !== undefined && eventData.multiSelect !== null) {
+    docToSave.multiSelect = eventData.multiSelect;
+  }
+  if (eventData.maxSelections !== undefined && eventData.maxSelections !== null) {
+    docToSave.maxSelections = eventData.maxSelections;
+  }
+  if (eventData.rules !== undefined && eventData.rules !== null && Array.isArray(eventData.rules) && eventData.rules.length > 0) {
+    docToSave.rules = eventData.rules;
+  }
+  if (eventData.groupId !== undefined && eventData.groupId !== null && eventData.groupId !== '') {
+    docToSave.groupId = eventData.groupId;
+  }
 
   return addDoc(eventsCollection, docToSave)
     .catch(async (serverError) => {
@@ -179,10 +210,46 @@ export function updateTournamentEvent(
   eventData: Partial<NewTournamentEvent>
 ) {
   const eventDocRef = doc(firestore, 'cricket-tournaments', tournamentId, 'events', eventId);
-  const docToUpdate = removeUndefined({
-    ...eventData,
+  
+  // Build update object with only defined values
+  const docToUpdate: any = {
     updatedAt: serverTimestamp(),
-  });
+  };
+  
+  // Only include fields that are actually provided and not undefined/null
+  if (eventData.title !== undefined) docToUpdate.title = eventData.title;
+  if (eventData.description !== undefined) docToUpdate.description = eventData.description;
+  if (eventData.eventType !== undefined) docToUpdate.eventType = eventData.eventType;
+  if (eventData.status !== undefined) docToUpdate.status = eventData.status;
+  if (eventData.startDate !== undefined) docToUpdate.startDate = eventData.startDate;
+  if (eventData.endDate !== undefined) docToUpdate.endDate = eventData.endDate;
+  if (eventData.points !== undefined) docToUpdate.points = eventData.points;
+  
+  // Optional fields - only include if they have valid values
+  if (eventData.lockTime !== undefined && eventData.lockTime !== null) {
+    docToUpdate.lockTime = eventData.lockTime;
+  } else if (eventData.lockTime === null) {
+    // Explicitly remove lockTime if set to null
+    docToUpdate.lockTime = null;
+  }
+  if (eventData.difficultyLevel !== undefined && eventData.difficultyLevel !== null) {
+    docToUpdate.difficultyLevel = eventData.difficultyLevel;
+  }
+  if (eventData.options !== undefined && eventData.options !== null) {
+    docToUpdate.options = Array.isArray(eventData.options) && eventData.options.length > 0 ? eventData.options : null;
+  }
+  if (eventData.multiSelect !== undefined && eventData.multiSelect !== null) {
+    docToUpdate.multiSelect = eventData.multiSelect;
+  }
+  if (eventData.maxSelections !== undefined && eventData.maxSelections !== null) {
+    docToUpdate.maxSelections = eventData.maxSelections;
+  }
+  if (eventData.rules !== undefined && eventData.rules !== null) {
+    docToUpdate.rules = Array.isArray(eventData.rules) && eventData.rules.length > 0 ? eventData.rules : null;
+  }
+  if (eventData.groupId !== undefined && eventData.groupId !== null && eventData.groupId !== '') {
+    docToUpdate.groupId = eventData.groupId;
+  }
 
   return updateDoc(eventDocRef, docToUpdate)
     .catch(async (serverError) => {
