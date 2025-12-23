@@ -3,7 +3,6 @@
 import { notFound, useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Clock, ThumbsUp, Star, Share2, ArrowLeft } from 'lucide-react';
-import Image from 'next/image';
 import { AudioPlayer } from '@/components/article/audio-player';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -40,7 +39,6 @@ function ArticleSkeleton() {
                         <Skeleton className="h-10 w-24" />
                     </div>
                 </div>
-                <Skeleton className="relative my-8 aspect-video not-prose" />
                 <div className="space-y-4">
                     <Skeleton className="h-6 w-full" />
                     <Skeleton className="h-6 w-full" />
