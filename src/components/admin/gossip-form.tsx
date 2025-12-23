@@ -34,12 +34,26 @@ type GossipFormProps = {
 export function GossipForm({ onSubmit, defaultValues }: GossipFormProps) {
   const form = useForm<GossipFormValues>({
     resolver: zodResolver(gossipSchema),
-    defaultValues: defaultValues || {},
+    defaultValues: {
+      title: '',
+      source: '',
+      imageUrl: '',
+      ...defaultValues,
+    },
   });
+  
+  const handleSubmit = (data: GossipFormValues) => {
+    // Ensure imageUrl is empty string instead of undefined
+    const cleanData = {
+      ...data,
+      imageUrl: data.imageUrl || '',
+    };
+    onSubmit(cleanData);
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Gossip Details</CardTitle>

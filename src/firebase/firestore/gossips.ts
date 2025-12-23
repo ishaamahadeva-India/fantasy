@@ -20,11 +20,23 @@ type GossipData = {
 
 export function addGossip(firestore: Firestore, data: GossipData) {
   const gossipsCollection = collection(firestore, 'gossips');
-  return addDoc(gossipsCollection, data).catch(async (serverError) => {
+  
+  // Remove undefined values to prevent Firestore errors
+  const cleanData: Record<string, any> = {
+    title: data.title,
+    source: data.source,
+  };
+  
+  // Only include imageUrl if it's defined and not empty
+  if (data.imageUrl && data.imageUrl.trim() !== '') {
+    cleanData.imageUrl = data.imageUrl;
+  }
+  
+  return addDoc(gossipsCollection, cleanData).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
       path: gossipsCollection.path,
       operation: 'create',
-      requestResourceData: data,
+      requestResourceData: cleanData,
     });
     errorEmitter.emit('permission-error', permissionError);
     throw serverError;
@@ -37,11 +49,28 @@ export function updateGossip(
   data: Partial<GossipData>
 ) {
   const gossipDocRef = doc(firestore, 'gossips', gossipId);
-  return updateDoc(gossipDocRef, data).catch(async (serverError) => {
+  
+  // Remove undefined values to prevent Firestore errors
+  const cleanData: Record<string, any> = {};
+  
+  if (data.title !== undefined) {
+    cleanData.title = data.title;
+  }
+  if (data.source !== undefined) {
+    cleanData.source = data.source;
+  }
+  // Only include imageUrl if it's defined and not empty, or explicitly set to empty string to clear it
+  if (data.imageUrl !== undefined) {
+    if (data.imageUrl === '' || (data.imageUrl && data.imageUrl.trim() !== '')) {
+      cleanData.imageUrl = data.imageUrl || '';
+    }
+  }
+  
+  return updateDoc(gossipDocRef, cleanData).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
       path: gossipDocRef.path,
       operation: 'update',
-      requestResourceData: data,
+      requestResourceData: cleanData,
     });
     errorEmitter.emit('permission-error', permissionError);
     throw serverError;

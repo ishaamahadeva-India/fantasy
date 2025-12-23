@@ -63,10 +63,12 @@ export function ImageUpload({ value, onChange, folder, label = 'Image' }: ImageU
       });
     } catch (error) {
       console.error('Error uploading image:', error);
+      // Set empty string instead of leaving undefined
+      onChange('');
       toast({
         variant: 'destructive',
         title: 'Upload failed',
-        description: 'Could not upload the image. Please try again.',
+        description: 'Could not upload the image. Please check CORS settings or try again. You can still save without an image.',
       });
       setPreview(null);
     } finally {
