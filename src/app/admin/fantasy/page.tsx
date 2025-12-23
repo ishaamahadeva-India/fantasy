@@ -73,6 +73,23 @@ export default function AdminFantasyPage() {
     }
   };
 
+  // Helper function to safely parse dates
+  const parseDate = (dateString: string | undefined, fieldName: string, required: boolean = false): Date => {
+    if (!dateString || dateString.trim() === '') {
+      if (required) {
+        throw new Error(`${fieldName} is required`);
+      }
+      return new Date();
+    }
+    
+    const date = new Date(dateString.trim());
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid ${fieldName} format: "${dateString}". Expected format: YYYY-MM-DD or ISO 8601`);
+    }
+    
+    return date;
+  };
+
   const handleCampaignsCSVUpload = async (rows: any[], currentIndex?: number, total?: number) => {
     if (!firestore) {
       throw new Error('Firestore not initialized');
@@ -99,8 +116,8 @@ export default function AdminFantasyPage() {
         movieId: row.movieId?.trim() || undefined,
         movieTitle: row.movieTitle?.trim() || undefined,
         movieLanguage: row.movieLanguage?.trim() || undefined,
-        startDate: row.startDate ? new Date(row.startDate) : new Date(),
-        endDate: row.endDate ? new Date(row.endDate) : undefined,
+        startDate: parseDate(row.startDate, 'startDate'),
+        endDate: row.endDate ? parseDate(row.endDate, 'endDate') : undefined,
         status: (row.status || 'upcoming') as 'upcoming' | 'active' | 'completed',
         visibility: (row.visibility || 'public') as 'public' | 'private' | 'invite_only',
         maxParticipants: row.maxParticipants ? parseInt(row.maxParticipants) : undefined,
@@ -145,7 +162,7 @@ export default function AdminFantasyPage() {
         team1: row.team1?.trim() || teams[0] || '',
         team2: row.team2?.trim() || teams[1] || '',
         venue: row.venue?.trim() || undefined,
-        startTime: row.startTime ? new Date(row.startTime) : new Date(),
+        startTime: parseDate(row.startTime, 'startTime'),
         status: (row.status || 'upcoming') as "upcoming" | "live" | "completed",
         description: row.description?.trim() || undefined,
         entryFee: row.entryFeeType ? {
@@ -187,8 +204,8 @@ export default function AdminFantasyPage() {
         name: row.name.trim(),
         format: (row.format || 'T20') as "T20" | "ODI" | "Test" | "IPL",
         description: row.description?.trim() || undefined,
-        startDate: row.startDate ? new Date(row.startDate) : new Date(),
-        endDate: row.endDate ? new Date(row.endDate) : new Date(),
+        startDate: parseDate(row.startDate, 'startDate', true),
+        endDate: parseDate(row.endDate, 'endDate', true),
         status: (row.status || 'upcoming') as 'upcoming' | 'live' | 'completed',
         teams: teams,
         venue: row.venue?.trim() || undefined,
