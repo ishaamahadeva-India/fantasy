@@ -540,7 +540,8 @@ export default function AdminFantasyPage() {
                     </AlertDialog>
                 </div>
             </div>
-          ))}
+            );
+          })}
            {!matchesLoading && matches?.length === 0 && (
             <div className="text-center p-6 text-muted-foreground">No cricket matches found.</div>
           )}
