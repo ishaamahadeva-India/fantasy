@@ -120,17 +120,25 @@ export default function TournamentPage() {
     setIsJoining(true);
 
     try {
-      const entryData = {
+      const entryData: any = {
         userId: user.uid,
         tournamentId,
-        entryFee: tournament.entryFee?.type === 'paid' && selectedTier ? parseFloat(selectedTier) : undefined,
-        entryFeeTier: tournament.entryFee?.type === 'paid' && selectedTier 
-          ? tournament.entryFee.tiers?.find((t: any) => t.amount.toString() === selectedTier)?.label
-          : undefined,
         paymentStatus: tournament.entryFee?.type === 'free' ? 'paid' as const : 'pending' as const,
-        city: userProfile?.city,
-        state: userProfile?.state,
       };
+
+      // Only add entryFee if it's a paid tournament with a selected tier
+      if (tournament.entryFee?.type === 'paid' && selectedTier) {
+        entryData.entryFee = parseFloat(selectedTier);
+        entryData.entryFeeTier = tournament.entryFee.tiers?.find((t: any) => t.amount.toString() === selectedTier)?.label;
+      }
+
+      // Only add location if available
+      if (userProfile?.city) {
+        entryData.city = userProfile.city;
+      }
+      if (userProfile?.state) {
+        entryData.state = userProfile.state;
+      }
 
       await addTournamentEntry(firestore, entryData);
 

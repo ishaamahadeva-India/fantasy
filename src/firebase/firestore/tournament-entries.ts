@@ -38,8 +38,18 @@ export async function addTournamentEntry(
   entryData: NewTournamentEntry
 ) {
   const entriesCollection = collection(firestore, 'tournament-entries');
+  
+  // Remove undefined values - Firestore doesn't allow undefined
+  const cleanedData: Record<string, any> = {};
+  Object.keys(entryData).forEach((key) => {
+    const value = (entryData as any)[key];
+    if (value !== undefined) {
+      cleanedData[key] = value;
+    }
+  });
+  
   const docToSave = {
-    ...entryData,
+    ...cleanedData,
     joinedAt: serverTimestamp(),
   };
 
