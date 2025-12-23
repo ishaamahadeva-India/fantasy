@@ -1,9 +1,9 @@
 'use client';
 
 import { useParams, notFound, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDoc, useFirestore, useUser, useCollection } from '@/firebase';
-import { doc, collection } from 'firebase/firestore';
+import { doc, collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,23 @@ export default function TournamentPage() {
   
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
   const { data: userProfile } = useDoc(userProfileRef);
+
+  // Fetch user's predictions for this tournament
+  const predictionsRef = firestore ? collection(firestore, 'tournament-predictions') : null;
+  const predictionsQuery = firestore && user && tournamentId
+    ? query(
+        predictionsRef!,
+        where('userId', '==', user.uid),
+        where('tournamentId', '==', tournamentId)
+      )
+    : null;
+  const { data: userPredictions } = useCollection(predictionsQuery);
+
+  // Create a map of event IDs that have predictions
+  const submittedEventIds = useMemo(() => {
+    if (!userPredictions) return new Set<string>();
+    return new Set(userPredictions.map((p: any) => p.eventId));
+  }, [userPredictions]);
 
   const [hasEntry, setHasEntry] = useState(false);
   const [isCheckingEntry, setIsCheckingEntry] = useState(true);
@@ -422,7 +439,7 @@ export default function TournamentPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="live" className="w-full">
-                <TabsList>
+                <TabsList className="grid grid-cols-2 sm:grid-cols-4 gap-1">
                   <TabsTrigger value="live">
                     Live Events
                     {events.filter((e) => e.status === 'live').length > 0 && (
@@ -439,80 +456,110 @@ export default function TournamentPage() {
                       </Badge>
                     )}
                   </TabsTrigger>
+                  {hasEntry && user && (
+                    <TabsTrigger value="submitted">
+                      Submitted
+                      {events.filter((e) => submittedEventIds.has(e.id)).length > 0 && (
+                        <Badge variant="default" className="ml-2 px-1.5 py-0 text-xs bg-green-500">
+                          {events.filter((e) => submittedEventIds.has(e.id)).length}
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="all">All Events</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
                   <div className="space-y-3">
-                    {events.map((event) => (
-                      <div
-                        key={event.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div>
-                          <h4 className="font-semibold">{event.title}</h4>
-                          <p className="text-sm text-muted-foreground">{event.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline">{event.points} pts</Badge>
-                            <Badge
-                              variant={
-                                event.status === 'live'
-                                  ? 'destructive'
-                                  : event.status === 'completed'
-                                  ? 'secondary'
-                                  : 'outline'
-                              }
-                            >
-                              {event.status}
-                            </Badge>
+                    {events.map((event) => {
+                      const hasPrediction = submittedEventIds.has(event.id);
+                      return (
+                        <div
+                          key={event.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold">{event.title}</h4>
+                              {hasPrediction && (
+                                <Badge variant="default" className="bg-green-500 text-white">
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                  Submitted
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{event.description}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="outline">{event.points} pts</Badge>
+                              <Badge
+                                variant={
+                                  event.status === 'live'
+                                    ? 'destructive'
+                                    : event.status === 'completed'
+                                    ? 'secondary'
+                                    : 'outline'
+                                }
+                              >
+                                {event.status}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                                {hasPrediction ? 'Update Prediction' : event.status === 'live' ? 'Predict Now' : 'View Details'}
+                              </Link>
+                            </Button>
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={`/fantasy/cricket/tournament/${tournamentId}/leaderboard`}>
+                                <Trophy className="w-4 h-4" />
+                              </Link>
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
-                              {event.status === 'live' ? 'Predict Now' : 'View Details'}
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/fantasy/cricket/tournament/${tournamentId}/leaderboard`}>
-                              <Trophy className="w-4 h-4" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </TabsContent>
                 <TabsContent value="live" className="mt-4">
                   <div className="space-y-3">
                     {events
                       .filter((e) => e.status === 'live')
-                      .map((event) => (
-                        <div
-                          key={event.id}
-                          className="flex items-center justify-between p-4 border-2 border-primary/30 rounded-lg hover:bg-primary/5 transition-colors bg-primary/5"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold">{event.title}</h4>
-                              <Badge variant="destructive" className="animate-pulse">LIVE</Badge>
+                      .map((event) => {
+                        const hasPrediction = submittedEventIds.has(event.id);
+                        return (
+                          <div
+                            key={event.id}
+                            className="flex items-center justify-between p-4 border-2 border-primary/30 rounded-lg hover:bg-primary/5 transition-colors bg-primary/5"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold">{event.title}</h4>
+                                <Badge variant="destructive" className="animate-pulse">LIVE</Badge>
+                                {hasPrediction && (
+                                  <Badge variant="default" className="bg-green-500 text-white">
+                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    Submitted
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline">{event.points} pts</Badge>
+                                {event.lockTime && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Locks: {new Date(event.lockTime).toLocaleString()}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">{event.points} pts</Badge>
-                              {event.lockTime && (
-                                <Badge variant="outline" className="text-xs">
-                                  Locks: {new Date(event.lockTime).toLocaleString()}
-                                </Badge>
-                              )}
-                            </div>
+                            <Button size="sm" asChild className="ml-4" variant={hasPrediction ? "outline" : "default"}>
+                              <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                                {hasPrediction ? 'Update Prediction' : 'Predict Now'}
+                              </Link>
+                            </Button>
                           </div>
-                          <Button size="sm" asChild className="ml-4">
-                            <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
-                              Predict Now
-                            </Link>
-                          </Button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     {events.filter((e) => e.status === 'live').length === 0 && (
                       <div className="text-center py-12">
                         <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
@@ -536,13 +583,22 @@ export default function TournamentPage() {
                           : (event.startDate as any)?.seconds 
                           ? new Date((event.startDate as any).seconds * 1000)
                           : null;
+                        const hasPrediction = submittedEventIds.has(event.id);
                         return (
                           <div
                             key={event.id}
                             className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                           >
                             <div className="flex-1">
-                              <h4 className="font-semibold">{event.title}</h4>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold">{event.title}</h4>
+                                {hasPrediction && (
+                                  <Badge variant="default" className="bg-green-500 text-white">
+                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    Submitted
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline">{event.points} pts</Badge>
@@ -560,7 +616,7 @@ export default function TournamentPage() {
                             </div>
                             <Button variant="outline" size="sm" asChild className="ml-4">
                               <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
-                                View Details
+                                {hasPrediction ? 'Update Prediction' : 'View Details'}
                               </Link>
                             </Button>
                           </div>
@@ -579,6 +635,91 @@ export default function TournamentPage() {
                     )}
                   </div>
                 </TabsContent>
+                {hasEntry && user && (
+                  <TabsContent value="submitted" className="mt-4">
+                    <div className="space-y-3">
+                      {events
+                        .filter((e) => submittedEventIds.has(e.id))
+                        .map((event) => {
+                          const prediction = userPredictions?.find((p: any) => p.eventId === event.id);
+                          const startDate = event.startDate instanceof Date 
+                            ? event.startDate 
+                            : (event.startDate as any)?.seconds 
+                            ? new Date((event.startDate as any).seconds * 1000)
+                            : null;
+                          return (
+                            <div
+                              key={event.id}
+                              className="flex items-center justify-between p-4 border-2 border-green-200 dark:border-green-800 rounded-lg hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors bg-green-50/50 dark:bg-green-950/10"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="font-semibold">{event.title}</h4>
+                                  <Badge variant="default" className="bg-green-500 text-white">
+                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    Submitted
+                                  </Badge>
+                                  <Badge
+                                    variant={
+                                      event.status === 'live'
+                                        ? 'destructive'
+                                        : event.status === 'completed'
+                                        ? 'secondary'
+                                        : 'outline'
+                                    }
+                                  >
+                                    {event.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
+                                {prediction && (
+                                  <div className="mb-2 p-2 bg-background rounded border border-green-200 dark:border-green-800">
+                                    <p className="text-xs text-muted-foreground mb-1">Your Prediction:</p>
+                                    <p className="text-sm font-medium">
+                                      {Array.isArray(prediction.prediction) 
+                                        ? prediction.prediction.join(', ')
+                                        : prediction.prediction}
+                                    </p>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant="outline">{event.points} pts</Badge>
+                                  {startDate && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Starts: {startDate.toLocaleString()}
+                                    </Badge>
+                                  )}
+                                  {event.lockTime && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Locks: {new Date(event.lockTime).toLocaleString()}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button variant="outline" size="sm" asChild>
+                                  <Link href={`/fantasy/cricket/tournament/${tournamentId}/event/${event.id}`}>
+                                    {event.status === 'live' || event.status === 'upcoming' ? 'Update Prediction' : 'View Prediction'}
+                                  </Link>
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {events.filter((e) => submittedEventIds.has(e.id)).length === 0 && (
+                        <div className="text-center py-12">
+                          <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                          <p className="text-lg font-semibold text-muted-foreground mb-2">
+                            No submitted predictions yet
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Make predictions on live events to see them here
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                )}
               </Tabs>
             </CardContent>
           </Card>
