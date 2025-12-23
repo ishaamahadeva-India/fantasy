@@ -162,17 +162,6 @@ export default function ArticlePage() {
                 </div>
             </div>
         </div>
-        
-        <div className="relative my-8 aspect-video not-prose">
-            <Image 
-                src={articleImage}
-                alt={article.title}
-                fill 
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                className="object-cover rounded-2xl"
-                data-ai-hint="news article"
-            />
-        </div>
 
         {hasNarration && (
             <div className='not-prose my-8'>
