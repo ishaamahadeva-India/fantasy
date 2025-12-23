@@ -157,6 +157,20 @@ service cloud.firestore {
     match /cricket-tournaments/{tournamentId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+      
+      // Tournament Events subcollection - authenticated read, admin write
+      match /events/{eventId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+      
+      // Tournament Participations subcollection - authenticated read/write
+      match /participations/{participationId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update: if isAuthenticated() && 
+                        resource.data.userId == request.auth.uid;
+      }
     }
     
     // User Predictions - users can read/write their own
