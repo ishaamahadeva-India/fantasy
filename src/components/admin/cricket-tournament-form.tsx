@@ -41,7 +41,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useState } from 'react';
 
 const tournamentEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
