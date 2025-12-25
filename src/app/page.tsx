@@ -223,8 +223,25 @@ function SponsoredAd() {
     const startDate = toDate(advertisement.startDate);
     const endDate = toDate(advertisement.endDate);
     
-    if (startDate && now < startDate) return null; // Ad hasn't started yet
-    if (endDate && now > endDate) return null; // Ad has expired
+    console.log('Advertisement date check:', {
+        title: advertisement.title,
+        startDate,
+        endDate,
+        now,
+        startDateValid: startDate ? now >= startDate : true,
+        endDateValid: endDate ? now <= endDate : true
+    });
+    
+    if (startDate && now < startDate) {
+        console.log('Advertisement filtered out: Hasn\'t started yet');
+        return null; // Ad hasn't started yet
+    }
+    if (endDate && now > endDate) {
+        console.log('Advertisement filtered out: Has expired');
+        return null; // Ad has expired
+    }
+    
+    console.log('Rendering advertisement:', advertisement.title);
     
     return (
         <Card className="bg-gradient-to-br from-accent/10">

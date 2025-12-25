@@ -168,10 +168,14 @@ export default function NationalTeamProfilePage() {
                         <SelectValue placeholder="Select Era" />
                     </SelectTrigger>
                     <SelectContent>
-                        {displayEras.map((era: any) => (
-                             <SelectItem key={era.eraName || era} value={era.eraName || era}>
-                               {era.eraName || era}
-                             </SelectItem>
+                        {displayEras.map((era: any, index: number) => {
+                             const eraValue = era.eraName || era || `era-${index}`;
+                             return (
+                               <SelectItem key={eraValue} value={eraValue}>
+                                 {era.eraName || era || 'Unknown Era'}
+                               </SelectItem>
+                             );
+                           })}
                         ))}
                     </SelectContent>
                 </Select>

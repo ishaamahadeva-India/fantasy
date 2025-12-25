@@ -333,7 +333,7 @@ export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None (Standalone Match)</SelectItem>
+                      <SelectItem value="none">None (Standalone Match)</SelectItem>
                       {tournaments && tournaments.length > 0 ? (
                         tournaments.map((tournament: any) => (
                           <SelectItem key={tournament.id} value={tournament.id}>
@@ -341,7 +341,7 @@ export function CricketMatchForm({ onSubmit, defaultValues }: CricketMatchFormPr
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="" disabled>No tournaments available</SelectItem>
+                        <SelectItem value="no-tournaments" disabled>No tournaments available</SelectItem>
                       )}
                     </SelectContent>
                   </Select>

@@ -924,7 +924,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">All Movies (Campaign-wide)</SelectItem>
+                            <SelectItem value="all-movies">All Movies (Campaign-wide)</SelectItem>
                             {form.watch('movies')?.map((movie) => (
                               <SelectItem key={movie.movieId} value={movie.movieId}>
                                 {movie.movieTitle || `Movie ${movie.movieId}`}
