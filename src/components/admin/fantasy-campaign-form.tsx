@@ -900,56 +900,116 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Campaign Events</CardTitle>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button type="button" variant="outline">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Event
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add Event from Template</DialogTitle>
-                    <DialogDescription>
-                      Select a predefined event template to add to this campaign.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex gap-2 mt-4 mb-4">
-                    <Button
-                      type="button"
-                      variant="default"
-                      onClick={addAllEventsFromTemplates}
-                      className="w-full"
-                    >
-                      Select All Events ({EVENT_TEMPLATES.length})
+              <div className="flex gap-2">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Event
                     </Button>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {EVENT_TEMPLATES.map((template, index) => (
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add Event from Template</DialogTitle>
+                      <DialogDescription>
+                        Select a predefined event template to add to this campaign.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-2 mt-4 mb-4">
                       <Button
-                        key={index}
                         type="button"
-                        variant="outline"
-                        className="h-auto p-4 justify-start text-left"
-                        onClick={() => {
-                          addEventFromTemplate(template);
-                        }}
+                        variant="default"
+                        onClick={addAllEventsFromTemplates}
+                        className="w-full"
                       >
-                        <div className="flex-1">
-                          <div className="font-semibold">{template.title}</div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {template.description}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary">{template.eventType}</Badge>
-                            <Badge variant="outline">{template.defaultPoints} points</Badge>
-                          </div>
-                        </div>
+                        Select All Events ({EVENT_TEMPLATES.length})
                       </Button>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {EVENT_TEMPLATES.map((template, index) => (
+                        <Button
+                          key={index}
+                          type="button"
+                          variant="outline"
+                          className="h-auto p-4 justify-start text-left"
+                          onClick={() => {
+                            addEventFromTemplate(template);
+                          }}
+                        >
+                          <div className="flex-1">
+                            <div className="font-semibold">{template.title}</div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {template.description}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="secondary">{template.eventType}</Badge>
+                              <Badge variant="outline">{template.defaultPoints} points</Badge>
+                            </div>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                {campaignType === 'multiple_movies' && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="default">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Comparison Events
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Add Comparison Events</DialogTitle>
+                        <DialogDescription>
+                          These events compare movies head-to-head. Options will be populated with your campaign movies.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex gap-2 mt-4 mb-4">
+                        <Button
+                          type="button"
+                          variant="default"
+                          onClick={() => {
+                            COMPARISON_EVENT_TEMPLATES.forEach(template => addComparisonEventFromTemplate(template));
+                          }}
+                          className="w-full"
+                        >
+                          Select All Comparison Events ({COMPARISON_EVENT_TEMPLATES.length})
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {COMPARISON_EVENT_TEMPLATES.map((template, index) => (
+                          <Button
+                            key={index}
+                            type="button"
+                            variant="outline"
+                            className="h-auto p-4 justify-start text-left"
+                            onClick={() => {
+                              addComparisonEventFromTemplate(template);
+                            }}
+                          >
+                            <div className="flex-1">
+                              <div className="font-semibold">{template.title}</div>
+                              <div className="text-sm text-muted-foreground mt-1">
+                                {template.description}
+                              </div>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Badge variant="secondary">{template.eventType}</Badge>
+                                <Badge variant="outline">{template.defaultPoints} points</Badge>
+                                {template.isIndustryBattle && (
+                                  <Badge variant="destructive">Industry Battle</Badge>
+                                )}
+                              </div>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
