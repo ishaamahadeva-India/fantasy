@@ -6,7 +6,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AppShell } from '@/components/layout/app-shell';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { CookieConsent } from '@/components/cookie-consent';
-import { MobileSplashScreen } from '@/components/mobile-splash-screen';
+import { SplashScreen } from '@/components/mobile-splash-screen';
 
 export const metadata: Metadata = {
   title: 'quizzbuzz',
@@ -66,7 +66,7 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen">
         <ErrorBoundary>
           <FirebaseClientProvider>
-            <MobileSplashScreen />
+            <SplashScreen />
             <AppShell>{children}</AppShell>
           </FirebaseClientProvider>
           <Toaster />

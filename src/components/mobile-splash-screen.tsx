@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Zap, Trophy, Users } from 'lucide-react';
@@ -9,18 +8,11 @@ import Image from 'next/image';
 
 const SPLASH_STORAGE_KEY = 'quizzbuzz-splash-seen';
 
-export function MobileSplashScreen() {
-  const isMobile = useIsMobile();
+export function SplashScreen() {
   const [showSplash, setShowSplash] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Only show on mobile devices
-    if (!isMobile) {
-      setIsLoading(false);
-      return;
-    }
-
     // Check if user has seen splash screen before
     const hasSeenSplash = localStorage.getItem(SPLASH_STORAGE_KEY);
     
@@ -31,7 +23,7 @@ export function MobileSplashScreen() {
     } else {
       setIsLoading(false);
     }
-  }, [isMobile]);
+  }, []);
 
   const handleGetStarted = () => {
     // Mark splash as seen
@@ -39,8 +31,8 @@ export function MobileSplashScreen() {
     setShowSplash(false);
   };
 
-  // Don't render anything on desktop or while loading
-  if (!isMobile || isLoading) {
+  // Don't render anything while loading
+  if (isLoading) {
     return null;
   }
 
@@ -52,7 +44,7 @@ export function MobileSplashScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[9999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6"
+          className="fixed inset-0 z-[9999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12"
         >
           {/* Animated Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -98,13 +90,13 @@ export function MobileSplashScreen() {
               transition={{ delay: 0.3, type: "spring", stiffness: 200, damping: 15 }}
               className="relative"
             >
-              <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 p-4 shadow-2xl shadow-primary/50 flex items-center justify-center">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 p-4 shadow-2xl shadow-primary/50 flex items-center justify-center">
                 <Image
                   src="/icons/icon-512x512.png"
                   alt="quizzbuzz"
                   width={120}
                   height={120}
-                  className="rounded-2xl"
+                  className="rounded-2xl md:w-[140px] md:h-[140px]"
                   priority
                 />
               </div>
@@ -133,10 +125,10 @@ export function MobileSplashScreen() {
               transition={{ delay: 0.5, duration: 0.5 }}
               className="space-y-2"
             >
-              <h1 className="text-5xl font-bold font-headline bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
+              <h1 className="text-5xl md:text-6xl font-bold font-headline bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
                 quizzbuzz
               </h1>
-              <p className="text-lg text-muted-foreground font-medium">
+              <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-md">
                 The premier subscription platform for discerning learners
               </p>
             </motion.div>
@@ -178,14 +170,14 @@ export function MobileSplashScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
-              className="w-full pt-4"
+              className="w-full max-w-sm pt-4"
             >
               <Button
                 onClick={handleGetStarted}
                 size="lg"
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30 transition-all duration-300"
+                className="w-full h-14 md:h-16 text-lg md:text-xl font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30 transition-all duration-300"
               >
-                <Sparkles className="w-5 h-5 mr-2" />
+                <Sparkles className="w-5 h-5 md:w-6 md:h-6 mr-2" />
                 Get Started
               </Button>
             </motion.div>
