@@ -496,7 +496,7 @@ export default function CricketFanZonePage() {
         <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-5">
           <TabsTrigger value="cricketers">Cricketers</TabsTrigger>
           <TabsTrigger value="national-teams">National Teams</TabsTrigger>
-          <TabsTrigger value="ip-teams">IP Teams</TabsTrigger>
+          <TabsTrigger value="ip-teams">IPL Teams</TabsTrigger>
           <TabsTrigger value="trending">
             <Flame className="w-4 h-4 mr-2" />
             Trending

@@ -85,7 +85,7 @@ export function TeamForm({ onSubmit, defaultValues }: TeamFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="ip">IP (League Team)</SelectItem>
+                      <SelectItem value="ip">IPL (League Team)</SelectItem>
                       <SelectItem value="national">National Team</SelectItem>
                     </SelectContent>
                   </Select>

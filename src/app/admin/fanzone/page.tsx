@@ -416,7 +416,7 @@ export default function AdminFanZonePage() {
             <TabsContent value="teams" className="m-0">
               <div className="p-6">
                 <div className='flex justify-between items-center mb-4'>
-                    <h3 className="text-lg font-semibold">Teams (IP & National)</h3>
+                    <h3 className="text-lg font-semibold">Teams (IPL & National)</h3>
                     <div className="flex gap-2">
                       <CSVUpload
                         onUpload={handleTeamsCSVUpload}

@@ -200,7 +200,7 @@ export default function IpTeamProfilePage() {
         <div className="md:col-span-2 space-y-6">
           <div>
             <div className="mt-2 flex items-center gap-2">
-              <Badge variant="secondary">IP League</Badge>
+              <Badge variant="secondary">IPL League</Badge>
             </div>
           </div>
 

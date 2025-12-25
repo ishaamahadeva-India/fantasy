@@ -58,7 +58,7 @@ export default function FanZoneAnalyticsPage() {
 
   // Team type distribution
   const teamTypeDistribution = teams?.reduce((acc, team) => {
-    const type = team.type === 'ip' ? 'IP Teams' : 'National Teams';
+    const type = team.type === 'ip' ? 'IPL Teams' : 'National Teams';
     acc[type] = (acc[type] || 0) + 1;
     return acc;
   }, {} as Record<string, number>) || {};
@@ -127,7 +127,7 @@ export default function FanZoneAnalyticsPage() {
           <CardContent>
             <div className="text-2xl font-bold">{totalTeams}</div>
             <p className="text-xs text-muted-foreground">
-              {teams?.filter(t => t.type === 'ip').length || 0} IP, {teams?.filter(t => t.type === 'national').length || 0} National
+              {teams?.filter(t => t.type === 'ip').length || 0} IPL, {teams?.filter(t => t.type === 'national').length || 0} National
             </p>
           </CardContent>
         </Card>
@@ -227,7 +227,7 @@ export default function FanZoneAnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Team Type Distribution</CardTitle>
-            <CardDescription>IP vs National teams</CardDescription>
+            <CardDescription>IPL vs National teams</CardDescription>
           </CardHeader>
           <CardContent>
             {teamTypeData.length > 0 ? (
