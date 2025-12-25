@@ -10,7 +10,7 @@ import { SocialShare } from '@/components/social-share';
 import { useDoc, useFirestore, useCollection, useUser } from '@/firebase';
 import { doc, collection, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
 
 type FantasyCampaignWithId = FantasyCampaign & { id: string };
