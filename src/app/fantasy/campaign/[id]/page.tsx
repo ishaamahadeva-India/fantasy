@@ -16,15 +16,22 @@ import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
 type FantasyCampaignWithId = FantasyCampaign & { id: string };
 type FantasyEventWithId = FantasyEvent & { id: string };
 
+// Helper function to convert various date types to Date
+function toDate(dateValue: any): Date {
+    if (!dateValue) return new Date();
+    if (dateValue instanceof Date) return dateValue;
+    if (dateValue instanceof Timestamp) return dateValue.toDate();
+    if (dateValue && typeof dateValue.toDate === 'function') return dateValue.toDate();
+    if (typeof dateValue === 'number') return new Date(dateValue);
+    if (typeof dateValue === 'string') return new Date(dateValue);
+    return new Date();
+}
+
 function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignId: string }) {
     // Determine event status based on dates
     const now = new Date();
-    const startDate = event.startDate instanceof Date ? event.startDate : 
-                     event.startDate instanceof Timestamp ? event.startDate.toDate() :
-                     event.startDate?.toDate ? event.startDate.toDate() : new Date();
-    const endDate = event.endDate instanceof Date ? event.endDate :
-                   event.endDate instanceof Timestamp ? event.endDate.toDate() :
-                   event.endDate?.toDate ? event.endDate.toDate() : null;
+    const startDate = toDate(event.startDate);
+    const endDate = event.endDate ? toDate(event.endDate) : null;
     
     const isCompleted = event.status === 'completed' || (endDate && now > endDate);
     const isLive = event.status === 'live' || (startDate <= now && (!endDate || now <= endDate));
@@ -122,12 +129,8 @@ export default function FantasyMovieCampaignPage() {
     const completed: FantasyEventWithId[] = [];
 
     events.forEach(event => {
-      const startDate = event.startDate instanceof Date ? event.startDate : 
-                       event.startDate instanceof Timestamp ? event.startDate.toDate() :
-                       event.startDate?.toDate ? event.startDate.toDate() : new Date();
-      const endDate = event.endDate instanceof Date ? event.endDate :
-                     event.endDate instanceof Timestamp ? event.endDate.toDate() :
-                     event.endDate?.toDate ? event.endDate.toDate() : null;
+      const startDate = toDate(event.startDate);
+      const endDate = event.endDate ? toDate(event.endDate) : null;
       
       if (event.status === 'completed' || (endDate && now > endDate)) {
         completed.push(event);
