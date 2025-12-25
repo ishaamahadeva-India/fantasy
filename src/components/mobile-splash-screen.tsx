@@ -16,15 +16,22 @@ export function SplashScreen() {
     // Mark splash as seen
     localStorage.setItem(SPLASH_STORAGE_KEY, 'true');
     setShowSplash(false);
-    // Show the app content and restore body scroll
+    // Show the app content and restore body/html scroll
     const appContent = document.getElementById('app-content');
     const body = document.body;
+    const html = document.documentElement;
     if (appContent) {
       appContent.style.display = 'block';
       appContent.style.visibility = 'visible';
+      appContent.style.opacity = '1';
     }
     if (body) {
       body.style.overflow = '';
+      body.style.height = '';
+    }
+    if (html) {
+      html.style.overflow = '';
+      html.style.height = '';
     }
   };
 
@@ -35,15 +42,22 @@ export function SplashScreen() {
     // Hide app content initially if splash should show
     const appContent = document.getElementById('app-content');
     const body = document.body;
+    const html = document.documentElement;
     
     if (!hasSeenSplash) {
-      // Hide app content and prevent body scroll while splash is showing
+      // Hide app content and prevent body/html scroll while splash is showing
       if (appContent) {
         appContent.style.display = 'none';
         appContent.style.visibility = 'hidden';
+        appContent.style.opacity = '0';
       }
       if (body) {
         body.style.overflow = 'hidden';
+        body.style.height = '100vh';
+      }
+      if (html) {
+        html.style.overflow = 'hidden';
+        html.style.height = '100vh';
       }
       setShowSplash(true);
       // Hide loading after a brief delay for smooth transition
@@ -63,9 +77,15 @@ export function SplashScreen() {
       if (appContent) {
         appContent.style.display = 'block';
         appContent.style.visibility = 'visible';
+        appContent.style.opacity = '1';
       }
       if (body) {
         body.style.overflow = '';
+        body.style.height = '';
+      }
+      if (html) {
+        html.style.overflow = '';
+        html.style.height = '';
       }
       setIsLoading(false);
     }
