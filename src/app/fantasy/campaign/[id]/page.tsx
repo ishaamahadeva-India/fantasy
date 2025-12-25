@@ -50,7 +50,7 @@ function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignI
 
     // Use direct points property or basePoints from pointsConfig
     const points = event.points || event.pointsConfig?.basePoints || 0;
-    const userScore = event.userScore || 0; // This would come from user's predictions
+    // TODO: Fetch user's actual score from their predictions/participations
 
     return (
         <Card className={`overflow-hidden flex flex-col ${isCompleted ? 'bg-white/5' : ''}`}>
@@ -78,14 +78,10 @@ function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignI
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
-                 {isCompleted && userScore > 0 ? (
-                    <p>Your Score: <span className="font-bold text-primary font-code">{userScore}</span></p>
-                ) : (
-                    <div className="flex items-center gap-2 text-amber-400">
-                        <Trophy className="w-4 h-4" />
-                        <span className="font-semibold">{points} Points</span>
-                    </div>
-                )}
+                <div className="flex items-center gap-2 text-amber-400">
+                    <Trophy className="w-4 h-4" />
+                    <span className="font-semibold">{points} Points</span>
+                </div>
                 {event.description && (
                     <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
                 )}
@@ -182,7 +178,8 @@ export default function FantasyMovieCampaignPage() {
 
   const campaignWithId = campaign as FantasyCampaignWithId;
   const movieTitle = getMovieTitle(campaignWithId);
-  const totalPoints = categorizedEvents.completed.reduce((acc, event) => acc + (event.userScore || 0), 0);
+  // TODO: Calculate total points from user's actual predictions/participations
+  const totalPoints = 0;
   
   // TODO: Fetch actual leaderboard data from Firestore
   const leaderboardData: { name: string; score: number; rank: number }[] = [
