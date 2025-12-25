@@ -153,7 +153,7 @@ export function ImageAdGate({
     };
 
     checkAndLoadAd();
-  }, [firestore, user?.uid, tournamentId, campaignId, required, hasViewed]);
+  }, [firestore, user?.uid, tournamentId, campaignId, required]);
 
   const handleAdComplete = async (advertisementId: string) => {
     if (!firestore || !user?.uid || !ad) {
