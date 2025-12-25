@@ -51,8 +51,13 @@ export function ImageAdGate({
   }, []);
 
   useEffect(() => {
-    // Don't run if already viewed or completed
-    if (hasViewed || isLoading === false) {
+    // Don't run if already viewed
+    if (hasViewed) {
+      return;
+    }
+    
+    // Don't run if already completed loading (and no ad found)
+    if (isLoading === false && !ad) {
       return;
     }
     
