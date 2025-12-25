@@ -36,6 +36,8 @@ const navItems = [
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
+const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'adminW@fantasy.com';
+
 export function MainNav() {
   const pathname = usePathname();
   const { user } = useUser();
@@ -43,6 +45,8 @@ export function MainNav() {
   const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
   const { data: userProfile } = useDoc(userProfileRef);
 
+  // Only super admin can see admin link
+  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
 
   return (
     <div className="flex flex-col justify-between h-full p-2">
@@ -73,7 +77,7 @@ export function MainNav() {
             </SidebarMenuItem>
           );
         })}
-        {userProfile?.isAdmin && (
+        {isSuperAdmin && (
             <SidebarMenuItem>
                 <SidebarMenuButton
                     asChild

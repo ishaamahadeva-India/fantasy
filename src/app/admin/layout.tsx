@@ -99,25 +99,21 @@ function AdminSidebar() {
   );
 }
 
-const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'admin@fantasy.com';
+const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'adminW@fantasy.com';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, isLoading: userLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
   
-  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
-  const { data: userProfile, isLoading: profileLoading } = useDoc(userProfileRef);
-  
-  // Check superadmin first (from Firebase Auth, available immediately on refresh)
+  // Check superadmin ONLY (from Firebase Auth, available immediately on refresh)
   const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
   
-  // Only wait for profile loading if user is not superadmin
-  const isLoading = userLoading || (!isSuperAdmin && profileLoading);
+  // Only wait for user loading
+  const isLoading = userLoading;
   
-  // Check both userProfile.isAdmin and user email (for super admin)
-  // Superadmin is always authorized, even if profile hasn't loaded yet
-  const isAuthorized = isSuperAdmin || userProfile?.isAdmin === true;
+  // ONLY super admin is authorized - no other users can access admin panel
+  const isAuthorized = isSuperAdmin;
 
   useEffect(() => {
     // Only redirect if loading is finished AND we're sure the user is not authorized
@@ -127,13 +123,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         router.replace('/');
         return;
       }
-      // If user is logged in but not authorized (and not superadmin), redirect to home
-      // Superadmin should never be redirected
-      if (!isAuthorized && !isSuperAdmin) {
+      // If user is logged in but is NOT the super admin, redirect to home
+      if (!isSuperAdmin) {
         router.replace('/');
       }
     }
-  }, [isLoading, isAuthorized, isSuperAdmin, router, user]);
+  }, [isLoading, isSuperAdmin, router, user]);
 
 
   // While we are verifying the user's authentication state and admin role,
