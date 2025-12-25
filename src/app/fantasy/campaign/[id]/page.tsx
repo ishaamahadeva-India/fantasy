@@ -264,13 +264,16 @@ export default function FantasyMovieCampaignPage() {
   const [showAdGate, setShowAdGate] = useState(false);
   const hasCheckedAdRef = useRef(false);
 
-  const handleAdGateComplete = () => {
+  const handleAdGateComplete = useCallback((adViewId?: string, advertisementId?: string) => {
+    if (adViewId && user?.uid) {
+      localStorage.setItem(`ad-viewed-${campaignId}-${user.uid}`, 'true');
+    }
     setShowAdGate(false);
-  };
+  }, [campaignId, user?.uid]);
 
-  const handleAdGateCancel = () => {
+  const handleAdGateCancel = useCallback(() => {
     setShowAdGate(false);
-  };
+  }, []);
 
   // Show ad gate when user first views the campaign (if not already viewed)
   useEffect(() => {
