@@ -6,7 +6,7 @@ import { ArrowRight, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import type { UserProfile, FantasyCampaign, Movie } from '@/lib/types';
-import { doc, collection, query, where, or, orderBy } from 'firebase/firestore';
+import { doc, collection, query, where, or, orderBy, Timestamp } from 'firebase/firestore';
 import { DisclaimerModal } from '@/components/fantasy/disclaimer-modal';
 import { useState, useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -297,10 +297,25 @@ export default function MovieFantasyPage() {
         
         // Sort by startDate descending (client-side)
         filtered.sort((a, b) => {
-            const dateA = a.startDate instanceof Date ? a.startDate.getTime() : 
-                         a.startDate?.toMillis ? a.startDate.toMillis() : 0;
-            const dateB = b.startDate instanceof Date ? b.startDate.getTime() : 
-                         b.startDate?.toMillis ? b.startDate.toMillis() : 0;
+            // Handle different date types: Date, Firestore Timestamp, or number
+            const getDateValue = (date: any): number => {
+                if (date instanceof Date) {
+                    return date.getTime();
+                }
+                if (date instanceof Timestamp) {
+                    return date.toMillis();
+                }
+                if (date && typeof date.toMillis === 'function') {
+                    return date.toMillis();
+                }
+                if (typeof date === 'number') {
+                    return date;
+                }
+                return 0;
+            };
+            
+            const dateA = getDateValue(a.startDate);
+            const dateB = getDateValue(b.startDate);
             return dateB - dateA;
         });
         
