@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { serverTimestamp } from 'firebase/firestore';
 import { addDoc } from 'firebase/firestore';
-import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
+import type { FantasyCampaign, FantasyEvent, Movie } from '@/lib/types';
 
 // Helper to convert various date types to Date objects
 const toDate = (value: any): Date | null => {
