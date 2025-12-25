@@ -244,14 +244,14 @@ export default function FantasyMovieCampaignPage() {
                     <p className="mt-4 text-muted-foreground">{campaignWithId.description}</p>
                 )}
             </div>
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-[200px]'>
                 <Card className="text-center p-4">
-                    <CardDescription>Total Points</CardDescription>
-                    <CardTitle className="font-code text-4xl text-primary">{totalPoints}</CardTitle>
+                    <CardDescription className="mb-2">Total Points</CardDescription>
+                    <CardTitle className="font-code text-4xl text-primary break-words">{totalPoints}</CardTitle>
                 </Card>
-                 <Card className="text-center p-4">
-                    <CardDescription>Your Rank</CardDescription>
-                    <CardTitle className="font-code text-4xl text-primary">#{currentUserRank}</CardTitle>
+                <Card className="text-center p-4">
+                    <CardDescription className="mb-2">Your Rank</CardDescription>
+                    <CardTitle className="font-code text-4xl text-primary break-words">#{currentUserRank}</CardTitle>
                 </Card>
             </div>
         </div>

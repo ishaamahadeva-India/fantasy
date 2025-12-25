@@ -933,7 +933,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Movie (Optional - leave blank for campaign-wide event)</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select movie or leave blank" />
@@ -994,7 +994,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Difficulty Level</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select difficulty" />
@@ -1032,7 +1032,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Event Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -1063,7 +1063,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || 'upcoming'}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />

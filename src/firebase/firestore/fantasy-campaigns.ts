@@ -56,11 +56,16 @@ type NewFantasyCampaign = {
 type NewFantasyEvent = {
   title: string;
   description: string;
-  eventType: 'choice_selection' | 'numeric_prediction' | 'draft_selection';
-  status: 'upcoming' | 'live' | 'completed';
+  eventType: 'choice_selection' | 'numeric_prediction' | 'draft_selection' | 
+             'opening_day_collection' | 'weekend_collection' | 'lifetime_gross' |
+             'imdb_rating' | 'occupancy_percentage' | 'day1_talk' |
+             'awards_rank' | 'ott_debut_rank';
+  status: 'upcoming' | 'live' | 'completed' | 'locked';
   startDate: Date;
   endDate: Date;
   points: number;
+  movieId?: string; // For multiple movie campaigns
+  difficultyLevel?: 'easy' | 'medium' | 'hard';
   options?: string[];
   rules?: string[];
   draftConfig?: {
@@ -68,6 +73,7 @@ type NewFantasyEvent = {
     roles: Array<{ id: string; title: string; players: string[] }>;
     playerCredits: Record<string, number>;
   };
+  lockTime?: Date;
 };
 
 // Helper function to remove undefined values from an object recursively
@@ -246,13 +252,53 @@ export function addCampaignEvent(
   eventData: NewFantasyEvent
 ) {
   const eventsCollection = collection(firestore, 'fantasy-campaigns', campaignId, 'events');
-  const docToSave = {
-    ...eventData,
+  
+  // Build the document to save, explicitly including required fields
+  const docToSave: Record<string, any> = {
+    title: eventData.title,
+    description: eventData.description,
+    eventType: eventData.eventType,
+    status: eventData.status,
+    startDate: eventData.startDate,
+    endDate: eventData.endDate,
+    points: eventData.points,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  
+  // Add optional fields only if they have values
+  if (eventData.movieId && eventData.movieId.trim() !== '') {
+    docToSave.movieId = eventData.movieId;
+  }
+  if (eventData.difficultyLevel) {
+    docToSave.difficultyLevel = eventData.difficultyLevel;
+  }
+  if (eventData.options && eventData.options.length > 0) {
+    docToSave.options = eventData.options;
+  }
+  if (eventData.rules && eventData.rules.length > 0) {
+    docToSave.rules = eventData.rules;
+  }
+  if (eventData.draftConfig) {
+    docToSave.draftConfig = eventData.draftConfig;
+  }
+  if (eventData.lockTime) {
+    docToSave.lockTime = eventData.lockTime;
+  }
+  
+  // Clean undefined values
+  const cleanData = removeUndefinedValues(docToSave);
+  
+  console.log('Saving event to Firestore:', {
+    campaignId,
+    eventTitle: eventData.title,
+    eventType: eventData.eventType,
+    status: eventData.status,
+    points: eventData.points,
+    cleanData
+  });
 
-  return addDoc(eventsCollection, docToSave)
+  return addDoc(eventsCollection, cleanData)
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: eventsCollection.path,

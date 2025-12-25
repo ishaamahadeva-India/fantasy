@@ -39,12 +39,32 @@ export default function NewMultipleMoviesCampaignPage() {
       // Add events if any
       if (events && events.length > 0) {
         console.log(`Adding ${events.length} events to campaign ${campaignId}`);
+        console.log('Events data:', events);
         for (const event of events) {
           try {
-            await addCampaignEvent(firestore, campaignId, event);
+            // Ensure all required fields are present
+            const eventToSave = {
+              title: event.title,
+              description: event.description || '',
+              eventType: event.eventType,
+              status: event.status || 'upcoming',
+              startDate: event.startDate || new Date(),
+              endDate: event.endDate || new Date(),
+              points: event.points || 0,
+              movieId: event.movieId,
+              difficultyLevel: event.difficultyLevel,
+              options: event.options,
+              rules: event.rules,
+              draftConfig: event.draftConfig,
+              lockTime: event.lockTime,
+            };
+            
+            console.log('Saving event:', eventToSave);
+            await addCampaignEvent(firestore, campaignId, eventToSave);
             console.log('Event added successfully:', event.title);
           } catch (error) {
             console.error('Error adding event:', error);
+            console.error('Event data that failed:', event);
             toast({
               variant: 'destructive',
               title: 'Warning',
@@ -52,6 +72,7 @@ export default function NewMultipleMoviesCampaignPage() {
             });
           }
         }
+        console.log('Finished adding all events');
       } else {
         console.log('No events to add to campaign');
       }
