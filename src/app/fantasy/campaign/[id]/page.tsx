@@ -299,10 +299,33 @@ export default function FantasyMovieCampaignPage() {
                 <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             </TabsList>
             <TabsContent value="events" className="mt-6">
+                {eventsError && (
+                    <Card className="mb-6 border-destructive">
+                        <CardContent className="pt-6">
+                            <div className="text-destructive">
+                                <strong>Error loading events:</strong> {eventsError.message || 'Unknown error'}
+                                <p className="text-sm mt-2">Please check Firestore rules and ensure events subcollection has read permissions.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+                
+                {!eventsLoading && events && events.length === 0 && (
+                    <Card className="mb-6">
+                        <CardContent className="pt-6">
+                            <div className="text-muted-foreground text-center">
+                                <p className="font-semibold mb-2">No events found for this campaign.</p>
+                                <p className="text-sm">Events may not have been created yet, or there may be a Firestore rules issue.</p>
+                                <p className="text-xs mt-2">Check: Firestore Console → fantasy-campaigns → {campaignId} → events</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+                
                 <div className="space-y-8">
                     <div className='space-y-4'>
                         <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                            <Trophy className="text-primary"/> Live Events
+                            <Trophy className="text-primary"/> Live Events ({categorizedEvents.live.length})
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categorizedEvents.live.length > 0 ? (
@@ -319,7 +342,7 @@ export default function FantasyMovieCampaignPage() {
 
                     <div className='space-y-4'>
                         <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                            <Clock className="text-primary"/> Upcoming Events
+                            <Clock className="text-primary"/> Upcoming Events ({categorizedEvents.upcoming.length})
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categorizedEvents.upcoming.length > 0 ? (
@@ -336,7 +359,7 @@ export default function FantasyMovieCampaignPage() {
                     
                     <div className='space-y-4'>
                         <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                            <ListOrdered className="text-primary"/> Completed Events
+                            <ListOrdered className="text-primary"/> Completed Events ({categorizedEvents.completed.length})
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categorizedEvents.completed.length > 0 ? (
@@ -350,6 +373,28 @@ export default function FantasyMovieCampaignPage() {
                             )}
                         </div>
                     </div>
+                    
+                    {/* Debug: Show all events if none are categorized */}
+                    {events && events.length > 0 && 
+                     categorizedEvents.live.length === 0 && 
+                     categorizedEvents.upcoming.length === 0 && 
+                     categorizedEvents.completed.length === 0 && (
+                        <Card className="border-yellow-500">
+                            <CardHeader>
+                                <CardTitle className="text-yellow-600">⚠️ Debug: All Events (Uncategorized)</CardTitle>
+                                <CardDescription>
+                                    {events.length} event(s) found but not categorized. Check dates and status.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {events.map(event => (
+                                        <EventCard key={event.id} event={event} campaignId={campaignId} />
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </TabsContent>
             <TabsContent value="leaderboard" className="mt-6">
