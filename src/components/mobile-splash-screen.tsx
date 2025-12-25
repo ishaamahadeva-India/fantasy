@@ -16,10 +16,15 @@ export function SplashScreen() {
     // Mark splash as seen
     localStorage.setItem(SPLASH_STORAGE_KEY, 'true');
     setShowSplash(false);
-    // Show the app content
+    // Show the app content and restore body scroll
     const appContent = document.getElementById('app-content');
+    const body = document.body;
     if (appContent) {
       appContent.style.display = 'block';
+      appContent.style.visibility = 'visible';
+    }
+    if (body) {
+      body.style.overflow = '';
     }
   };
 
@@ -29,11 +34,16 @@ export function SplashScreen() {
     
     // Hide app content initially if splash should show
     const appContent = document.getElementById('app-content');
+    const body = document.body;
     
     if (!hasSeenSplash) {
-      // Hide app content while splash is showing
+      // Hide app content and prevent body scroll while splash is showing
       if (appContent) {
         appContent.style.display = 'none';
+        appContent.style.visibility = 'hidden';
+      }
+      if (body) {
+        body.style.overflow = 'hidden';
       }
       setShowSplash(true);
       // Hide loading after a brief delay for smooth transition
@@ -52,6 +62,10 @@ export function SplashScreen() {
       // User has seen splash, show app content immediately
       if (appContent) {
         appContent.style.display = 'block';
+        appContent.style.visibility = 'visible';
+      }
+      if (body) {
+        body.style.overflow = '';
       }
       setIsLoading(false);
     }
@@ -70,8 +84,19 @@ export function SplashScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed top-0 left-0 right-0 bottom-0 z-[99999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12 w-full h-full min-h-screen"
-          style={{ width: '100vw', height: '100vh' }}
+          className="fixed top-0 left-0 z-[99999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12"
+          style={{ 
+            width: '100vw', 
+            height: '100vh',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            margin: 0,
+            padding: '1.5rem',
+            overflow: 'hidden'
+          }}
         >
           {/* Animated Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
