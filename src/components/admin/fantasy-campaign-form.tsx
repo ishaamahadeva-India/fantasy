@@ -102,6 +102,24 @@ const campaignSchema = z.object({
   }).default({ type: 'free' }),
   // Events
   events: z.array(eventSchema).optional(),
+}).refine((data) => {
+  // Require movieId for single_movie campaigns
+  if (data.campaignType === 'single_movie') {
+    return data.movieId && data.movieId.trim() !== '';
+  }
+  return true;
+}, {
+  message: 'Please select a movie for single movie campaign.',
+  path: ['movieId'],
+}).refine((data) => {
+  // Require movies array for multiple_movies campaigns
+  if (data.campaignType === 'multiple_movies') {
+    return data.movies && data.movies.length > 0;
+  }
+  return true;
+}, {
+  message: 'Please add at least one movie for multiple movies campaign.',
+  path: ['movies'],
 });
 
 type CampaignFormValues = z.infer<typeof campaignSchema>;
@@ -224,8 +242,16 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   name="movieId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Movie</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <FormLabel>Movie <span className="text-destructive">*</span></FormLabel>
+                      <Select 
+                        onValueChange={(value) => {
+                          // Only set value if it's a valid movie ID (not loading or no-movies)
+                          if (value && value !== 'loading' && value !== 'no-movies') {
+                            field.onChange(value);
+                          }
+                        }} 
+                        value={field.value || ''}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a movie" />

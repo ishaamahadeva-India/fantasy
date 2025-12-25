@@ -17,8 +17,8 @@ export default function NewFantasyCampaignPage() {
       // Extract events from campaign data
       const { events, ...campaignData } = data;
       
-      // Validate campaign type
-      if (campaignData.campaignType === 'single_movie' && !campaignData.movieId) {
+      // Validate campaign type (additional check - schema validation should catch this, but double-check)
+      if (campaignData.campaignType === 'single_movie' && (!campaignData.movieId || campaignData.movieId.trim() === '')) {
         toast({
           variant: 'destructive',
           title: 'Validation Error',
