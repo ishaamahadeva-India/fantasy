@@ -20,6 +20,16 @@ export function SplashScreen() {
       setShowSplash(true);
       // Hide loading after a brief delay for smooth transition
       setTimeout(() => setIsLoading(false), 100);
+      
+      // Auto-dismiss after 4 seconds (between 3-5 seconds)
+      const autoDismissTimer = setTimeout(() => {
+        handleGetStarted();
+      }, 4000);
+
+      // Cleanup timer on unmount
+      return () => {
+        clearTimeout(autoDismissTimer);
+      };
     } else {
       setIsLoading(false);
     }
@@ -44,7 +54,7 @@ export function SplashScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[9999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12"
+          className="fixed inset-0 z-[9999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12 w-screen h-screen"
         >
           {/* Animated Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -72,7 +82,7 @@ export function SplashScreen() {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="absolute bottom-20 right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"
+              className="absolute bottom-20 right-10 md:bottom-40 md:right-40 w-40 h-40 md:w-80 md:h-80 bg-primary/20 rounded-full blur-3xl"
             />
           </div>
 
@@ -81,7 +91,7 @@ export function SplashScreen() {
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
-            className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-sm w-full"
+            className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-sm md:max-w-lg w-full"
           >
             {/* Logo/Icon */}
             <motion.div
