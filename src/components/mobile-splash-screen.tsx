@@ -12,6 +12,12 @@ export function SplashScreen() {
   const [showSplash, setShowSplash] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleGetStarted = () => {
+    // Mark splash as seen
+    localStorage.setItem(SPLASH_STORAGE_KEY, 'true');
+    setShowSplash(false);
+  };
+
   useEffect(() => {
     // Check if user has seen splash screen before
     const hasSeenSplash = localStorage.getItem(SPLASH_STORAGE_KEY);
@@ -34,12 +40,6 @@ export function SplashScreen() {
       setIsLoading(false);
     }
   }, []);
-
-  const handleGetStarted = () => {
-    // Mark splash as seen
-    localStorage.setItem(SPLASH_STORAGE_KEY, 'true');
-    setShowSplash(false);
-  };
 
   // Don't render anything while loading
   if (isLoading) {
