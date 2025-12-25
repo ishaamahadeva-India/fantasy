@@ -29,23 +29,29 @@ export function ImageAdGate({
   const [isLoading, setIsLoading] = useState(true);
   const [hasViewed, setHasViewed] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
+  const hasRunRef = useRef(false);
   
   // Use refs to store callbacks to avoid infinite loops from function recreation
   const onCompleteRef = useRef(onComplete);
   const onCancelRef = useRef(onCancel);
   
-  // Update refs when callbacks change
+  // Update refs when callbacks change (this doesn't trigger main effect)
   useEffect(() => {
     onCompleteRef.current = onComplete;
     onCancelRef.current = onCancel;
   }, [onComplete, onCancel]);
 
   useEffect(() => {
+    // Prevent multiple runs
+    if (hasRunRef.current) return;
+    
     const checkAndLoadAd = async () => {
-      if (!firestore || !user || (!tournamentId && !campaignId)) {
+      if (!firestore || !user?.uid || (!tournamentId && !campaignId)) {
         setIsLoading(false);
         return;
       }
+
+      hasRunRef.current = true; // Mark as run
 
       try {
         const targetId = tournamentId || campaignId!;
@@ -98,6 +104,7 @@ export function ImageAdGate({
         }
 
         setAd(selectedAd);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error loading ad:', error);
         // On error, allow entry (don't block user)
@@ -107,18 +114,16 @@ export function ImageAdGate({
         } else {
           onCompleteRef.current();
         }
-      } finally {
-        setIsLoading(false);
       }
     };
 
     checkAndLoadAd();
-  }, [firestore, user, tournamentId, campaignId, required]);
+  }, [firestore, user?.uid, tournamentId, campaignId, required]);
 
   const handleAdComplete = async (advertisementId: string) => {
-    if (!firestore || !user || !ad) {
+    if (!firestore || !user?.uid || !ad) {
       // If missing required data, still allow entry
-      onComplete();
+      onCompleteRef.current();
       return;
     }
 
@@ -160,12 +165,12 @@ export function ImageAdGate({
       // Increment ad view count
       await incrementAdViews(firestore, ad.id);
 
-      // Call completion callback with view ID and ad ID
-      onComplete(viewIdStr, ad.id);
+      // Call completion callback with view ID and ad ID using ref
+      onCompleteRef.current(viewIdStr, ad.id);
     } catch (error) {
       console.error('Error completing ad view:', error);
       // Still allow entry even if tracking fails
-      onComplete(undefined, ad.id);
+      onCompleteRef.current(undefined, ad.id);
     }
   };
 
