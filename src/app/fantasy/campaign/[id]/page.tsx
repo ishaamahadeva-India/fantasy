@@ -11,7 +11,7 @@ import { useDoc, useFirestore, useCollection, useUser } from '@/firebase';
 import { doc, collection, Timestamp, query, where } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
 import { ImageAdGate } from '@/components/ads/image-ad-gate';
 
@@ -290,12 +290,7 @@ export default function FantasyMovieCampaignPage() {
       {showAdGate && (
         <ImageAdGate
           campaignId={campaignId}
-          onComplete={(adViewId, advertisementId) => {
-            if (adViewId && user) {
-              localStorage.setItem(`ad-viewed-${campaignId}-${user.uid}`, 'true');
-            }
-            handleAdGateComplete();
-          }}
+          onComplete={handleAdGateComplete}
           onCancel={handleAdGateCancel}
           required={true}
         />
