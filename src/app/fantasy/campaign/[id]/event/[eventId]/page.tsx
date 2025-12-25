@@ -168,7 +168,7 @@ export default function CampaignEventPage() {
     );
   }
 
-  if (!campaign || !event) {
+  if (!campaign || !event || !eventWithId) {
     notFound();
   }
 
