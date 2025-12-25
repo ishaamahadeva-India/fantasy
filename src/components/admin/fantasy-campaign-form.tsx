@@ -189,12 +189,6 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
     console.log('✅ All events added. Final count:', form.getValues('events')?.length || 0);
   };
 
-  const addAllEventsFromTemplates = () => {
-    EVENT_TEMPLATES.forEach((template) => {
-      addEventFromTemplate(template);
-    });
-  };
-
   const addMovie = () => {
     appendMovie({
       movieId: '',
