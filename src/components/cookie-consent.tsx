@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Cookie, X } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -40,49 +40,50 @@ export function CookieConsent() {
   };
 
   // Don't render until mounted to prevent hydration mismatch
-  if (!mounted || !showBanner) return null;
+  if (!mounted) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
-      <Card className="max-w-4xl mx-auto shadow-lg border-2">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex items-start gap-4">
-            <Cookie className="w-6 h-6 text-primary shrink-0 mt-1" />
-            <div className="flex-1 space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Cookie Consent</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We use cookies to enhance your experience, analyze site usage, and assist in our marketing efforts. 
-                    By clicking "Accept All", you consent to our use of cookies. You can manage your preferences or learn more in our{' '}
-                    <Link href="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0"
-                  onClick={handleReject}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button onClick={handleAccept} className="flex-1">
-                  Accept All Cookies
-                </Button>
-                <Button onClick={handleReject} variant="outline" className="flex-1">
-                  Reject Non-Essential
-                </Button>
-              </div>
-            </div>
+    <AnimatePresence>
+      {showBanner && (
+    <motion.div
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 100, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 md:px-6 md:pb-6"
+    >
+      <div className="max-w-4xl mx-auto bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg p-3 md:p-4">
+        <div className="flex items-center gap-3">
+          <Cookie className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs md:text-sm text-muted-foreground">
+              We use cookies to enhance your experience.{' '}
+              <Link href="/privacy" className="text-primary hover:underline font-medium">
+                Learn more
+              </Link>
+            </p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 md:px-3 text-xs"
+              onClick={handleReject}
+            >
+              <X className="w-3 h-3 md:w-4 md:h-4" />
+            </Button>
+            <Button 
+              onClick={handleAccept} 
+              size="sm"
+              className="h-8 px-3 md:px-4 text-xs md:text-sm"
+            >
+              Accept
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
