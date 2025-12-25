@@ -48,7 +48,8 @@ function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignI
         return 'Less than a minute';
     };
 
-    const points = event.pointsConfig?.points || 0;
+    // Use direct points property or basePoints from pointsConfig
+    const points = event.points || event.pointsConfig?.basePoints || 0;
     const userScore = event.userScore || 0; // This would come from user's predictions
 
     return (
