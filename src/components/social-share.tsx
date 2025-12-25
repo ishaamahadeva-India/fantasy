@@ -147,7 +147,7 @@ export function SocialShare({
           </Button>
 
           {/* Native Share (Mobile) */}
-          {typeof navigator !== 'undefined' && navigator.share && (
+          {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
             <Button
               variant="ghost"
               className="w-full justify-start"
