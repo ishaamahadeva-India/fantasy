@@ -20,6 +20,34 @@ import type { ImageAdvertisement } from '@/lib/types';
 
 type NewImageAdvertisement = Omit<ImageAdvertisement, 'id' | 'createdAt' | 'updatedAt'>;
 
+// Helper function to remove undefined values from an object recursively
+function removeUndefinedValues(obj: Record<string, any>): Record<string, any> {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      continue; // Skip undefined values
+    }
+    // Handle arrays
+    if (Array.isArray(value)) {
+      cleaned[key] = value.map(item => 
+        typeof item === 'object' && item !== null ? removeUndefinedValues(item) : item
+      );
+    }
+    // Handle nested objects
+    else if (typeof value === 'object' && value !== null && !(value instanceof Date)) {
+      cleaned[key] = removeUndefinedValues(value);
+    }
+    // Handle strings - filter out empty strings for optional fields
+    else if (typeof value === 'string' && value.trim() === '') {
+      continue; // Skip empty strings for optional fields
+    }
+    else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
 /**
  * Creates a new image advertisement
  */
@@ -28,14 +56,53 @@ export function createImageAdvertisement(
   adData: NewImageAdvertisement
 ) {
   const adsCollection = collection(firestore, 'image-advertisements');
-  const docToSave = {
-    ...adData,
+  
+  // Build the document to save, explicitly including required fields
+  const docToSave: Record<string, any> = {
+    sponsorId: adData.sponsorId,
+    sponsorName: adData.sponsorName,
+    title: adData.title,
+    imageUrl: adData.imageUrl,
+    status: adData.status,
+    startDate: adData.startDate,
+    endDate: adData.endDate,
+    priority: adData.priority,
+    displayDuration: adData.displayDuration,
     currentViews: 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  
+  // Add optional fields only if they have values
+  if (adData.description && adData.description.trim() !== '') {
+    docToSave.description = adData.description;
+  }
+  if (adData.thumbnailUrl && adData.thumbnailUrl.trim() !== '') {
+    docToSave.thumbnailUrl = adData.thumbnailUrl;
+  }
+  if (adData.clickThroughUrl && adData.clickThroughUrl.trim() !== '') {
+    docToSave.clickThroughUrl = adData.clickThroughUrl;
+  }
+  if (adData.maxViews !== undefined && adData.maxViews !== null) {
+    docToSave.maxViews = adData.maxViews;
+  }
+  if (adData.maxViewsPerUser !== undefined && adData.maxViewsPerUser !== null) {
+    docToSave.maxViewsPerUser = adData.maxViewsPerUser;
+  }
+  if (adData.targetTournaments && adData.targetTournaments.length > 0) {
+    docToSave.targetTournaments = adData.targetTournaments;
+  }
+  if (adData.trackingPixel && adData.trackingPixel.trim() !== '') {
+    docToSave.trackingPixel = adData.trackingPixel;
+  }
+  if (adData.createdBy && adData.createdBy.trim() !== '') {
+    docToSave.createdBy = adData.createdBy;
+  }
+  
+  // Clean undefined values as a final safety check
+  const cleanData = removeUndefinedValues(docToSave);
 
-  return addDoc(adsCollection, docToSave)
+  return addDoc(adsCollection, cleanData)
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: adsCollection.path,
@@ -56,12 +123,69 @@ export function updateImageAdvertisement(
   adData: Partial<NewImageAdvertisement>
 ) {
   const adDocRef = doc(firestore, 'image-advertisements', adId);
-  const docToUpdate = {
-    ...adData,
+  
+  // Build the document to update, explicitly including only defined fields
+  const docToUpdate: Record<string, any> = {
     updatedAt: serverTimestamp(),
   };
+  
+  // Add fields only if they are defined and have values
+  if (adData.sponsorId !== undefined) {
+    docToUpdate.sponsorId = adData.sponsorId;
+  }
+  if (adData.sponsorName !== undefined) {
+    docToUpdate.sponsorName = adData.sponsorName;
+  }
+  if (adData.title !== undefined) {
+    docToUpdate.title = adData.title;
+  }
+  if (adData.imageUrl !== undefined) {
+    docToUpdate.imageUrl = adData.imageUrl;
+  }
+  if (adData.status !== undefined) {
+    docToUpdate.status = adData.status;
+  }
+  if (adData.startDate !== undefined) {
+    docToUpdate.startDate = adData.startDate;
+  }
+  if (adData.endDate !== undefined) {
+    docToUpdate.endDate = adData.endDate;
+  }
+  if (adData.priority !== undefined) {
+    docToUpdate.priority = adData.priority;
+  }
+  if (adData.displayDuration !== undefined) {
+    docToUpdate.displayDuration = adData.displayDuration;
+  }
+  if (adData.description !== undefined && adData.description.trim() !== '') {
+    docToUpdate.description = adData.description;
+  }
+  if (adData.thumbnailUrl !== undefined && adData.thumbnailUrl.trim() !== '') {
+    docToUpdate.thumbnailUrl = adData.thumbnailUrl;
+  }
+  if (adData.clickThroughUrl !== undefined && adData.clickThroughUrl.trim() !== '') {
+    docToUpdate.clickThroughUrl = adData.clickThroughUrl;
+  }
+  if (adData.maxViews !== undefined && adData.maxViews !== null) {
+    docToUpdate.maxViews = adData.maxViews;
+  }
+  if (adData.maxViewsPerUser !== undefined && adData.maxViewsPerUser !== null) {
+    docToUpdate.maxViewsPerUser = adData.maxViewsPerUser;
+  }
+  if (adData.targetTournaments !== undefined && adData.targetTournaments.length > 0) {
+    docToUpdate.targetTournaments = adData.targetTournaments;
+  }
+  if (adData.trackingPixel !== undefined && adData.trackingPixel.trim() !== '') {
+    docToUpdate.trackingPixel = adData.trackingPixel;
+  }
+  if (adData.createdBy !== undefined && adData.createdBy.trim() !== '') {
+    docToUpdate.createdBy = adData.createdBy;
+  }
+  
+  // Clean undefined values as a final safety check
+  const cleanData = removeUndefinedValues(docToUpdate);
 
-  return updateDoc(adDocRef, docToUpdate)
+  return updateDoc(adDocRef, cleanData)
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: adDocRef.path,
