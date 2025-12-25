@@ -67,7 +67,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <FirebaseClientProvider>
             <SplashScreen />
-            <div id="app-content" style={{ display: 'none' }}>
+            <div id="app-content">
               <AppShell>{children}</AppShell>
             </div>
           </FirebaseClientProvider>
