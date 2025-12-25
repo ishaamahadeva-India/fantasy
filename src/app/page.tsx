@@ -7,12 +7,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
-import { collection, query, where, orderBy, limit, type Query, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, type Query, doc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
-import type { Article, UserProfile, Movie, Gossip } from '@/lib/types';
+import type { Article, UserProfile, Movie, Gossip, Advertisement } from '@/lib/types';
 import { MessageSquareText } from 'lucide-react';
 import { SocialShare } from '@/components/social-share';
+
+// Helper function to convert various date types to Date
+function toDate(dateValue: any): Date | null {
+    if (!dateValue) return null;
+    if (dateValue instanceof Date) return dateValue;
+    if (dateValue instanceof Timestamp) return dateValue.toDate();
+    if (dateValue && typeof dateValue.toDate === 'function') return dateValue.toDate();
+    if (typeof dateValue === 'number') return new Date(dateValue);
+    if (typeof dateValue === 'string') return new Date(dateValue);
+    return null;
+}
 
 
 function AdBanner() {
@@ -125,6 +136,89 @@ function GossipList() {
             </CardContent>
         </Card>
     )
+}
+
+function SponsoredAd() {
+    const firestore = useFirestore();
+    
+    // Query for active advertisements in the sidebar sponsored position
+    const adsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'advertisements'),
+            where('position', '==', 'home-sidebar-sponsored'),
+            where('active', '==', true),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+        );
+    }, [firestore]);
+    
+    const { data: ads, isLoading } = useCollection(adsQuery);
+    const advertisement = ads && ads.length > 0 ? (ads[0] as Advertisement & { id: string }) : null;
+    
+    if (isLoading) {
+        return (
+            <Card className="bg-gradient-to-br from-accent/10">
+                <CardHeader>
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-4 w-48 mt-2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-4 w-3/4 mt-2" />
+                </CardContent>
+                <CardFooter>
+                    <Skeleton className="h-10 w-full" />
+                </CardFooter>
+            </Card>
+        );
+    }
+    
+    if (!advertisement) {
+        return null; // Don't show anything if no active ad
+    }
+    
+    // Check if ad is within date range (if dates are set)
+    const now = new Date();
+    const startDate = toDate(advertisement.startDate);
+    const endDate = toDate(advertisement.endDate);
+    
+    if (startDate && now < startDate) return null; // Ad hasn't started yet
+    if (endDate && now > endDate) return null; // Ad has expired
+    
+    return (
+        <Card className="bg-gradient-to-br from-accent/10">
+            <CardHeader>
+                <CardTitle className="font-headline">Sponsored</CardTitle>
+                {advertisement.description && (
+                    <CardDescription>{advertisement.description}</CardDescription>
+                )}
+            </CardHeader>
+            <CardContent className="text-center">
+                {advertisement.imageUrl && (
+                    <div className="relative w-full h-32 mb-4 rounded-md overflow-hidden">
+                        <Image
+                            src={advertisement.imageUrl}
+                            alt={advertisement.title}
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                )}
+                <p className="font-bold text-lg">{advertisement.title}</p>
+                {advertisement.description && !advertisement.imageUrl && (
+                    <p className="text-sm text-muted-foreground mt-1">{advertisement.description}</p>
+                )}
+            </CardContent>
+            <CardFooter>
+                <Button asChild className="w-full">
+                    <Link href={advertisement.linkUrl} target="_blank" rel="noopener noreferrer">
+                        Learn More
+                    </Link>
+                </Button>
+            </CardFooter>
+        </Card>
+    );
 }
 
 function WatchlistSidebar() {
@@ -327,21 +421,7 @@ export default function HomePage() {
       <aside className="lg:col-span-1 space-y-8">
         <WatchlistSidebar />
         <GossipList />
-        <Card className="bg-gradient-to-br from-accent/10">
-            <CardHeader>
-                <CardTitle className="font-headline">Sponsored</CardTitle>
-                <CardDescription>Exclusive offer from our partner.</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-                <p className="font-bold text-lg">Play Fantasy Cricket on My11Circle!</p>
-                <p className="text-sm text-muted-foreground mt-1">Join now and get a special bonus.</p>
-            </CardContent>
-            <CardFooter>
-                 <Button asChild className="w-full">
-                    <Link href="#" target="_blank">Play Now</Link>
-                </Button>
-            </CardFooter>
-        </Card>
+        <SponsoredAd />
       </aside>
     </div>
   );

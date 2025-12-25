@@ -17,7 +17,7 @@ import type { Advertisement, AdvertisementPosition } from '@/lib/types';
 type NewAdvertisement = {
   title: string;
   description?: string;
-  imageUrl: string;
+  imageUrl?: string; // Made optional
   linkUrl: string;
   position: AdvertisementPosition;
   active: boolean;
@@ -30,11 +30,28 @@ type NewAdvertisement = {
  */
 export function addAdvertisement(firestore: Firestore, adData: NewAdvertisement) {
   const adsCollection = collection(firestore, 'advertisements');
-  const docToSave = {
-    ...adData,
+  const docToSave: Record<string, any> = {
+    title: adData.title,
+    linkUrl: adData.linkUrl,
+    position: adData.position,
+    active: adData.active,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  
+  // Only include optional fields if they have values
+  if (adData.description && adData.description.trim() !== '') {
+    docToSave.description = adData.description;
+  }
+  if (adData.imageUrl && adData.imageUrl.trim() !== '') {
+    docToSave.imageUrl = adData.imageUrl;
+  }
+  if (adData.startDate) {
+    docToSave.startDate = adData.startDate;
+  }
+  if (adData.endDate) {
+    docToSave.endDate = adData.endDate;
+  }
 
   return addDoc(adsCollection, docToSave)
     .catch(async (serverError) => {

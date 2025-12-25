@@ -100,7 +100,7 @@ export type Advertisement = {
     id: string;
     title: string;
     description?: string;
-    imageUrl: string;
+    imageUrl?: string; // Made optional
     linkUrl: string;
     position: AdvertisementPosition;
     active: boolean;

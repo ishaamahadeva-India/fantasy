@@ -1,0 +1,72 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.admin == true;
+    }
+    
+    // Allow public read access to all files
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+    
+    // Articles images - authenticated users can upload
+    match /articles/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Gossips images - authenticated users can upload
+    match /gossips/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Advertisements images - authenticated users can upload
+    match /advertisements/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Movies images - authenticated users can upload
+    match /movies/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Stars images - authenticated users can upload
+    match /stars/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Teams images - authenticated users can upload
+    match /teams/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Cricketers images - authenticated users can upload
+    match /cricketers/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Sponsors images - authenticated users can upload
+    match /sponsors/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Campaign images - authenticated users can upload
+    match /campaigns/{fileName} {
+      allow write: if isAuthenticated();
+    }
+    
+    // Default: only admins can write to other paths
+    match /{allPaths=**} {
+      allow write: if isAdmin();
+    }
+  }
+}
+

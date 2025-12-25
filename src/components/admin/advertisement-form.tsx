@@ -31,7 +31,7 @@ import type { AdvertisementPosition } from '@/lib/types';
 const advertisementSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  imageUrl: z.string().min(1, 'Image is required'),
+  imageUrl: z.string().optional(),
   linkUrl: z.string().url('Valid URL is required'),
   position: z.enum([
     'home-banner-top',
@@ -137,6 +137,7 @@ export function AdvertisementForm({ onSubmit, defaultValues }: AdvertisementForm
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel>Image (Optional)</FormLabel>
                   <FormControl>
                     <ImageUpload
                       value={field.value}
@@ -145,6 +146,9 @@ export function AdvertisementForm({ onSubmit, defaultValues }: AdvertisementForm
                       label="Advertisement Image"
                     />
                   </FormControl>
+                  <FormDescription>
+                    Upload an image for this advertisement (optional)
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
