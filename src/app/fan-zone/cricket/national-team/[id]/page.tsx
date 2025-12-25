@@ -176,7 +176,6 @@ export default function NationalTeamProfilePage() {
                                </SelectItem>
                              );
                            })}
-                        ))}
                     </SelectContent>
                 </Select>
                 {!hasEras && (
