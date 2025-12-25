@@ -300,7 +300,8 @@ export default function CampaignEventPage() {
                   <Label className="text-base mb-3 block">Select your prediction:</Label>
                   <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
                     <div className="space-y-2">
-                      {eventWithId.options.map((option, idx) => {
+                      {resolveMovieTitles(eventWithId.options).map((option, idx) => {
+                        const originalOption = eventWithId.options![idx];
                         const isSelected = selectedOption === originalOption;
                         const wasPreviouslySelected = hasExistingPrediction && 
                           (existingPredictions?.[0] as any)?.selectedOption === originalOption;
