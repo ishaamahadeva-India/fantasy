@@ -180,7 +180,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
   const addMovie = () => {
     appendMovie({
       movieId: '',
-      language: '',
+      language: 'Hindi', // Default language
       industry: 'Bollywood',
       releaseDate: new Date(),
       releaseType: 'theatrical',
@@ -194,7 +194,9 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+        console.error('Form validation errors:', errors);
+      })} className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Campaign Details</CardTitle>
@@ -355,7 +357,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         name={`movies.${index}.movieId`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Movie</FormLabel>
+                            <FormLabel>Movie <span className="text-destructive">*</span></FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
@@ -389,11 +391,11 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         name={`movies.${index}.industry`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Industry</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormLabel>Industry <span className="text-destructive">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || 'Bollywood'}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue />
+                                  <SelectValue placeholder="Select industry" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -418,11 +420,11 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         name={`movies.${index}.releaseType`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Release Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormLabel>Release Type <span className="text-destructive">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || 'theatrical'}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue />
+                                  <SelectValue placeholder="Select release type" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -439,7 +441,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         name={`movies.${index}.releaseDate`}
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
-                            <FormLabel>Release Date</FormLabel>
+                            <FormLabel>Release Date <span className="text-destructive">*</span></FormLabel>
                             <Popover>
                               <PopoverTrigger asChild>
                                 <FormControl>
@@ -453,6 +455,58 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                                 <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
                               </PopoverContent>
                             </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`movies.${index}.language`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Language <span className="text-destructive">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || 'Hindi'}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Hindi">Hindi</SelectItem>
+                                <SelectItem value="Telugu">Telugu</SelectItem>
+                                <SelectItem value="Tamil">Tamil</SelectItem>
+                                <SelectItem value="Kannada">Kannada</SelectItem>
+                                <SelectItem value="Malayalam">Malayalam</SelectItem>
+                                <SelectItem value="Punjabi">Punjabi</SelectItem>
+                                <SelectItem value="Bhojpuri">Bhojpuri</SelectItem>
+                                <SelectItem value="English">English</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`movies.${index}.status`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status <span className="text-destructive">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || 'upcoming'}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="upcoming">Upcoming</SelectItem>
+                                <SelectItem value="released">Released</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
