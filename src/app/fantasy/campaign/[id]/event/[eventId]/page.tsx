@@ -218,9 +218,13 @@ export default function CampaignEventPage() {
               <h3 className="text-xl font-semibold">Make Your Prediction</h3>
               
               {hasExistingPrediction && (
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                  <p className="text-sm text-blue-400">
-                    You have already submitted a prediction for this event. You can update it below.
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <p className="font-semibold">You have already submitted a prediction for this event.</p>
+                  </div>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                    Your selected option is highlighted in green below. You can update it if needed.
                   </p>
                 </div>
               )}
@@ -230,14 +234,31 @@ export default function CampaignEventPage() {
                   <Label className="text-base mb-3 block">Select your prediction:</Label>
                   <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
                     <div className="space-y-2">
-                      {eventWithId.options.map((option, idx) => (
-                        <div key={idx} className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent">
-                          <RadioGroupItem value={option} id={`option-${idx}`} />
-                          <Label htmlFor={`option-${idx}`} className="flex-1 cursor-pointer">
-                            {option}
-                          </Label>
-                        </div>
-                      ))}
+                      {eventWithId.options.map((option, idx) => {
+                        const isSelected = selectedOption === option;
+                        const wasPreviouslySelected = hasExistingPrediction && 
+                          (existingPredictions?.[0] as any)?.selectedOption === option;
+                        return (
+                          <div 
+                            key={idx} 
+                            className={`flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent transition-colors ${
+                              isSelected || wasPreviouslySelected 
+                                ? 'bg-green-500/10 border-green-500 border-2' 
+                                : ''
+                            }`}
+                          >
+                            <RadioGroupItem value={option} id={`option-${idx}`} />
+                            <Label htmlFor={`option-${idx}`} className={`flex-1 cursor-pointer flex items-center gap-2 ${
+                              isSelected || wasPreviouslySelected ? 'text-green-700 dark:text-green-400 font-semibold' : ''
+                            }`}>
+                              {option}
+                              {(isSelected || wasPreviouslySelected) && (
+                                <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              )}
+                            </Label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </RadioGroup>
                 </div>

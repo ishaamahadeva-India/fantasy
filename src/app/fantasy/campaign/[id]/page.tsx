@@ -28,6 +28,21 @@ function toDate(dateValue: any): Date {
 }
 
 function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignId: string }) {
+    const { user } = useUser();
+    const firestore = useFirestore();
+    
+    // Check if user has made a prediction for this event
+    const predictionsQuery = firestore && user
+        ? query(
+            collection(firestore, 'campaign-predictions'),
+            where('userId', '==', user.uid),
+            where('campaignId', '==', campaignId),
+            where('eventId', '==', event.id)
+        )
+        : null;
+    const { data: userPredictions } = useCollection(predictionsQuery);
+    const hasAttempted = userPredictions && userPredictions.length > 0;
+    
     // Determine event status based on dates
     const now = new Date();
     const startDate = toDate(event.startDate);
@@ -53,9 +68,19 @@ function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignI
     // TODO: Fetch user's actual score from their predictions/participations
 
     return (
-        <Card className={`overflow-hidden flex flex-col ${isCompleted ? 'bg-white/5' : ''}`}>
+        <Card className={`overflow-hidden flex flex-col ${isCompleted ? 'bg-white/5' : ''} ${hasAttempted ? 'border-green-500 border-2' : ''}`}>
             <CardHeader>
-                <CardTitle className="text-lg font-headline">{event.title}</CardTitle>
+                <div className="flex items-start justify-between">
+                    <CardTitle className={`text-lg font-headline ${hasAttempted ? 'text-green-600 dark:text-green-400' : ''}`}>
+                        {event.title}
+                    </CardTitle>
+                    {hasAttempted && (
+                        <Badge variant="outline" className="bg-green-500/10 border-green-500 text-green-700 dark:text-green-400">
+                            <Check className="w-3 h-3 mr-1" />
+                            Attempted
+                        </Badge>
+                    )}
+                </div>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     {isLive && (
                         <div className="flex items-center gap-1 text-red-400">
