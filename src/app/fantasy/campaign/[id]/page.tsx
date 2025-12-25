@@ -502,5 +502,6 @@ export default function FantasyMovieCampaignPage() {
             </TabsContent>
         </Tabs>
     </div>
+    </>
   );
 }

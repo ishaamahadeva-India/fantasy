@@ -130,10 +130,21 @@ export default function TournamentPage() {
     // Check entry method
     const entryMethod = tournament.entryMethod || tournament.entryFee?.type || 'free';
 
-    // If ad_watch, show ad gate instead of dialog
-    if (entryMethod === 'ad_watch') {
+    // Show ad gate for all tournaments (user can skip if not required)
+    // If ad_watch, ad is required; otherwise, it's optional
+    const isAdRequired = entryMethod === 'ad_watch';
+    
+    // Check if user has already viewed an ad for this tournament
+    const hasViewedAd = localStorage.getItem(`ad-viewed-${tournamentId}-${user.uid}`);
+    
+    if (!hasViewedAd) {
       setShowAdGate(true);
       setJoinDialogOpen(false);
+      return;
+    }
+
+    // If ad_watch and no ad viewed, don't proceed
+    if (entryMethod === 'ad_watch' && !hasViewedAd) {
       return;
     }
 
@@ -206,15 +217,23 @@ export default function TournamentPage() {
       return;
     }
 
+    // Mark ad as viewed
+    if (adViewId && user) {
+      localStorage.setItem(`ad-viewed-${tournamentId}-${user.uid}`, 'true');
+    }
+
     setShowAdGate(false);
     setIsJoining(true);
+
+    // Check entry method
+    const entryMethod = tournament.entryMethod || tournament.entryFee?.type || 'free';
 
     try {
       const entryData: any = {
         userId: user.uid,
         tournamentId,
-        entryMethod: 'ad_watch',
-        paymentStatus: 'paid' as const,
+        entryMethod: entryMethod === 'ad_watch' ? 'ad_watch' : entryMethod,
+        paymentStatus: entryMethod === 'free' || entryMethod === 'ad_watch' ? 'paid' as const : 'pending' as const,
       };
 
       // Link ad view if available
