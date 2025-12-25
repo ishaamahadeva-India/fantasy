@@ -131,7 +131,8 @@ export type FantasyEventType =
     | 'occupancy_percentage'    // Opening day occupancy %
     | 'day1_talk'               // Day-1 talk (Hit/Average/Flop)
     | 'awards_rank'             // Awards / Trending rank
-    | 'ott_debut_rank';         // OTT platform debut week rank
+    | 'ott_debut_rank'          // OTT platform debut week rank
+    | 'ranking_selection';       // Ranking multiple movies (1st, 2nd, 3rd, etc.)
 
 // Campaign Movie - represents a movie in a campaign
 export type CampaignMovie = {

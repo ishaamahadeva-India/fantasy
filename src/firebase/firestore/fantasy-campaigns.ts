@@ -554,3 +554,213 @@ export const EVENT_TEMPLATES: Array<{
   },
 ];
 
+/**
+ * Comparison event templates for multiple movie campaigns
+ * These events compare movies head-to-head and create competitive scenarios
+ */
+export const COMPARISON_EVENT_TEMPLATES: Array<{
+  title: string;
+  description: string;
+  eventType: 'choice_selection' | 'ranking_selection';
+  defaultPoints: number;
+  difficultyLevel?: 'easy' | 'medium' | 'hard';
+  defaultOptions?: string[]; // Predefined options (for events like Collection Gap Prediction)
+  defaultRules?: string[];
+  isIndustryBattle?: boolean; // If true, compares industries instead of individual movies
+}> = [
+  // ========== PRE-RELEASE COMPARISON EVENTS ==========
+  {
+    title: 'Trailer Views Winner (24h)',
+    description: 'Which movie\'s trailer will get the most views in the first 24 hours?',
+    eventType: 'choice_selection',
+    defaultPoints: 150,
+    difficultyLevel: 'medium',
+    defaultRules: ['Views from official YouTube channels only.', 'Comparison across all movies in campaign.'],
+  },
+  {
+    title: 'First Look Views Winner (24h)',
+    description: 'Which movie\'s first look will get the most views in the first 24 hours?',
+    eventType: 'choice_selection',
+    defaultPoints: 150,
+    difficultyLevel: 'medium',
+    defaultRules: ['Views from official YouTube, X, and Instagram channels only.'],
+  },
+  {
+    title: 'Social Media Buzz Leader',
+    description: 'Which movie will generate the most social media buzz before release?',
+    eventType: 'choice_selection',
+    defaultPoints: 100,
+    difficultyLevel: 'easy',
+    defaultRules: ['Based on trending topics, hashtags, and engagement across platforms.'],
+  },
+  
+  // ========== OPENING DAY COMPARISON EVENTS ==========
+  {
+    title: 'Opening Day Collection Winner',
+    description: 'Which movie will collect the highest opening day box office?',
+    eventType: 'choice_selection',
+    defaultPoints: 200,
+    difficultyLevel: 'medium',
+    defaultRules: ['Official box office reports will be considered final.', 'Comparison across all movies in campaign.'],
+  },
+  {
+    title: 'Opening Day Collection Ranking',
+    description: 'Rank all movies by opening day collection (1st, 2nd, 3rd, 4th, etc.)',
+    eventType: 'ranking_selection',
+    defaultPoints: 350,
+    difficultyLevel: 'hard',
+    defaultRules: ['Predict the complete ranking order of all movies.', 'Higher points for full ranking accuracy.'],
+  },
+  {
+    title: 'Opening Day Occupancy Leader',
+    description: 'Which movie will have the highest theater occupancy on opening day?',
+    eventType: 'choice_selection',
+    defaultPoints: 100,
+    difficultyLevel: 'easy',
+    defaultRules: ['Average occupancy across all theaters will be considered.'],
+  },
+  {
+    title: 'Industry Winner - Opening Day',
+    description: 'Which industry will have the highest opening day collection?',
+    eventType: 'choice_selection',
+    defaultPoints: 180,
+    difficultyLevel: 'medium',
+    isIndustryBattle: true,
+    defaultRules: ['Compares industries (Bollywood, Hollywood, Tollywood, etc.) based on their movie\'s performance.'],
+  },
+  
+  // ========== FIRST WEEKEND COMPARISON EVENTS ==========
+  {
+    title: 'First Weekend Collection Winner',
+    description: 'Which movie will have the highest first weekend (3 days) collection?',
+    eventType: 'choice_selection',
+    defaultPoints: 250,
+    difficultyLevel: 'medium',
+    defaultRules: ['Official box office reports will be considered final.', '3-day weekend collection comparison.'],
+  },
+  {
+    title: 'First Weekend Collection Ranking',
+    description: 'Rank all movies by first weekend collection (complete ranking order)',
+    eventType: 'ranking_selection',
+    defaultPoints: 400,
+    difficultyLevel: 'hard',
+    defaultRules: ['Predict the complete ranking order of all movies for first weekend.', 'Higher points for full ranking accuracy.'],
+  },
+  {
+    title: 'Overseas Collection Leader',
+    description: 'Which movie will lead in overseas (international) box office collections?',
+    eventType: 'choice_selection',
+    defaultPoints: 200,
+    difficultyLevel: 'medium',
+    defaultRules: ['Overseas collections from all international markets.', 'Official reports will be considered final.'],
+  },
+  {
+    title: 'Domestic Collection Leader',
+    description: 'Which movie will lead in domestic (India) box office collections?',
+    eventType: 'choice_selection',
+    defaultPoints: 200,
+    difficultyLevel: 'medium',
+    defaultRules: ['Domestic collections from Indian markets only.', 'Official reports will be considered final.'],
+  },
+  {
+    title: 'Industry Winner - First Weekend',
+    description: 'Which industry will dominate the first weekend box office?',
+    eventType: 'choice_selection',
+    defaultPoints: 220,
+    difficultyLevel: 'medium',
+    isIndustryBattle: true,
+    defaultRules: ['Compares industries based on their movie\'s weekend performance.'],
+  },
+  
+  // ========== FIRST WEEK COMPARISON EVENTS ==========
+  {
+    title: 'First Week Collection Winner',
+    description: 'Which movie will have the highest first week box office collection?',
+    eventType: 'choice_selection',
+    defaultPoints: 300,
+    difficultyLevel: 'hard',
+    defaultRules: ['Official box office reports will be considered final.', '7-day collection comparison.'],
+  },
+  {
+    title: 'IMDb Rating Leader',
+    description: 'Which movie will achieve the highest IMDb rating after 1000+ reviews?',
+    eventType: 'choice_selection',
+    defaultPoints: 180,
+    difficultyLevel: 'medium',
+    defaultRules: ['IMDb rating after 1000+ verified reviews will be considered final.'],
+  },
+  {
+    title: 'Critics\' Choice Leader',
+    description: 'Which movie will get the best critics\' ratings across review platforms?',
+    eventType: 'choice_selection',
+    defaultPoints: 150,
+    difficultyLevel: 'medium',
+    defaultRules: ['Average critics\' ratings across major review platforms.', 'At least 10 critic reviews required.'],
+  },
+  {
+    title: 'Day-1 Talk Winner',
+    description: 'Which movie will get the best Day-1 word-of-mouth and audience talk?',
+    eventType: 'choice_selection',
+    defaultPoints: 100,
+    difficultyLevel: 'easy',
+    defaultRules: ['Based on social media sentiment and audience reviews on Day 1.'],
+  },
+  {
+    title: 'Collection Gap Prediction',
+    description: 'What will be the gap between highest and second-highest opening day collection?',
+    eventType: 'choice_selection',
+    defaultPoints: 100,
+    difficultyLevel: 'medium',
+    defaultOptions: ['Less than 5 Cr', '5-10 Cr', '10-20 Cr', '20-30 Cr', 'More than 30 Cr'],
+    defaultRules: ['Predict how close the competition will be.', 'Gap = Highest - Second Highest'],
+  },
+  
+  // ========== POST-RELEASE COMPARISON EVENTS ==========
+  {
+    title: 'Lifetime Gross Collection Leader',
+    description: 'Which movie will collect the highest lifetime gross box office?',
+    eventType: 'choice_selection',
+    defaultPoints: 400,
+    difficultyLevel: 'hard',
+    defaultRules: ['Official box office reports will be considered final.', 'Lifetime gross from all markets.'],
+  },
+  {
+    title: 'OTT Debut Rank Winner',
+    description: 'Which movie will rank highest on OTT platforms in its debut week?',
+    eventType: 'choice_selection',
+    defaultPoints: 150,
+    difficultyLevel: 'easy',
+    defaultRules: ['Based on official OTT platform rankings.', 'Highest rank among all movies.'],
+  },
+  {
+    title: 'Awards/Trending Rank Winner',
+    description: 'Which movie will rank highest in awards season or trending charts?',
+    eventType: 'choice_selection',
+    defaultPoints: 200,
+    difficultyLevel: 'medium',
+    defaultRules: ['Based on official awards nominations or trending charts.', 'Highest rank wins.'],
+  },
+  {
+    title: 'Overall Performance Champion',
+    description: 'Which movie will be the overall champion considering collections, ratings, and buzz?',
+    eventType: 'choice_selection',
+    defaultPoints: 500,
+    difficultyLevel: 'hard',
+    defaultRules: [
+      'Considers multiple factors: box office collections, IMDb ratings, social media buzz, and critics\' reviews.',
+      'Weighted scoring: Collections (40%), Ratings (30%), Buzz (20%), Critics (10%)',
+    ],
+  },
+  {
+    title: 'Fan War Winner',
+    description: 'Which movie\'s fans will be most satisfied based on overall performance?',
+    eventType: 'choice_selection',
+    defaultPoints: 400,
+    difficultyLevel: 'hard',
+    defaultRules: [
+      'Based on collections + ratings + social buzz + fan satisfaction.',
+      'The movie that exceeds expectations the most wins.',
+    ],
+  },
+];
+

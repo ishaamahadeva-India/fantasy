@@ -29,7 +29,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Plus, Trash2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { EVENT_TEMPLATES } from '@/firebase/firestore/fantasy-campaigns';
+import { EVENT_TEMPLATES, COMPARISON_EVENT_TEMPLATES } from '@/firebase/firestore/fantasy-campaigns';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Movie } from '@/lib/types';
@@ -51,7 +51,7 @@ const eventSchema = z.object({
     'choice_selection', 'numeric_prediction', 'draft_selection',
     'opening_day_collection', 'weekend_collection', 'lifetime_gross',
     'imdb_rating', 'occupancy_percentage', 'day1_talk',
-    'awards_rank', 'ott_debut_rank'
+    'awards_rank', 'ott_debut_rank', 'ranking_selection'
   ]),
   movieId: z.string().optional(),
   status: z.enum(['upcoming', 'live', 'completed', 'locked']),
@@ -188,6 +188,45 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
     });
     const finalCount = form.getValues('events')?.length || 0;
     console.log('✅ All events added. Final count:', finalCount);
+  };
+
+  const addComparisonEventFromTemplate = (template: typeof COMPARISON_EVENT_TEMPLATES[0]) => {
+    const movies = form.getValues('movies') || [];
+    
+    // For comparison events, options should be movie names (or industries for industry battles)
+    let options: string[] = [];
+    
+    if (template.isIndustryBattle) {
+      // For industry battles, get unique industries from movies
+      const industries = [...new Set(movies.map(m => m.industry))];
+      options = industries;
+    } else {
+      // For regular comparison events, use movie titles
+      options = movies.map(m => m.movieTitle || `Movie ${m.movieId}`);
+    }
+    
+    // If no movies added yet, use placeholder
+    if (options.length === 0) {
+      options = ['Movie A', 'Movie B', 'Movie C', 'Movie D'];
+    }
+    
+    const newEvent = {
+      title: template.title,
+      description: template.description,
+      eventType: template.eventType,
+      status: 'upcoming' as const,
+      startDate: new Date(),
+      endDate: new Date(),
+      points: template.defaultPoints,
+      difficultyLevel: template.difficultyLevel,
+      options: template.eventType === 'ranking_selection' ? options : options, // For ranking, all movies are options
+      rules: template.defaultRules || [],
+      movieId: '', // Campaign-wide event
+    };
+    
+    console.log('➕ Adding comparison event from template:', newEvent.title);
+    appendEvent(newEvent);
+    console.log('✅ Comparison event added. Current events count:', form.getValues('events')?.length || 0);
   };
 
   const addMovie = () => {
@@ -1065,6 +1104,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                             <SelectItem value="day1_talk">Day-1 Talk</SelectItem>
                             <SelectItem value="awards_rank">Awards/Trending Rank</SelectItem>
                             <SelectItem value="ott_debut_rank">OTT Debut Rank</SelectItem>
+                            <SelectItem value="ranking_selection">Ranking Selection (Multiple Movies)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -1175,29 +1215,64 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   )}
                 />
 
-                {form.watch(`events.${index}.eventType`) === 'choice_selection' && (
+                {(form.watch(`events.${index}.eventType`) === 'choice_selection' || 
+                  form.watch(`events.${index}.eventType`) === 'ranking_selection') && (
                   <FormField
                     control={form.control}
                     name={`events.${index}.options`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Options (one per line)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Option 1&#10;Option 2&#10;Option 3"
-                            value={field.value?.join('\n') || ''}
-                            onChange={(e) => {
-                              const options = e.target.value.split('\n').filter((o) => o.trim());
-                              field.onChange(options);
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Enter each option on a new line
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      // For multiple movie campaigns, auto-populate with movie names if empty
+                      const eventType = form.watch(`events.${index}.eventType`);
+                      const isRanking = eventType === 'ranking_selection';
+                      const movies = form.watch('movies') || [];
+                      
+                      // Auto-populate options with movie names for comparison events
+                      const shouldAutoPopulate = campaignType === 'multiple_movies' && 
+                                                 (!field.value || field.value.length === 0) &&
+                                                 movies.length > 0;
+                      
+                      if (shouldAutoPopulate && !field.value) {
+                        const movieOptions = movies.map(m => m.movieTitle || `Movie ${m.movieId}`);
+                        setTimeout(() => field.onChange(movieOptions), 0);
+                      }
+                      
+                      return (
+                        <FormItem>
+                          <FormLabel>
+                            {isRanking ? 'Movies to Rank (will be ranked 1st, 2nd, 3rd, etc.)' : 'Options (one per line)'}
+                            {campaignType === 'multiple_movies' && (
+                              <span className="text-xs text-muted-foreground ml-2">
+                                (For comparison events, use movie names)
+                              </span>
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder={
+                                isRanking 
+                                  ? campaignType === 'multiple_movies' 
+                                    ? "Movie names will auto-populate from your campaign movies"
+                                    : "Movie 1\nMovie 2\nMovie 3\nMovie 4"
+                                  : campaignType === 'multiple_movies'
+                                    ? "Movie A\nMovie B\nMovie C\nMovie D"
+                                    : "Option 1\nOption 2\nOption 3"
+                              }
+                              value={field.value?.join('\n') || ''}
+                              onChange={(e) => {
+                                const options = e.target.value.split('\n').filter((o) => o.trim());
+                                field.onChange(options);
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {isRanking 
+                              ? 'Enter movie names. Users will rank these movies (1st, 2nd, 3rd, etc.)'
+                              : 'Enter each option on a new line. For comparison events, use movie names.'}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 )}
 

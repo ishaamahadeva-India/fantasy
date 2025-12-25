@@ -7,15 +7,17 @@ import { doc, collection, query, where, Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Check } from 'lucide-react';
 import { ArrowLeft, Trophy, Calendar, Lock, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
-import Link from 'next/link';
-import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
-import { toast } from '@/hooks/use-toast';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
+import { serverTimestamp } from 'firebase/firestore';
+import { addDoc } from 'firebase/firestore';
+import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
 
 // Helper to convert various date types to Date objects
 const toDate = (value: any): Date | null => {
@@ -29,35 +31,38 @@ const toDate = (value: any): Date | null => {
 
 export default function CampaignEventPage() {
   const params = useParams();
+  const router = useRouter();
   const campaignId = params.id as string;
   const eventId = params.eventId as string;
-  const router = useRouter();
   const firestore = useFirestore();
   const { user } = useUser();
-  
-  const campaignRef = firestore ? doc(firestore, 'fantasy-campaigns', campaignId) : null;
-  const { data: campaign, isLoading: campaignLoading } = useDoc(campaignRef);
-  
-  const eventRef = firestore 
-    ? doc(firestore, 'fantasy-campaigns', campaignId, 'events', eventId) 
-    : null;
-  const { data: event, isLoading: eventLoading } = useDoc(eventRef);
 
-  // Check if user has already made a prediction
-  const predictionsRef = firestore
-    ? collection(firestore, 'campaign-predictions')
+  // Fetch campaign
+  const campaignDocRef = firestore ? doc(firestore, 'fantasy-campaigns', campaignId) : null;
+  const { data: campaignData, isLoading: campaignLoading } = useDoc(campaignDocRef);
+  const campaign = campaignData as (FantasyCampaign & { id: string }) | undefined;
+
+  // Fetch event
+  const eventDocRef = firestore 
+    ? doc(firestore, 'fantasy-campaigns', campaignId, 'events', eventId)
     : null;
-  const predictionsQuery = firestore && user
-    ? query(
-        predictionsRef!,
-        where('userId', '==', user.uid),
-        where('campaignId', '==', campaignId),
-        where('eventId', '==', eventId)
-      )
-    : null;
+  const { data: eventData, isLoading: eventLoading } = useDoc(eventDocRef);
+  const event = eventData as (FantasyEvent & { id: string }) | undefined;
+
+  // Fetch existing predictions
+  const predictionsQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'fantasy-campaigns', campaignId, 'events', eventId, 'predictions'),
+      where('userId', '==', user.uid)
+    );
+  }, [firestore, campaignId, eventId, user]);
   const { data: existingPredictions } = useCollection(predictionsQuery);
 
+  const eventWithId = event ? { ...event, id: eventId } : undefined;
+
   const [selectedOption, setSelectedOption] = useState<string>('');
+  const [rankingOrder, setRankingOrder] = useState<string[]>([]); // For ranking_selection events
   const [numericValue, setNumericValue] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +72,9 @@ export default function CampaignEventPage() {
     if (existingPredictions && existingPredictions.length > 0) {
       const prediction = existingPredictions[0] as any;
       if (prediction.selectedOption) setSelectedOption(prediction.selectedOption);
+      if (prediction.rankingOrder && Array.isArray(prediction.rankingOrder)) {
+        setRankingOrder(prediction.rankingOrder);
+      }
       if (prediction.numericValue) setNumericValue(prediction.numericValue.toString());
       if (prediction.notes) setNotes(prediction.notes);
     }
@@ -91,18 +99,52 @@ export default function CampaignEventPage() {
 
   const hasExistingPrediction = existingPredictions && existingPredictions.length > 0;
   const isLocked = eventStatus === 'locked' || eventStatus === 'completed';
-  const canSubmit = !isLocked && user && (selectedOption || numericValue);
+  const isRankingEvent = eventWithId?.eventType === 'ranking_selection';
+  const canSubmit = !isLocked && user && (
+    selectedOption || 
+    numericValue || 
+    (isRankingEvent && rankingOrder.length > 0)
+  );
 
   const handleSubmit = async () => {
-    if (!firestore || !user || !canSubmit) return;
+    if (!firestore || !user || !canSubmit || !eventWithId) return;
     
     setIsSubmitting(true);
     try {
-      // TODO: Implement addCampaignPrediction function
-      // For now, just show a toast
+      const predictionsCollection = collection(
+        firestore,
+        'fantasy-campaigns',
+        campaignId,
+        'events',
+        eventId,
+        'predictions'
+      );
+
+      const predictionData: any = {
+        eventId: eventWithId.id,
+        campaignId: campaignId,
+        userId: user.uid,
+        timestamp: serverTimestamp(),
+      };
+
+      if (selectedOption) {
+        predictionData.selectedOption = selectedOption;
+      }
+      if (isRankingEvent && rankingOrder.length > 0) {
+        predictionData.rankingOrder = rankingOrder;
+      }
+      if (numericValue) {
+        predictionData.numericValue = parseFloat(numericValue);
+      }
+      if (notes) {
+        predictionData.notes = notes;
+      }
+
+      await addDoc(predictionsCollection, predictionData);
+      
       toast({
         title: 'Prediction Submitted',
-        description: 'Your prediction has been recorded. (Note: Prediction saving functionality needs to be implemented)',
+        description: 'Your prediction has been recorded successfully!',
       });
       router.push(`/fantasy/campaign/${campaignId}`);
     } catch (error: any) {
@@ -130,80 +172,74 @@ export default function CampaignEventPage() {
     notFound();
   }
 
-  const eventWithId = event as FantasyEvent & { id: string };
-  const campaignWithId = campaign as FantasyCampaign & { id: string };
-
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <Button variant="ghost" asChild>
-        <Link href={`/fantasy/campaign/${campaignId}`}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Campaign
-        </Link>
+    <div className="max-w-4xl mx-auto p-6">
+      <Button
+        variant="ghost"
+        onClick={() => router.push(`/fantasy/campaign/${campaignId}`)}
+        className="mb-6"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Campaign
       </Button>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-3xl font-headline mb-2">{eventWithId.title}</CardTitle>
-              <CardDescription className="text-base">{eventWithId.description}</CardDescription>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <Badge variant="secondary" className="text-lg px-3 py-1">
-                <Trophy className="w-4 h-4 mr-1" />
-                {eventWithId.points} Points
-              </Badge>
-              {eventStatus === 'live' && (
-                <Badge variant="default" className="bg-red-500">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Live
-                </Badge>
-              )}
-              {eventStatus === 'upcoming' && (
-                <Badge variant="outline">
-                  <Lock className="w-3 h-3 mr-1" />
-                  Upcoming
-                </Badge>
-              )}
-              {eventStatus === 'completed' && (
-                <Badge variant="secondary" className="bg-green-500">
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  Completed
-                </Badge>
-              )}
-              {eventStatus === 'locked' && (
-                <Badge variant="destructive">
-                  <Lock className="w-3 h-3 mr-1" />
-                  Locked
-                </Badge>
-              )}
-            </div>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-headline">{eventWithId.title}</CardTitle>
+            <Badge variant="secondary" className="text-lg px-3 py-1">
+              {eventWithId.points} Points
+            </Badge>
           </div>
+          <CardDescription>{eventWithId.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Event Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">
-                Starts: {toDate(eventWithId.startDate)?.toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">
-                Ends: {toDate(eventWithId.endDate)?.toLocaleDateString()}
-              </span>
-            </div>
+        <CardContent className="space-y-4">
+          {/* Event Status Badges */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {eventStatus === 'live' && (
+              <Badge variant="destructive" className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Live
+              </Badge>
+            )}
+            {eventStatus === 'upcoming' && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                Upcoming
+              </Badge>
+            )}
+            {eventStatus === 'locked' && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                Locked
+              </Badge>
+            )}
+            {eventStatus === 'completed' && (
+              <Badge variant="default" className="flex items-center gap-1 bg-green-600">
+                <CheckCircle2 className="w-3 h-3" />
+                Completed
+              </Badge>
+            )}
           </div>
 
+          {/* Event Dates */}
+          <div className="text-sm text-muted-foreground">
+            <p>
+              <strong>Start:</strong>{' '}
+              {toDate(eventWithId.startDate)?.toLocaleString() || 'Not set'}
+            </p>
+            {eventWithId.endDate && (
+              <p>
+                <strong>End:</strong>{' '}
+                {toDate(eventWithId.endDate)?.toLocaleString() || 'Not set'}
+              </p>
+            )}
+          </div>
+
+          {/* Event Rules */}
           {eventWithId.rules && eventWithId.rules.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                Rules
-              </h3>
+              <h4 className="font-semibold mb-2">Rules:</h4>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                 {eventWithId.rules.map((rule, idx) => (
                   <li key={idx}>{rule}</li>
@@ -219,12 +255,9 @@ export default function CampaignEventPage() {
               
               {hasExistingPrediction && (
                 <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <p className="font-semibold">You have already submitted a prediction for this event.</p>
-                  </div>
-                  <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                    Your selected option is highlighted in green below. You can update it if needed.
+                  <p className="text-sm text-green-400">
+                    <CheckCircle2 className="inline-block w-4 h-4 mr-1" />
+                    You have already submitted a prediction for this event. You can update it below.
                   </p>
                 </div>
               )}
@@ -248,10 +281,10 @@ export default function CampaignEventPage() {
                             }`}
                           >
                             <RadioGroupItem value={option} id={`option-${idx}`} />
-                            <Label htmlFor={`option-${idx}`} className={`flex-1 cursor-pointer flex items-center gap-2 ${
-                              isSelected || wasPreviouslySelected ? 'text-green-700 dark:text-green-400 font-semibold' : ''
-                            }`}>
-                              {option}
+                            <Label htmlFor={`option-${idx}`} className="flex-1 cursor-pointer flex items-center gap-2">
+                              <span className={isSelected || wasPreviouslySelected ? 'font-semibold text-green-700 dark:text-green-400' : ''}>
+                                {option}
+                              </span>
                               {(isSelected || wasPreviouslySelected) && (
                                 <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
                               )}
@@ -261,6 +294,62 @@ export default function CampaignEventPage() {
                       })}
                     </div>
                   </RadioGroup>
+                </div>
+              )}
+
+              {eventWithId.eventType === 'ranking_selection' && eventWithId.options && (
+                <div>
+                  <Label className="text-base mb-3 block">Rank the movies (click to add to ranking):</Label>
+                  <div className="space-y-2">
+                    {eventWithId.options.map((option, idx) => {
+                      const currentRank = rankingOrder.indexOf(option) + 1;
+                      const isRanked = rankingOrder.includes(option);
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex items-center space-x-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                            isRanked 
+                              ? 'bg-green-500/10 border-green-500 border-2' 
+                              : 'hover:bg-accent'
+                          }`}
+                          onClick={() => {
+                            if (!isRanked) {
+                              setRankingOrder([...rankingOrder, option]);
+                            } else {
+                              setRankingOrder(rankingOrder.filter(o => o !== option));
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            {isRanked && (
+                              <Badge variant="default" className="bg-green-600">
+                                #{currentRank}
+                              </Badge>
+                            )}
+                            <span className={`flex-1 ${isRanked ? 'font-semibold text-green-700 dark:text-green-400' : ''}`}>
+                              {option}
+                            </span>
+                            {isRanked && (
+                              <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {rankingOrder.length > 0 && (
+                    <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">Your Ranking:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        {rankingOrder.map((movie, idx) => (
+                          <li key={idx} className="text-sm">{movie}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Click on movies to add them to your ranking. Click again to remove.
+                  </p>
                 </div>
               )}
 
@@ -275,37 +364,35 @@ export default function CampaignEventPage() {
                     value={numericValue}
                     onChange={(e) => setNumericValue(e.target.value)}
                     placeholder="Enter a number"
-                    className="max-w-xs"
+                    className={`max-w-xs ${
+                      hasExistingPrediction ? 'border-green-500 text-green-400' : ''
+                    }`}
                   />
+                  {hasExistingPrediction && (
+                    <p className="text-sm text-green-400 mt-1">
+                      Your current prediction: {(existingPredictions?.[0] as any)?.numericValue}
+                    </p>
+                  )}
                 </div>
               )}
 
-              {eventWithId.eventType === 'draft_selection' && (
-                <div>
-                  <Label className="text-base mb-2 block">
-                    Draft Selection (Coming Soon)
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Draft selection functionality will be available soon.
-                  </p>
-                </div>
-              )}
-
+              {/* Notes Field */}
               <div>
                 <Label htmlFor="notes" className="text-base mb-2 block">
-                  Additional Notes (Optional)
+                  Additional Notes (Optional):
                 </Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add any additional context or reasoning for your prediction..."
-                  rows={4}
+                  placeholder="Add any additional notes or reasoning..."
+                  rows={3}
                 />
               </div>
 
-              <Button 
-                onClick={handleSubmit} 
+              {/* Submit Button */}
+              <Button
+                onClick={handleSubmit}
                 disabled={!canSubmit || isSubmitting}
                 className="w-full"
                 size="lg"
@@ -325,6 +412,23 @@ export default function CampaignEventPage() {
                   <p className="text-sm text-muted-foreground">
                     The prediction window for this event has closed.
                   </p>
+                  {hasExistingPrediction && (
+                    <div className="mt-4">
+                      <p className="text-sm font-semibold mb-1">Your Prediction:</p>
+                      {(existingPredictions?.[0] as any)?.rankingOrder ? (
+                        <ol className="list-decimal list-inside text-sm text-green-400">
+                          {(existingPredictions?.[0] as any).rankingOrder.map((movie: string, idx: number) => (
+                            <li key={idx}>{movie}</li>
+                          ))}
+                        </ol>
+                      ) : (
+                        <p className="text-sm text-green-400">
+                          {(existingPredictions?.[0] as any)?.selectedOption || 
+                           (existingPredictions?.[0] as any)?.numericValue}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               {eventStatus === 'completed' && eventWithId.result && (
@@ -347,9 +451,12 @@ export default function CampaignEventPage() {
                       {hasExistingPrediction && (
                         <div className="mt-4 pt-4 border-t">
                           <p className="text-sm text-muted-foreground">Your Prediction:</p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-green-400">
                             {(existingPredictions?.[0] as any)?.selectedOption || 
                              (existingPredictions?.[0] as any)?.numericValue}
+                            {(existingPredictions?.[0] as any)?.selectedOption === eventWithId.result.outcome && (
+                              <CheckCircle2 className="inline-block w-4 h-4 ml-2 text-green-400" />
+                            )}
                           </p>
                         </div>
                       )}
@@ -364,4 +471,3 @@ export default function CampaignEventPage() {
     </div>
   );
 }
-
