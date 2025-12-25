@@ -42,14 +42,6 @@ export function ImageAdGate({
     onCancelRef.current = onCancel;
   }, [onComplete, onCancel]);
 
-  // Set mounted flag
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
   useEffect(() => {
     // Don't run if already viewed
     if (hasViewed) {
@@ -67,14 +59,8 @@ export function ImageAdGate({
       return;
     }
     
-    // Prevent initialization if already initialized for this targetId
-    if (isInitializedRef.current && hasRunRef.current === targetId) {
-      return;
-    }
-    
     // Mark as run immediately to prevent concurrent runs
     hasRunRef.current = targetId;
-    isInitializedRef.current = true;
     
     let cancelled = false;
     
