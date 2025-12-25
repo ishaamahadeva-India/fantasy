@@ -30,6 +30,7 @@ export function ImageAdGate({
   const [hasViewed, setHasViewed] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
   const hasRunRef = useRef<string | null>(null);
+  const isMountedRef = useRef(true);
   
   // Use refs to store callbacks to avoid infinite loops from function recreation
   const onCompleteRef = useRef(onComplete);
@@ -41,16 +42,36 @@ export function ImageAdGate({
     onCancelRef.current = onCancel;
   }, [onComplete, onCancel]);
 
+  // Set mounted flag
   useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    // Don't run if already viewed or completed
+    if (hasViewed) {
+      return;
+    }
+    
     const targetId = tournamentId || campaignId;
-    if (!targetId) return;
+    if (!targetId) {
+      setIsLoading(false);
+      return;
+    }
     
     // Prevent multiple runs for the same targetId
-    if (hasRunRef.current === targetId) return;
+    if (hasRunRef.current === targetId) {
+      return;
+    }
     
     const checkAndLoadAd = async () => {
       if (!firestore || !user?.uid || (!tournamentId && !campaignId)) {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -65,11 +86,15 @@ export function ImageAdGate({
           : await hasUserViewedAd(firestore, user.uid, targetId);
         
         if (alreadyViewed) {
-          setHasViewed(true);
-          setIsLoading(false);
+          if (isMountedRef.current) {
+            setHasViewed(true);
+            setIsLoading(false);
+          }
           // User already viewed, allow entry
           setTimeout(() => {
-            onCompleteRef.current();
+            if (isMountedRef.current) {
+              onCompleteRef.current();
+            }
           }, 500);
           return;
         }
@@ -81,7 +106,9 @@ export function ImageAdGate({
         
         if (!selectedAd) {
           // No ads available, allow entry or show error
-          setIsLoading(false);
+          if (isMountedRef.current) {
+            setIsLoading(false);
+          }
           if (required) {
             // If required but no ads, still allow (fallback)
             onCompleteRef.current();
@@ -98,19 +125,25 @@ export function ImageAdGate({
           
           if (completedViews >= selectedAd.maxViewsPerUser) {
             // User reached limit, allow entry
-            setHasViewed(true);
-            setIsLoading(false);
+            if (isMountedRef.current) {
+              setHasViewed(true);
+              setIsLoading(false);
+            }
             onCompleteRef.current();
             return;
           }
         }
 
-        setAd(selectedAd);
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setAd(selectedAd);
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error('Error loading ad:', error);
         // On error, allow entry (don't block user)
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
         if (!required && onCancelRef.current) {
           onCancelRef.current();
         } else {
@@ -120,15 +153,7 @@ export function ImageAdGate({
     };
 
     checkAndLoadAd();
-    
-    // Reset hasRunRef when targetId changes (cleanup)
-    return () => {
-      if (hasRunRef.current === targetId) {
-        // Only reset if this is the current targetId
-        // This allows the effect to run again if the targetId actually changes
-      }
-    };
-  }, [firestore, user?.uid, tournamentId, campaignId, required]);
+  }, [firestore, user?.uid, tournamentId, campaignId, required, hasViewed]);
 
   const handleAdComplete = async (advertisementId: string) => {
     if (!firestore || !user?.uid || !ad) {

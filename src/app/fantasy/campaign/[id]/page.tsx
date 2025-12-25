@@ -262,7 +262,7 @@ export default function FantasyMovieCampaignPage() {
   const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank || 1;
 
   const [showAdGate, setShowAdGate] = useState(false);
-  const hasCheckedAdRef = useRef(false);
+  const hasCheckedAdRef = useRef<string | null>(null);
 
   const handleAdGateComplete = useCallback((adViewId?: string, advertisementId?: string) => {
     if (adViewId && user?.uid) {
@@ -277,14 +277,18 @@ export default function FantasyMovieCampaignPage() {
 
   // Show ad gate when user first views the campaign (if not already viewed)
   useEffect(() => {
-    if (user?.uid && campaignId && !hasCheckedAdRef.current) {
-      // Check if user has already viewed an ad for this campaign
-      const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
-      if (!hasViewedBefore) {
-        setShowAdGate(true);
-      }
-      hasCheckedAdRef.current = true;
+    // Only check once per campaign/user combination
+    const checkKey = `${campaignId}-${user?.uid}`;
+    if (!user?.uid || !campaignId || hasCheckedAdRef.current === checkKey) {
+      return;
     }
+    
+    // Check if user has already viewed an ad for this campaign
+    const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
+    if (!hasViewedBefore) {
+      setShowAdGate(true);
+    }
+    hasCheckedAdRef.current = checkKey;
   }, [user?.uid, campaignId]); // Only depend on stable primitive values
 
   return (
