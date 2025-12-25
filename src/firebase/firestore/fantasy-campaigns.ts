@@ -70,27 +70,107 @@ type NewFantasyEvent = {
   };
 };
 
+// Helper function to remove undefined values from an object recursively
+function removeUndefinedValues(obj: Record<string, any>): Record<string, any> {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      continue; // Skip undefined values
+    }
+    // Handle arrays
+    if (Array.isArray(value)) {
+      cleaned[key] = value.map(item => 
+        typeof item === 'object' && item !== null ? removeUndefinedValues(item) : item
+      );
+    }
+    // Handle nested objects
+    else if (typeof value === 'object' && value !== null && !(value instanceof Date)) {
+      cleaned[key] = removeUndefinedValues(value);
+    }
+    // Handle strings - filter out empty strings for optional fields
+    else if (typeof value === 'string' && value.trim() === '' && 
+             (key === 'sponsorLogo' || key === 'sponsorName' || key === 'description' || 
+              key === 'prizePool' || key === 'movieTitle' || key === 'movieLanguage')) {
+      continue; // Skip empty strings for optional fields
+    }
+    else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
 /**
  * Adds a new fantasy campaign to the 'fantasy-campaigns' collection.
  */
 export function addFantasyCampaign(firestore: Firestore, campaignData: NewFantasyCampaign) {
   const campaignsCollection = collection(firestore, 'fantasy-campaigns');
-  const docToSave = {
-    ...campaignData,
-    // Ensure backward compatibility - if single movie, set movieId
-    ...(campaignData.campaignType === 'single_movie' && campaignData.movieId
-      ? { movieId: campaignData.movieId, movieTitle: campaignData.movieTitle, movieLanguage: campaignData.movieLanguage }
-      : {}),
+  
+  // Build the document to save
+  const docToSave: Record<string, any> = {
+    title: campaignData.title,
+    campaignType: campaignData.campaignType,
+    startDate: campaignData.startDate,
+    status: campaignData.status,
+    visibility: campaignData.visibility,
+    entryFee: campaignData.entryFee,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  
+  // Add optional fields only if they have values
+  if (campaignData.description && campaignData.description.trim() !== '') {
+    docToSave.description = campaignData.description;
+  }
+  if (campaignData.prizePool && campaignData.prizePool.trim() !== '') {
+    docToSave.prizePool = campaignData.prizePool;
+  }
+  if (campaignData.sponsorName && campaignData.sponsorName.trim() !== '') {
+    docToSave.sponsorName = campaignData.sponsorName;
+  }
+  if (campaignData.sponsorLogo && campaignData.sponsorLogo.trim() !== '') {
+    docToSave.sponsorLogo = campaignData.sponsorLogo;
+  }
+  if (campaignData.endDate) {
+    docToSave.endDate = campaignData.endDate;
+  }
+  if (campaignData.maxParticipants !== undefined && campaignData.maxParticipants !== null) {
+    docToSave.maxParticipants = campaignData.maxParticipants;
+  }
+  if (campaignData.rewards && campaignData.rewards.length > 0) {
+    docToSave.rewards = campaignData.rewards;
+  }
+  if (campaignData.createdBy) {
+    docToSave.createdBy = campaignData.createdBy;
+  }
+  
+  // Handle single movie fields
+  if (campaignData.campaignType === 'single_movie') {
+    if (campaignData.movieId && campaignData.movieId.trim() !== '') {
+      docToSave.movieId = campaignData.movieId;
+    }
+    if (campaignData.movieTitle && campaignData.movieTitle.trim() !== '') {
+      docToSave.movieTitle = campaignData.movieTitle;
+    }
+    if (campaignData.movieLanguage && campaignData.movieLanguage.trim() !== '') {
+      docToSave.movieLanguage = campaignData.movieLanguage;
+    }
+  }
+  
+  // Handle multiple movies
+  if (campaignData.campaignType === 'multiple_movies' && campaignData.movies && campaignData.movies.length > 0) {
+    docToSave.movies = campaignData.movies;
+  }
+  
+  // Final cleanup to remove any undefined values (safety check)
+  const cleanData = removeUndefinedValues(docToSave);
 
-  return addDoc(campaignsCollection, docToSave)
+  return addDoc(campaignsCollection, cleanData)
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: campaignsCollection.path,
         operation: 'create',
-        requestResourceData: docToSave,
+        requestResourceData: cleanData,
       });
       errorEmitter.emit('permission-error', permissionError);
       throw serverError;
@@ -106,17 +186,35 @@ export function updateFantasyCampaign(
   campaignData: Partial<NewFantasyCampaign>
 ) {
   const campaignDocRef = doc(firestore, 'fantasy-campaigns', campaignId);
-  const docToUpdate = {
-    ...campaignData,
+  
+  // Build update object, only including defined fields
+  const docToUpdate: Record<string, any> = {
     updatedAt: serverTimestamp(),
   };
+  
+  // Only add fields that are defined
+  Object.keys(campaignData).forEach(key => {
+    const value = (campaignData as any)[key];
+    if (value !== undefined) {
+      // For strings, skip empty strings for optional fields
+      if (typeof value === 'string' && value.trim() === '' && 
+          (key === 'sponsorLogo' || key === 'sponsorName' || key === 'description' || 
+           key === 'prizePool' || key === 'movieTitle' || key === 'movieLanguage')) {
+        return; // Skip empty strings
+      }
+      docToUpdate[key] = value;
+    }
+  });
+  
+  // Final cleanup to remove any undefined values
+  const cleanData = removeUndefinedValues(docToUpdate);
 
-  return updateDoc(campaignDocRef, docToUpdate)
+  return updateDoc(campaignDocRef, cleanData)
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: campaignDocRef.path,
         operation: 'update',
-        requestResourceData: docToUpdate,
+        requestResourceData: cleanData,
       });
       errorEmitter.emit('permission-error', permissionError);
       throw serverError;
