@@ -121,6 +121,10 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
     resolver: zodResolver(campaignSchema),
     defaultValues: {
       status: 'upcoming',
+      campaignType: 'single_movie',
+      entryFee: {
+        type: 'free',
+      },
       events: [],
       ...defaultValues,
     },
@@ -136,8 +140,8 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
     name: 'movies',
   });
 
-  const campaignType = form.watch('campaignType');
-  const entryFeeType = form.watch('entryFee.type');
+  const campaignType = form.watch('campaignType') || 'single_movie';
+  const entryFeeType = form.watch('entryFee.type') || 'free';
 
   const addEventFromTemplate = (template: typeof EVENT_TEMPLATES[0]) => {
     appendEvent({
@@ -197,10 +201,10 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Campaign Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || 'single_movie'}>
+                  <Select onValueChange={field.onChange} value={field.value || 'single_movie'}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select campaign type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -259,25 +263,25 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Movie Language</FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select language" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Tollywood">Tollywood (Telugu)</SelectItem>
-                            <SelectItem value="Bollywood">Bollywood (Hindi)</SelectItem>
-                            <SelectItem value="Tamil">Tamil</SelectItem>
-                            <SelectItem value="Kannada">Kannada</SelectItem>
-                            <SelectItem value="Malayalam">Malayalam</SelectItem>
-                            <SelectItem value="Punjabi">Punjabi</SelectItem>
-                            <SelectItem value="Bhojpuri">Bhojpuri</SelectItem>
-                            <SelectItem value="Hollywood">Hollywood</SelectItem>
-                            <SelectItem value="OTT">OTT</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Tollywood">Tollywood (Telugu)</SelectItem>
+                          <SelectItem value="Bollywood">Bollywood (Hindi)</SelectItem>
+                          <SelectItem value="Tamil">Tamil</SelectItem>
+                          <SelectItem value="Kannada">Kannada</SelectItem>
+                          <SelectItem value="Malayalam">Malayalam</SelectItem>
+                          <SelectItem value="Punjabi">Punjabi</SelectItem>
+                          <SelectItem value="Bhojpuri">Bhojpuri</SelectItem>
+                          <SelectItem value="Hollywood">Hollywood</SelectItem>
+                          <SelectItem value="OTT">OTT</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -638,10 +642,10 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Entry Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || 'free'}>
+                  <Select onValueChange={field.onChange} value={field.value || 'free'}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select entry type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
