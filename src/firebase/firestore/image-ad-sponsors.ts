@@ -205,6 +205,16 @@ export function deleteImageAdSponsor(
     });
 }
 
+// Helper function to safely convert Firestore Timestamp to Date
+function toDate(value: any): Date | null {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (typeof value === 'number') return new Date(value);
+  if (typeof value === 'string') return new Date(value);
+  return null;
+}
+
 /**
  * Gets all sponsors
  */
@@ -220,10 +230,10 @@ export async function getAllImageAdSponsors(
     sponsors.push({
       id: docSnapshot.id,
       ...data,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      updatedAt: data.updatedAt?.toDate() || new Date(),
-      contractStartDate: data.contractStartDate?.toDate(),
-      contractEndDate: data.contractEndDate?.toDate(),
+      createdAt: toDate(data.createdAt) || new Date(),
+      updatedAt: toDate(data.updatedAt) || new Date(),
+      contractStartDate: toDate(data.contractStartDate),
+      contractEndDate: toDate(data.contractEndDate),
     } as ImageAdSponsor);
   });
 
