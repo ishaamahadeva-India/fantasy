@@ -141,6 +141,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
     defaultValues: {
       status: 'upcoming',
       campaignType: 'single_movie',
+      visibility: 'public',
       entryFee: {
         type: 'free',
       },
@@ -648,7 +649,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visibility</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || 'public'}>
+                  <Select onValueChange={field.onChange} value={field.value || 'public'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />

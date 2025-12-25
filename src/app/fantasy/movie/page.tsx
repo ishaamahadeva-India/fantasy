@@ -205,20 +205,31 @@ export default function MovieFantasyPage() {
 
     // Query for movie campaigns (single_movie or multiple_movies)
     // We'll filter by status client-side since Firestore doesn't support nested or() queries easily
+    // Note: Removed orderBy temporarily to avoid index requirement - we'll sort client-side
     const campaignsQuery = useMemo(() => {
         if (!firestore) return null;
         const campaignsRef = collection(firestore, 'fantasy-campaigns');
+        // Try to use or() query, but if it fails, we'll fetch all and filter client-side
         return query(
             campaignsRef,
             or(
                 where('campaignType', '==', 'single_movie'),
                 where('campaignType', '==', 'multiple_movies')
-            ),
-            orderBy('startDate', 'desc')
+            )
         );
     }, [firestore]);
 
-    const { data: campaignsData, isLoading: campaignsLoading } = useCollection(campaignsQuery);
+    // Fallback query: fetch all campaigns if the filtered query fails
+    const fallbackQuery = useMemo(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'fantasy-campaigns');
+    }, [firestore]);
+
+    const { data: campaignsData, isLoading: campaignsLoading, error: campaignsError } = useCollection(campaignsQuery);
+    const { data: fallbackData } = useCollection(campaignsError ? fallbackQuery : null);
+    
+    // Use fallback data if main query failed
+    const finalCampaignsData = campaignsError && fallbackData ? fallbackData : campaignsData;
     
     // Fetch all movies for displaying movie titles
     const moviesQuery = useMemo(() => {
@@ -229,15 +240,73 @@ export default function MovieFantasyPage() {
     const { data: moviesData } = useCollection(moviesQuery);
     const movies = moviesData as MovieWithId[] | undefined;
     
+    // Debug logging
+    useEffect(() => {
+        if (campaignsError) {
+            console.error('Error fetching campaigns:', campaignsError);
+            console.log('Using fallback query to fetch all campaigns...');
+        }
+        if (finalCampaignsData) {
+            console.log('Fetched campaigns:', finalCampaignsData);
+            console.log('Campaigns count:', finalCampaignsData.length);
+            (finalCampaignsData as FantasyCampaignWithId[]).forEach((campaign, idx) => {
+                console.log(`Campaign ${idx + 1}:`, {
+                    id: campaign.id,
+                    title: campaign.title,
+                    campaignType: campaign.campaignType,
+                    status: campaign.status,
+                    visibility: campaign.visibility,
+                    startDate: campaign.startDate
+                });
+            });
+        }
+    }, [finalCampaignsData, campaignsError]);
+    
     // Filter campaigns client-side to only show upcoming or active ones, and public visibility
+    // Also filter by campaignType and sort by startDate
     const campaigns = useMemo(() => {
-        if (!campaignsData) return undefined;
-        return (campaignsData as FantasyCampaignWithId[])
-            .filter(campaign => 
-                (campaign.status === 'upcoming' || campaign.status === 'active') &&
-                (campaign.visibility === 'public' || !campaign.visibility) // Show public campaigns or campaigns without visibility set (default to public)
-            );
-    }, [campaignsData]);
+        if (!finalCampaignsData) return undefined;
+        const allCampaigns = finalCampaignsData as FantasyCampaignWithId[];
+        console.log('All campaigns before filter:', allCampaigns.length);
+        
+        // First filter by campaignType (in case query didn't work)
+        const movieCampaigns = allCampaigns.filter(campaign => 
+            campaign.campaignType === 'single_movie' || campaign.campaignType === 'multiple_movies'
+        );
+        console.log('Movie campaigns after type filter:', movieCampaigns.length);
+        
+        // Then filter by status and visibility
+        const filtered = movieCampaigns.filter(campaign => {
+            const statusMatch = campaign.status === 'upcoming' || campaign.status === 'active';
+            const visibilityMatch = campaign.visibility === 'public' || !campaign.visibility;
+            const result = statusMatch && visibilityMatch;
+            
+            if (!result) {
+                console.log('Campaign filtered out:', {
+                    title: campaign.title,
+                    campaignType: campaign.campaignType,
+                    status: campaign.status,
+                    visibility: campaign.visibility,
+                    statusMatch,
+                    visibilityMatch
+                });
+            }
+            
+            return result;
+        });
+        
+        // Sort by startDate descending (client-side)
+        filtered.sort((a, b) => {
+            const dateA = a.startDate instanceof Date ? a.startDate.getTime() : 
+                         a.startDate?.toMillis ? a.startDate.toMillis() : 0;
+            const dateB = b.startDate instanceof Date ? b.startDate.getTime() : 
+                         b.startDate?.toMillis ? b.startDate.toMillis() : 0;
+            return dateB - dateA;
+        });
+        
+        console.log('Filtered campaigns:', filtered.length);
+        return filtered;
+    }, [finalCampaignsData]);
 
     useEffect(() => {
         if (!profileLoading && userProfile) {
