@@ -49,6 +49,39 @@ export default function CampaignEventPage() {
   const { data: eventData, isLoading: eventLoading } = useDoc(eventDocRef);
   const event = eventData as (FantasyEvent & { id: string }) | undefined;
 
+  // Fetch all movies to resolve movie titles from IDs
+  const moviesQuery = firestore ? collection(firestore, 'movies') : null;
+  const { data: moviesData } = useCollection(moviesQuery);
+  const allMovies = moviesData as (Movie & { id: string })[] | undefined;
+
+  // Helper function to resolve movie titles from options
+  const resolveMovieTitles = (options: string[] | undefined): string[] => {
+    if (!options || !allMovies || !campaign) return options || [];
+    
+    // Check if options look like movie IDs (long alphanumeric strings)
+    const isMovieId = (str: string) => /^[a-zA-Z0-9]{20,}$/.test(str);
+    
+    return options.map(option => {
+      // If it looks like a movie ID, try to resolve it
+      if (isMovieId(option)) {
+        // First check campaign movies
+        if (campaign.movies) {
+          const campaignMovie = campaign.movies.find(m => m.movieId === option);
+          if (campaignMovie?.movieTitle) {
+            return campaignMovie.movieTitle;
+          }
+        }
+        // Then check all movies collection
+        const movie = allMovies.find(m => m.id === option);
+        if (movie?.title) {
+          return movie.title;
+        }
+      }
+      // Return as-is if not a movie ID or not found
+      return option;
+    });
+  };
+
   // Fetch existing predictions
   const predictionsQuery = useMemo(() => {
     if (!firestore || !user) return null;
@@ -268,9 +301,9 @@ export default function CampaignEventPage() {
                   <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
                     <div className="space-y-2">
                       {eventWithId.options.map((option, idx) => {
-                        const isSelected = selectedOption === option;
+                        const isSelected = selectedOption === originalOption;
                         const wasPreviouslySelected = hasExistingPrediction && 
-                          (existingPredictions?.[0] as any)?.selectedOption === option;
+                          (existingPredictions?.[0] as any)?.selectedOption === originalOption;
                         return (
                           <div 
                             key={idx} 
@@ -280,7 +313,7 @@ export default function CampaignEventPage() {
                                 : ''
                             }`}
                           >
-                            <RadioGroupItem value={option} id={`option-${idx}`} />
+                            <RadioGroupItem value={originalOption} id={`option-${idx}`} />
                             <Label htmlFor={`option-${idx}`} className="flex-1 cursor-pointer flex items-center gap-2">
                               <span className={isSelected || wasPreviouslySelected ? 'font-semibold text-green-700 dark:text-green-400' : ''}>
                                 {option}
@@ -301,9 +334,10 @@ export default function CampaignEventPage() {
                 <div>
                   <Label className="text-base mb-3 block">Rank the movies (click to add to ranking):</Label>
                   <div className="space-y-2">
-                    {eventWithId.options.map((option, idx) => {
-                      const currentRank = rankingOrder.indexOf(option) + 1;
-                      const isRanked = rankingOrder.includes(option);
+                    {resolveMovieTitles(eventWithId.options).map((option, idx) => {
+                      const originalOption = eventWithId.options![idx];
+                      const currentRank = rankingOrder.indexOf(originalOption) + 1;
+                      const isRanked = rankingOrder.includes(originalOption);
                       return (
                         <div
                           key={idx}
@@ -314,9 +348,9 @@ export default function CampaignEventPage() {
                           }`}
                           onClick={() => {
                             if (!isRanked) {
-                              setRankingOrder([...rankingOrder, option]);
+                              setRankingOrder([...rankingOrder, originalOption]);
                             } else {
-                              setRankingOrder(rankingOrder.filter(o => o !== option));
+                              setRankingOrder(rankingOrder.filter(o => o !== originalOption));
                             }
                           }}
                         >
@@ -341,9 +375,10 @@ export default function CampaignEventPage() {
                     <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                       <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">Your Ranking:</p>
                       <ol className="list-decimal list-inside space-y-1">
-                        {rankingOrder.map((movie, idx) => (
-                          <li key={idx} className="text-sm">{movie}</li>
-                        ))}
+                        {rankingOrder.map((movieId, idx) => {
+                          const movieTitle = resolveMovieTitles([movieId])[0];
+                          return <li key={idx} className="text-sm">{movieTitle}</li>;
+                        })}
                       </ol>
                     </div>
                   )}

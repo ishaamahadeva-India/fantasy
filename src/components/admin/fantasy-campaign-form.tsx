@@ -191,7 +191,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
   };
 
   const addComparisonEventFromTemplate = (template: typeof COMPARISON_EVENT_TEMPLATES[0]) => {
-    const movies = form.getValues('movies') || [];
+    const campaignMovies = form.getValues('movies') || [];
     
     // For comparison events, options should be movie names (or industries for industry battles)
     let options: string[] = [];
@@ -201,11 +201,19 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
       options = template.defaultOptions;
     } else if (template.isIndustryBattle) {
       // For industry battles, get unique industries from movies
-      const industries = [...new Set(movies.map(m => m.industry))];
+      const industries = [...new Set(campaignMovies.map(m => m.industry))];
       options = industries;
     } else {
       // For regular comparison events, use movie titles
-      options = movies.map(m => m.movieTitle || `Movie ${m.movieId}`);
+      // Look up movie titles from the movies collection if movieTitle is not set
+      options = campaignMovies.map(m => {
+        if (m.movieTitle) {
+          return m.movieTitle;
+        }
+        // Look up from movies collection
+        const movie = movies?.find(mv => mv.id === m.movieId);
+        return movie?.title || `Movie ${m.movieId}`;
+      });
     }
     
     // If no movies added yet and no defaultOptions, use placeholder
@@ -423,7 +431,17 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Movie <span className="text-destructive">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select 
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                // Auto-populate movieTitle when movie is selected
+                                const selectedMovie = movies?.find(m => m.id === value);
+                                if (selectedMovie) {
+                                  form.setValue(`movies.${index}.movieTitle`, selectedMovie.title);
+                                }
+                              }} 
+                              value={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select movie" />
