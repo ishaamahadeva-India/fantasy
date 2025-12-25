@@ -301,15 +301,28 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="targetTournaments">Target Tournaments (optional)</Label>
-        <Input
-          id="targetTournaments"
-          value={formData.targetTournaments}
-          onChange={(e) => setFormData(prev => ({ ...prev, targetTournaments: e.target.value }))}
-          placeholder="Comma-separated tournament IDs"
-        />
-        <p className="text-xs text-muted-foreground">Leave empty to show for all tournaments</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="targetTournaments">Target Tournaments (optional)</Label>
+          <Input
+            id="targetTournaments"
+            value={formData.targetTournaments}
+            onChange={(e) => setFormData(prev => ({ ...prev, targetTournaments: e.target.value }))}
+            placeholder="Comma-separated tournament IDs"
+          />
+          <p className="text-xs text-muted-foreground">Leave empty to show for all tournaments</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="targetCampaigns">Target Campaigns (optional)</Label>
+          <Input
+            id="targetCampaigns"
+            value={formData.targetCampaigns}
+            onChange={(e) => setFormData(prev => ({ ...prev, targetCampaigns: e.target.value }))}
+            placeholder="Comma-separated campaign IDs"
+          />
+          <p className="text-xs text-muted-foreground">Leave empty to show for all campaigns</p>
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t">

@@ -664,7 +664,8 @@ export type ImageAdView = {
   id: string;
   advertisementId: string;
   userId: string;
-  tournamentId?: string;
+  tournamentId?: string; // For cricket tournaments
+  campaignId?: string; // For movie fantasy campaigns
   
   // View Details
   viewedAt: Date;

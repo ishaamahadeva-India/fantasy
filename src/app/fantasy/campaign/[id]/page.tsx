@@ -261,8 +261,46 @@ export default function FantasyMovieCampaignPage() {
 
   const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank || 1;
 
+  const [showAdGate, setShowAdGate] = useState(false);
+
+  const handleAdGateComplete = () => {
+    setShowAdGate(false);
+  };
+
+  const handleAdGateCancel = () => {
+    setShowAdGate(false);
+  };
+
+  // Show ad gate when user first views the campaign (if not already viewed)
+  useEffect(() => {
+    if (user && campaign && !showAdGate) {
+      // Check if user has already viewed an ad for this campaign
+      // For now, show ad gate on first visit (can be optimized later)
+      const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
+      if (!hasViewedBefore) {
+        setShowAdGate(true);
+      }
+    }
+  }, [user, campaign, campaignId, showAdGate]);
+
   return (
-    <div className="space-y-8">
+    <>
+      {/* Image Ad Gate - shows when user first views campaign */}
+      {showAdGate && (
+        <ImageAdGate
+          campaignId={campaignId}
+          onComplete={(adViewId, advertisementId) => {
+            if (adViewId && user) {
+              localStorage.setItem(`ad-viewed-${campaignId}-${user.uid}`, 'true');
+            }
+            handleAdGateComplete();
+          }}
+          onCancel={handleAdGateCancel}
+          required={true}
+        />
+      )}
+      
+      <div className="space-y-8">
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2 -ml-2 md:-ml-4'>
             <Button variant="ghost" asChild>
                 <Link href="/fantasy/movie">
