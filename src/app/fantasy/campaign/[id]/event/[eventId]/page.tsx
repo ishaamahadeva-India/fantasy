@@ -42,6 +42,20 @@ export default function CampaignEventPage() {
   const { data: campaignData, isLoading: campaignLoading } = useDoc(campaignDocRef);
   const campaign = campaignData as (FantasyCampaign & { id: string }) | undefined;
 
+  // Extract sponsor information (handle both typed and raw data)
+  const sponsorName = campaign?.sponsorName || (campaignData as any)?.sponsorName;
+  const sponsorLogo = campaign?.sponsorLogo || (campaignData as any)?.sponsorLogo;
+
+  // Debug: Log campaign data to check sponsor fields
+  useEffect(() => {
+    if (campaignData) {
+      console.log('Campaign data (raw):', campaignData);
+      console.log('Campaign (typed):', campaign);
+      console.log('Sponsor Name:', sponsorName);
+      console.log('Sponsor Logo:', sponsorLogo);
+    }
+  }, [campaignData, campaign, sponsorName, sponsorLogo]);
+
   // Fetch event
   const eventDocRef = firestore 
     ? doc(firestore, 'fantasy-campaigns', campaignId, 'events', eventId)
@@ -225,20 +239,32 @@ export default function CampaignEventPage() {
             </Badge>
           </div>
           <CardDescription>{eventWithId.description}</CardDescription>
-          {/* Sponsor/Brand Display */}
-          {campaign?.sponsorName && (
-            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-              {campaign.sponsorLogo && (
-                <img 
-                  src={campaign.sponsorLogo} 
-                  alt={campaign.sponsorName}
-                  className="w-5 h-5 object-contain"
-                />
-              )}
-              <span className="font-medium text-primary">Sponsored by {campaign.sponsorName}</span>
-            </div>
-          )}
         </CardHeader>
+        {/* Sponsor/Brand Display - More Prominent */}
+        {(sponsorName || sponsorLogo) && (
+          <div className="px-6 py-3 bg-primary/10 border-y border-primary/20 flex items-center gap-2">
+            {sponsorLogo && (
+              <img 
+                src={sponsorLogo} 
+                alt={sponsorName || 'Sponsor'}
+                className="w-6 h-6 object-contain"
+                onError={(e) => {
+                  // Hide image if it fails to load
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
+            {sponsorName ? (
+              <span className="text-sm font-semibold text-primary">
+                Sponsored by {sponsorName}
+              </span>
+            ) : sponsorLogo ? (
+              <span className="text-sm font-semibold text-primary">
+                Sponsored Event
+              </span>
+            ) : null}
+          </div>
+        )}
         <CardContent className="space-y-4">
           {/* Event Status Badges */}
           <div className="flex items-center gap-2 flex-wrap">
