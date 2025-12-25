@@ -262,6 +262,7 @@ export default function FantasyMovieCampaignPage() {
   const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank || 1;
 
   const [showAdGate, setShowAdGate] = useState(false);
+  const [hasCheckedAd, setHasCheckedAd] = useState(false);
 
   const handleAdGateComplete = () => {
     setShowAdGate(false);
@@ -273,15 +274,15 @@ export default function FantasyMovieCampaignPage() {
 
   // Show ad gate when user first views the campaign (if not already viewed)
   useEffect(() => {
-    if (user && campaign && !showAdGate) {
+    if (user && campaign && campaignId && !hasCheckedAd) {
       // Check if user has already viewed an ad for this campaign
-      // For now, show ad gate on first visit (can be optimized later)
       const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
       if (!hasViewedBefore) {
         setShowAdGate(true);
       }
+      setHasCheckedAd(true);
     }
-  }, [user, campaign, campaignId, showAdGate]);
+  }, [user, campaign, campaignId, hasCheckedAd]);
 
   return (
     <>
