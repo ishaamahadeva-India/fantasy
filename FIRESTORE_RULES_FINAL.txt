@@ -6,11 +6,11 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Helper function to check if user is admin
-    // IMPORTANT: Replace 'admin@fantasy.com' with your actual admin email
+    // Helper function to check if user is super admin
+    // Only adminW@fantasy.com has admin access
     function isAdmin() {
       return isAuthenticated() && 
-             request.auth.token.email == 'admin@fantasy.com';
+             request.auth.token.email == 'adminW@fantasy.com';
     }
     
     // Users collection - users can read/write their own data
