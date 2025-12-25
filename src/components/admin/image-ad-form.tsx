@@ -134,21 +134,22 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="sponsorId">Sponsor *</Label>
-          <Select value={formData.sponsorId || undefined} onValueChange={handleSponsorChange}>
+          <Select value={formData.sponsorId || 'none'} onValueChange={handleSponsorChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select sponsor" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">None</SelectItem>
               {sponsors.map((sponsor) => (
                 <SelectItem key={sponsor.id} value={sponsor.id}>
-                  {sponsor.name}
+                  {sponsor.name || sponsor.companyName || `Sponsor ${sponsor.id}`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {sponsors.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              No sponsors available. Create a sponsor first.
+              No sponsors available. <Link href="/admin/image-ads/sponsors" className="text-primary underline">Create a sponsor first</Link>.
             </p>
           )}
         </div>
