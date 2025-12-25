@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
 import { collection, query, where, orderBy, limit, type Query, doc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { Article, UserProfile, Movie, Gossip, Advertisement } from '@/lib/types';
 import { MessageSquareText } from 'lucide-react';
 import { SocialShare } from '@/components/social-share';
@@ -142,19 +142,53 @@ function SponsoredAd() {
     const firestore = useFirestore();
     
     // Query for active advertisements in the sidebar sponsored position
+    // Note: Removed orderBy to avoid index requirement - we'll sort client-side
     const adsQuery = useMemo(() => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'advertisements'),
             where('position', '==', 'home-sidebar-sponsored'),
-            where('active', '==', true),
-            orderBy('createdAt', 'desc'),
-            limit(1)
+            where('active', '==', true)
         );
     }, [firestore]);
     
-    const { data: ads, isLoading } = useCollection(adsQuery);
-    const advertisement = ads && ads.length > 0 ? (ads[0] as Advertisement & { id: string }) : null;
+    const { data: ads, isLoading, error } = useCollection(adsQuery);
+    
+    // Debug logging
+    useEffect(() => {
+        if (error) {
+            console.error('Error fetching advertisements:', error);
+        }
+        if (ads) {
+            console.log('Fetched advertisements:', ads);
+            console.log('Advertisements count:', ads.length);
+            ads.forEach((ad, idx) => {
+                console.log(`Ad ${idx + 1}:`, {
+                    id: ad.id,
+                    title: ad.title,
+                    position: ad.position,
+                    active: ad.active,
+                    createdAt: ad.createdAt
+                });
+            });
+        }
+    }, [ads, error]);
+    
+    // Sort by createdAt descending client-side and get the first one
+    const advertisement = useMemo(() => {
+        if (!ads || ads.length === 0) return null;
+        
+        const sortedAds = [...ads].sort((a, b) => {
+            const dateA = toDate(a.createdAt);
+            const dateB = toDate(b.createdAt);
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateB.getTime() - dateA.getTime();
+        });
+        
+        return sortedAds[0] as Advertisement & { id: string };
+    }, [ads]);
     
     if (isLoading) {
         return (
@@ -174,7 +208,13 @@ function SponsoredAd() {
         );
     }
     
+    if (error) {
+        console.error('Error loading advertisement:', error);
+        return null; // Don't show error to users, just fail silently
+    }
+    
     if (!advertisement) {
+        console.log('No active advertisement found for home-sidebar-sponsored position');
         return null; // Don't show anything if no active ad
     }
     
