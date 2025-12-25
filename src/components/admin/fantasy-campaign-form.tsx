@@ -164,18 +164,29 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
   const entryFeeType = form.watch('entryFee.type') || 'free';
 
   const addEventFromTemplate = (template: typeof EVENT_TEMPLATES[0]) => {
-    appendEvent({
+    const newEvent = {
       title: template.title,
       description: template.description,
       eventType: template.eventType,
-      status: 'upcoming',
+      status: 'upcoming' as const,
       startDate: new Date(),
       endDate: new Date(),
       points: template.defaultPoints,
       difficultyLevel: template.difficultyLevel,
       options: template.defaultOptions || [],
       rules: template.defaultRules || [],
+    };
+    console.log('➕ Adding event from template:', newEvent.title);
+    appendEvent(newEvent);
+    console.log('✅ Event added. Current events count:', form.getValues('events')?.length || 0);
+  };
+  
+  const addAllEventsFromTemplates = () => {
+    console.log('🚀 Adding all events from templates. Total templates:', EVENT_TEMPLATES.length);
+    EVENT_TEMPLATES.forEach((template) => {
+      addEventFromTemplate(template);
     });
+    console.log('✅ All events added. Final count:', form.getValues('events')?.length || 0);
   };
 
   const addAllEventsFromTemplates = () => {
@@ -201,8 +212,17 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-        console.error('Form validation errors:', errors);
+      <form onSubmit={form.handleSubmit((data) => {
+        // CRITICAL DEBUG: Log form data before submission
+        console.log('🔥 FORM SUBMIT - Data being sent to onSubmit:', data);
+        console.log('🔥 FORM SUBMIT - Events in data:', data.events);
+        console.log('🔥 FORM SUBMIT - Events length:', data.events?.length || 0);
+        console.log('🔥 FORM SUBMIT - Form values:', form.getValues());
+        console.log('🔥 FORM SUBMIT - Form events field:', form.getValues('events'));
+        onSubmit(data);
+      }, (errors) => {
+        console.error('❌ Form validation errors:', errors);
+        console.error('❌ Form values at error:', form.getValues());
       })} className="space-y-8">
         <Card>
           <CardHeader>

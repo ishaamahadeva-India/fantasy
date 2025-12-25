@@ -15,9 +15,20 @@ export default function NewMultipleMoviesCampaignPage() {
 
   const handleCreateCampaign = async (data: any) => {
     if (!firestore) return;
+    
+    // CRITICAL DEBUG: Log the entire form data
+    console.log('🔥 FORM SUBMITTED - Full data received:', data);
+    console.log('🔥 Events in form data:', data.events);
+    console.log('🔥 Events type:', typeof data.events);
+    console.log('🔥 Events is array?', Array.isArray(data.events));
+    console.log('🔥 Events length:', data.events?.length || 0);
+    
     try {
       // Extract events from campaign data
       const { events, ...campaignData } = data;
+      
+      console.log('🔥 After extraction - events:', events);
+      console.log('🔥 After extraction - events length:', events?.length || 0);
       
       // Ensure campaign type is multiple_movies
       campaignData.campaignType = 'multiple_movies';
