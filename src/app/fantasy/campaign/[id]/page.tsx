@@ -11,7 +11,7 @@ import { useDoc, useFirestore, useCollection, useUser } from '@/firebase';
 import { doc, collection, Timestamp, query, where } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
 import { ImageAdGate } from '@/components/ads/image-ad-gate';
 
@@ -262,7 +262,7 @@ export default function FantasyMovieCampaignPage() {
   const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank || 1;
 
   const [showAdGate, setShowAdGate] = useState(false);
-  const [hasCheckedAd, setHasCheckedAd] = useState(false);
+  const hasCheckedAdRef = useRef(false);
 
   const handleAdGateComplete = () => {
     setShowAdGate(false);
@@ -274,15 +274,15 @@ export default function FantasyMovieCampaignPage() {
 
   // Show ad gate when user first views the campaign (if not already viewed)
   useEffect(() => {
-    if (user && campaign && campaignId && !hasCheckedAd) {
+    if (user?.uid && campaignId && !hasCheckedAdRef.current) {
       // Check if user has already viewed an ad for this campaign
       const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
       if (!hasViewedBefore) {
         setShowAdGate(true);
       }
-      setHasCheckedAd(true);
+      hasCheckedAdRef.current = true;
     }
-  }, [user, campaign, campaignId, hasCheckedAd]);
+  }, [user?.uid, campaignId]); // Only depend on stable primitive values
 
   return (
     <>
