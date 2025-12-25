@@ -38,9 +38,22 @@ export default function NewMultipleMoviesCampaignPage() {
 
       // Add events if any
       if (events && events.length > 0) {
+        console.log(`Adding ${events.length} events to campaign ${campaignId}`);
         for (const event of events) {
-          await addCampaignEvent(firestore, campaignId, event);
+          try {
+            await addCampaignEvent(firestore, campaignId, event);
+            console.log('Event added successfully:', event.title);
+          } catch (error) {
+            console.error('Error adding event:', error);
+            toast({
+              variant: 'destructive',
+              title: 'Warning',
+              description: `Failed to add event: ${event.title}. Campaign created but some events may be missing.`,
+            });
+          }
         }
+      } else {
+        console.log('No events to add to campaign');
       }
 
       toast({

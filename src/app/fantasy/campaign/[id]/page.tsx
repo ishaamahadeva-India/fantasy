@@ -113,8 +113,28 @@ export default function FantasyMovieCampaignPage() {
   const eventsRef = firestore
     ? collection(firestore, 'fantasy-campaigns', campaignId, 'events')
     : null;
-  const { data: eventsData, isLoading: eventsLoading } = useCollection(eventsRef);
+  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useCollection(eventsRef);
   const events = eventsData as FantasyEventWithId[] | undefined;
+  
+  // Debug logging for events
+  useEffect(() => {
+    if (eventsError) {
+      console.error('Error fetching events:', eventsError);
+    }
+    if (eventsData) {
+      console.log('Fetched events:', eventsData);
+      console.log('Events count:', eventsData.length);
+      eventsData.forEach((event, idx) => {
+        console.log(`Event ${idx + 1}:`, {
+          id: event.id,
+          title: event.title,
+          status: event.status,
+          startDate: event.startDate,
+          endDate: event.endDate
+        });
+      });
+    }
+  }, [eventsData, eventsError]);
 
   // Categorize events by status
   const categorizedEvents = useMemo(() => {

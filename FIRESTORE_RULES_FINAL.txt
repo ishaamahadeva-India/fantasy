@@ -60,6 +60,20 @@ service cloud.firestore {
     match /fantasy-campaigns/{campaignId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+      
+      // Campaign Events subcollection - authenticated read, admin write
+      match /events/{eventId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+      
+      // Campaign Participations subcollection - authenticated read/write
+      match /participations/{participationId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update: if isAuthenticated() && 
+                        resource.data.userId == request.auth.uid;
+      }
     }
     
     // Fantasy Matches - authenticated read, admin write
