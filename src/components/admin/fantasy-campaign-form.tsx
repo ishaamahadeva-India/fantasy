@@ -250,12 +250,8 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                           variant="outline"
                           size="sm"
                           asChild
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
                         >
-                          <Link href="/admin/fanzone/movies/new" target="_blank">
+                          <Link href="/admin/fanzone/movies/new" target="_blank" rel="noopener noreferrer">
                             <Plus className="w-4 h-4 mr-2" />
                             Create New Movie
                           </Link>
