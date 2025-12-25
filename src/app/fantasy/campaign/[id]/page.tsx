@@ -292,6 +292,7 @@ export default function FantasyMovieCampaignPage() {
       {/* Image Ad Gate - shows when user first views campaign */}
       {showAdGate && (
         <ImageAdGate
+          key={`ad-gate-${campaignId}-${user?.uid}`}
           campaignId={campaignId}
           onComplete={handleAdGateComplete}
           onCancel={handleAdGateCancel}

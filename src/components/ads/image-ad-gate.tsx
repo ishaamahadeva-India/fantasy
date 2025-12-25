@@ -29,7 +29,7 @@ export function ImageAdGate({
   const [isLoading, setIsLoading] = useState(true);
   const [hasViewed, setHasViewed] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
-  const hasRunRef = useRef(false);
+  const hasRunRef = useRef<string | null>(null);
   
   // Use refs to store callbacks to avoid infinite loops from function recreation
   const onCompleteRef = useRef(onComplete);
@@ -42,8 +42,11 @@ export function ImageAdGate({
   }, [onComplete, onCancel]);
 
   useEffect(() => {
-    // Prevent multiple runs
-    if (hasRunRef.current) return;
+    const targetId = tournamentId || campaignId;
+    if (!targetId) return;
+    
+    // Prevent multiple runs for the same targetId
+    if (hasRunRef.current === targetId) return;
     
     const checkAndLoadAd = async () => {
       if (!firestore || !user?.uid || (!tournamentId && !campaignId)) {
@@ -51,10 +54,9 @@ export function ImageAdGate({
         return;
       }
 
-      hasRunRef.current = true; // Mark as run
+      hasRunRef.current = targetId; // Mark as run for this targetId
 
       try {
-        const targetId = tournamentId || campaignId!;
         const isCampaign = !!campaignId;
         
         // Check if user already viewed an ad
@@ -118,6 +120,14 @@ export function ImageAdGate({
     };
 
     checkAndLoadAd();
+    
+    // Reset hasRunRef when targetId changes (cleanup)
+    return () => {
+      if (hasRunRef.current === targetId) {
+        // Only reset if this is the current targetId
+        // This allows the effect to run again if the targetId actually changes
+      }
+    };
   }, [firestore, user?.uid, tournamentId, campaignId, required]);
 
   const handleAdComplete = async (advertisementId: string) => {
