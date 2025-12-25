@@ -17,7 +17,18 @@ export default function NewMoviePage() {
   const handleCreateMovie = async (data: any) => {
     if (!firestore) return;
     try {
-      await addMovie(firestore, data);
+      // Clean data - remove undefined values before passing to addMovie
+      const cleanData: any = {};
+      Object.keys(data).forEach(key => {
+        if (data[key] !== undefined) {
+          // For strings, convert empty strings to undefined (which will be filtered out)
+          if (typeof data[key] === 'string' && data[key].trim() === '') {
+            return; // Skip empty strings
+          }
+          cleanData[key] = data[key];
+        }
+      });
+      await addMovie(firestore, cleanData);
       toast({
         title: 'Movie Created',
         description: 'The new movie has been successfully saved.',
