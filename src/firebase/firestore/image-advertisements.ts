@@ -175,6 +175,9 @@ export function updateImageAdvertisement(
   if (adData.targetTournaments !== undefined && adData.targetTournaments.length > 0) {
     docToUpdate.targetTournaments = adData.targetTournaments;
   }
+  if (adData.targetCampaigns !== undefined && adData.targetCampaigns.length > 0) {
+    docToUpdate.targetCampaigns = adData.targetCampaigns;
+  }
   if (adData.trackingPixel !== undefined && adData.trackingPixel.trim() !== '') {
     docToUpdate.trackingPixel = adData.trackingPixel;
   }
@@ -265,6 +268,56 @@ export async function getActiveAdsForTournament(
 }
 
 /**
+ * Gets active advertisements for a campaign (movie fantasy)
+ */
+export async function getActiveAdsForCampaign(
+  firestore: Firestore,
+  campaignId: string
+): Promise<ImageAdvertisement[]> {
+  const adsCollection = collection(firestore, 'image-advertisements');
+  const now = new Date();
+  
+  const q = query(
+    adsCollection,
+    where('status', '==', 'active'),
+    where('startDate', '<=', now),
+    where('endDate', '>=', now)
+  );
+
+  const snapshot = await getDocs(q);
+  const ads: ImageAdvertisement[] = [];
+
+  snapshot.forEach((docSnapshot) => {
+    const data = docSnapshot.data();
+    // Check if ad targets this campaign
+    // If targetCampaigns is empty/undefined, show for all campaigns
+    // If targetCampaigns has values, only show if campaignId is in the list
+    if (
+      !data.targetCampaigns ||
+      data.targetCampaigns.length === 0 ||
+      data.targetCampaigns.includes(campaignId)
+    ) {
+      // Check view limits
+      if (!data.maxViews || data.currentViews < data.maxViews) {
+        ads.push({
+          id: docSnapshot.id,
+          ...data,
+          startDate: data.startDate?.toDate() || new Date(),
+          endDate: data.endDate?.toDate() || new Date(),
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        } as ImageAdvertisement);
+      }
+    }
+  });
+
+  // Sort by priority (highest first)
+  ads.sort((a, b) => b.priority - a.priority);
+
+  return ads;
+}
+
+/**
  * Selects the best ad for a user/tournament combination
  */
 export async function selectAdForEntry(
@@ -273,6 +326,34 @@ export async function selectAdForEntry(
   userId: string
 ): Promise<ImageAdvertisement | null> {
   const activeAds = await getActiveAdsForTournament(firestore, tournamentId);
+  
+  if (activeAds.length === 0) {
+    return null;
+  }
+
+  // Filter by user eligibility
+  const eligibleAds = activeAds.filter((ad) => {
+    // Check per-user view limit
+    if (ad.maxViewsPerUser) {
+      // This will be checked when creating the view
+      // For now, we'll filter in the view creation function
+    }
+    return true;
+  });
+
+  // Return highest priority ad
+  return eligibleAds[0] || null;
+}
+
+/**
+ * Selects the best ad for a user/campaign combination (movie fantasy)
+ */
+export async function selectAdForCampaign(
+  firestore: Firestore,
+  campaignId: string,
+  userId: string
+): Promise<ImageAdvertisement | null> {
+  const activeAds = await getActiveAdsForCampaign(firestore, campaignId);
   
   if (activeAds.length === 0) {
     return null;

@@ -46,6 +46,7 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
     maxViews: ad?.maxViews?.toString() || '',
     maxViewsPerUser: ad?.maxViewsPerUser?.toString() || '',
     targetTournaments: ad?.targetTournaments?.join(', ') || '',
+    targetCampaigns: ad?.targetCampaigns?.join(', ') || '',
     trackingPixel: ad?.trackingPixel || '',
   });
 
@@ -73,6 +74,9 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
         maxViewsPerUser: formData.maxViewsPerUser ? Number(formData.maxViewsPerUser) : undefined,
         targetTournaments: formData.targetTournaments 
           ? formData.targetTournaments.split(',').map(t => t.trim()).filter(Boolean)
+          : undefined,
+        targetCampaigns: formData.targetCampaigns 
+          ? formData.targetCampaigns.split(',').map(t => t.trim()).filter(Boolean)
           : undefined,
         trackingPixel: formData.trackingPixel || undefined,
         createdBy: user.uid,

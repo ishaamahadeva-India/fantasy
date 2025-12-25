@@ -637,6 +637,7 @@ export type ImageAdvertisement = {
   
   // Targeting
   targetTournaments?: string[];
+  targetCampaigns?: string[]; // For movie fantasy campaigns
   targetCategories?: string[];
   
   // Status & Scheduling

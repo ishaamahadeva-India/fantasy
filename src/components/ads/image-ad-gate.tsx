@@ -2,21 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { selectAdForEntry, incrementAdViews } from '@/firebase/firestore/image-advertisements';
-import { createImageAdView, completeImageAdView, hasUserViewedAd, getUserAdViews } from '@/firebase/firestore/image-ad-views';
+import { selectAdForEntry, selectAdForCampaign, incrementAdViews } from '@/firebase/firestore/image-advertisements';
+import { createImageAdView, completeImageAdView, hasUserViewedAd, hasUserViewedAdForCampaign, getUserAdViews } from '@/firebase/firestore/image-ad-views';
 import { ImageAdDisplay } from './image-ad-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ImageAdvertisement } from '@/lib/types';
 
 type ImageAdGateProps = {
-  tournamentId: string;
+  tournamentId?: string; // For cricket tournaments
+  campaignId?: string; // For movie fantasy campaigns
   onComplete: (adViewId?: string, advertisementId?: string) => void;
   onCancel?: () => void;
   required?: boolean;
 };
 
 export function ImageAdGate({ 
-  tournamentId, 
+  tournamentId,
+  campaignId,
   onComplete, 
   onCancel,
   required = true 
@@ -30,14 +32,19 @@ export function ImageAdGate({
 
   useEffect(() => {
     const checkAndLoadAd = async () => {
-      if (!firestore || !user || !tournamentId) {
+      if (!firestore || !user || (!tournamentId && !campaignId)) {
         setIsLoading(false);
         return;
       }
 
       try {
-        // Check if user already viewed an ad for this tournament
-        const alreadyViewed = await hasUserViewedAd(firestore, user.uid, tournamentId);
+        const targetId = tournamentId || campaignId!;
+        const isCampaign = !!campaignId;
+        
+        // Check if user already viewed an ad
+        const alreadyViewed = isCampaign
+          ? await hasUserViewedAdForCampaign(firestore, user.uid, targetId)
+          : await hasUserViewedAd(firestore, user.uid, targetId);
         
         if (alreadyViewed) {
           setHasViewed(true);
@@ -49,8 +56,10 @@ export function ImageAdGate({
           return;
         }
 
-        // Select an ad for this tournament
-        const selectedAd = await selectAdForEntry(firestore, tournamentId, user.uid);
+        // Select an ad
+        const selectedAd = isCampaign
+          ? await selectAdForCampaign(firestore, targetId, user.uid)
+          : await selectAdForEntry(firestore, targetId, user.uid);
         
         if (!selectedAd) {
           // No ads available, allow entry or show error
@@ -94,7 +103,7 @@ export function ImageAdGate({
     };
 
     checkAndLoadAd();
-  }, [firestore, user, tournamentId, required, onComplete, onCancel]);
+  }, [firestore, user, tournamentId, campaignId, required, onComplete, onCancel]);
 
   const handleAdComplete = async (advertisementId: string) => {
     if (!firestore || !user || !ad) {
@@ -111,17 +120,26 @@ export function ImageAdGate({
       
       const browser = typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown';
 
-      const newView = await createImageAdView(firestore, {
+      const viewData: any = {
         advertisementId: ad.id,
         userId: user.uid,
-        tournamentId,
         viewedAt: new Date(),
         viewedDuration: ad.displayDuration || 5,
         wasCompleted: true,
         clicked: false,
         deviceType,
         browser,
-      });
+      };
+
+      // Add tournamentId or campaignId based on which one is provided
+      if (tournamentId) {
+        viewData.tournamentId = tournamentId;
+      }
+      if (campaignId) {
+        viewData.campaignId = campaignId;
+      }
+
+      const newView = await createImageAdView(firestore, viewData);
 
       const viewIdStr = newView.id;
       setViewId(viewIdStr);

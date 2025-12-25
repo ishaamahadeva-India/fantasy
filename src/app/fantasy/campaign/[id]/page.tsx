@@ -11,8 +11,9 @@ import { useDoc, useFirestore, useCollection, useUser } from '@/firebase';
 import { doc, collection, Timestamp, query, where } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import type { FantasyCampaign, FantasyEvent } from '@/lib/types';
+import { ImageAdGate } from '@/components/ads/image-ad-gate';
 
 type FantasyCampaignWithId = FantasyCampaign & { id: string };
 type FantasyEventWithId = FantasyEvent & { id: string };

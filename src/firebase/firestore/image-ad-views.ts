@@ -139,6 +139,39 @@ export async function hasUserViewedAd(
 }
 
 /**
+ * Checks if user has viewed an ad for a campaign (movie fantasy)
+ */
+export async function hasUserViewedAdForCampaign(
+  firestore: Firestore,
+  userId: string,
+  campaignId: string,
+  advertisementId?: string
+): Promise<boolean> {
+  const viewsCollection = collection(firestore, 'image-ad-views');
+  let q;
+
+  if (advertisementId) {
+    q = query(
+      viewsCollection,
+      where('userId', '==', userId),
+      where('campaignId', '==', campaignId),
+      where('advertisementId', '==', advertisementId),
+      where('wasCompleted', '==', true)
+    );
+  } else {
+    q = query(
+      viewsCollection,
+      where('userId', '==', userId),
+      where('campaignId', '==', campaignId),
+      where('wasCompleted', '==', true)
+    );
+  }
+
+  const snapshot = await getDocs(q);
+  return !snapshot.empty;
+}
+
+/**
  * Gets user's ad views for an advertisement
  */
 export async function getUserAdViews(
