@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useUser, useDoc } from '@/firebase';
-import { collection, query, where, type Query, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, type Query, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
 import type { Article, UserProfile, Movie, Gossip } from '@/lib/types';
@@ -34,20 +34,29 @@ function AdBanner() {
 
 function GossipList() {
     const firestore = useFirestore();
-    const gossipsQuery = firestore ? query(collection(firestore, 'gossips')) : null;
-    const { data: gossips, isLoading } = useCollection(gossipsQuery);
+    const gossipsQuery = firestore ? query(
+        collection(firestore, 'gossips'),
+        limit(10)
+    ) : null;
+    const { data: gossips, isLoading, error } = useCollection(gossipsQuery);
+    
+    // Reverse to show newest first (Firestore returns in creation order)
+    const sortedGossips = gossips ? [...gossips].reverse() : null;
 
     if (isLoading) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+                    <div className="flex items-center justify-between gap-4">
+                        <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+                        <Skeleton className="h-8 w-8" />
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                    {[...Array(3)].map((_, i) => (
                      <div key={i} className="space-y-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-4 w-32" />
                      </div>
                    ))}
                 </CardContent>
@@ -55,7 +64,11 @@ function GossipList() {
         );
     }
     
-    if (!gossips || gossips.length === 0) {
+    if (error) {
+        console.error('Error loading gossips:', error);
+    }
+    
+    if (!sortedGossips || sortedGossips.length === 0) {
         return (
              <Card>
                 <CardHeader>
@@ -65,36 +78,46 @@ function GossipList() {
                     <div className="text-center text-muted-foreground py-8">
                         <MessageSquareText className="w-12 h-12 mx-auto mb-2" />
                         <p>No gossip yet. Check back later!</p>
+                        {error && (
+                            <p className="text-xs text-destructive mt-2">Error loading gossips</p>
+                        )}
                     </div>
                 </CardContent>
             </Card>
         )
     }
 
+    // Get the first gossip URL for sharing the section
+    const firstGossipUrl = sortedGossips.length > 0 && typeof window !== 'undefined' 
+        ? `${window.location.origin}/gossip/${sortedGossips[0].id}` 
+        : '';
+
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+                <div className="flex items-center justify-between gap-4">
+                    <CardTitle className="font-headline text-2xl">Gossip Mill</CardTitle>
+                    {firstGossipUrl && (
+                        <SocialShare
+                            url={firstGossipUrl}
+                            title="Gossip Mill"
+                            description="Latest gossip and rumors"
+                            variant="ghost"
+                            size="sm"
+                        />
+                    )}
+                </div>
             </CardHeader>
             <CardContent>
                 <ul className="space-y-4">
-                    {gossips.map((gossip, index) => {
-                        const gossipUrl = typeof window !== 'undefined' ? `${window.location.origin}/gossip/${gossip.id}` : '';
+                    {sortedGossips.map((gossip, index) => {
                         return (
-                            <li key={gossip.id} className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                    <p className="font-medium">{gossip.title}</p>
-                                    <p className="text-xs text-muted-foreground">Source: {gossip.source}</p>
-                                </div>
-                                <SocialShare
-                                    url={gossipUrl}
-                                    title={gossip.title}
-                                    description={`From ${gossip.source}`}
-                                    imageUrl={gossip.imageUrl}
-                                    variant="ghost"
-                                    size="sm"
-                                />
-                                {index < gossips.length - 1 && <Separator className="mt-4" />}
+                            <li key={gossip.id} className="space-y-2">
+                                <p className="font-medium text-base leading-snug line-clamp-2">
+                                    {gossip.title}
+                                </p>
+                                <p className="text-sm text-muted-foreground">Source: {gossip.source}</p>
+                                {index < sortedGossips.length - 1 && <Separator className="mt-4" />}
                             </li>
                         );
                     })}
@@ -121,11 +144,12 @@ function WatchlistSidebar() {
     
     // All hooks must be called before any conditional returns
     // Early returns AFTER all hooks
-    if (!user && !profileLoading) {
-        return <GossipList />;
+    // Only show watchlist if user is logged in
+    if (!user) {
+        return null;
     }
 
-    if (profileLoading || !user) {
+    if (profileLoading) {
         return <Card><CardHeader><Skeleton className="h-8 w-32" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
     }
 
@@ -302,6 +326,7 @@ export default function HomePage() {
 
       <aside className="lg:col-span-1 space-y-8">
         <WatchlistSidebar />
+        <GossipList />
         <Card className="bg-gradient-to-br from-accent/10">
             <CardHeader>
                 <CardTitle className="font-headline">Sponsored</CardTitle>

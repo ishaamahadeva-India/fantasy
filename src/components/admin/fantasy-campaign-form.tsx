@@ -221,7 +221,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Movie</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a movie" />
@@ -230,18 +230,23 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         <SelectContent>
                           {moviesLoading && (
                             <SelectItem value="loading" disabled>
-                              <Skeleton className="h-4 w-32" />
+                              Loading movies...
+                            </SelectItem>
+                          )}
+                          {!moviesLoading && (!movies || movies.length === 0) && (
+                            <SelectItem value="no-movies" disabled>
+                              No movies available. Add movies first.
                             </SelectItem>
                           )}
                           {movies?.map((movie) => (
                             <SelectItem key={movie.id} value={movie.id}>
-                              {movie.title} ({movie.releaseYear})
+                              {movie.title} {movie.releaseYear ? `(${movie.releaseYear})` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        {selectedMovie && `Selected: ${selectedMovie.title}`}
+                        {selectedMovie ? `Selected: ${selectedMovie.title}` : 'Choose a movie from the list'}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -302,16 +307,26 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Movie</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select movie" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
+                                {moviesLoading && (
+                                  <SelectItem value="loading" disabled>
+                                    Loading movies...
+                                  </SelectItem>
+                                )}
+                                {!moviesLoading && (!movies || movies.length === 0) && (
+                                  <SelectItem value="no-movies" disabled>
+                                    No movies available
+                                  </SelectItem>
+                                )}
                                 {movies?.map((movie) => (
                                   <SelectItem key={movie.id} value={movie.id}>
-                                    {movie.title} ({movie.releaseYear})
+                                    {movie.title} {movie.releaseYear ? `(${movie.releaseYear})` : ''}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
