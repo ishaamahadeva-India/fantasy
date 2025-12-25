@@ -279,16 +279,26 @@ export default function FantasyMovieCampaignPage() {
   useEffect(() => {
     // Only check once per campaign/user combination
     const checkKey = `${campaignId}-${user?.uid}`;
-    if (!user?.uid || !campaignId || hasCheckedAdRef.current === checkKey) {
+    if (!user?.uid || !campaignId) {
       return;
     }
+    
+    // Prevent multiple checks
+    if (hasCheckedAdRef.current === checkKey) {
+      return;
+    }
+    
+    // Mark as checked immediately to prevent re-runs
+    hasCheckedAdRef.current = checkKey;
     
     // Check if user has already viewed an ad for this campaign
     const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
     if (!hasViewedBefore) {
-      setShowAdGate(true);
+      // Use setTimeout to defer state update and prevent immediate re-render
+      setTimeout(() => {
+        setShowAdGate(true);
+      }, 0);
     }
-    hasCheckedAdRef.current = checkKey;
   }, [user?.uid, campaignId]); // Only depend on stable primitive values
 
   return (

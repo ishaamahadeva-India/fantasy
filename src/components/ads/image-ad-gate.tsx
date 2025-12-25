@@ -30,7 +30,7 @@ export function ImageAdGate({
   const [hasViewed, setHasViewed] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
   const hasRunRef = useRef<string | null>(null);
-  const isMountedRef = useRef(true);
+  const isInitializedRef = useRef(false);
   
   // Use refs to store callbacks to avoid infinite loops from function recreation
   const onCompleteRef = useRef(onComplete);
@@ -56,11 +56,6 @@ export function ImageAdGate({
       return;
     }
     
-    // Don't run if already completed loading (and no ad found)
-    if (isLoading === false && !ad) {
-      return;
-    }
-    
     const targetId = tournamentId || campaignId;
     if (!targetId || !firestore || !user?.uid) {
       setIsLoading(false);
@@ -72,8 +67,14 @@ export function ImageAdGate({
       return;
     }
     
+    // Prevent initialization if already initialized for this targetId
+    if (isInitializedRef.current && hasRunRef.current === targetId) {
+      return;
+    }
+    
     // Mark as run immediately to prevent concurrent runs
     hasRunRef.current = targetId;
+    isInitializedRef.current = true;
     
     let cancelled = false;
     
