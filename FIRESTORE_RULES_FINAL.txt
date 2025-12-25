@@ -7,10 +7,10 @@ service cloud.firestore {
     }
     
     // Helper function to check if user is super admin
-    // Only adminW@fantasy.com has admin access
+    // Only admin@fantasy.com has admin access
     function isAdmin() {
       return isAuthenticated() && 
-             request.auth.token.email == 'adminW@fantasy.com';
+             request.auth.token.email == 'admin@fantasy.com';
     }
     
     // Users collection - users can read/write their own data

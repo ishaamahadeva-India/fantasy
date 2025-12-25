@@ -36,7 +36,7 @@ const navItems = [
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
-const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'adminW@fantasy.com';
+const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'admin@fantasy.com';
 
 export function MainNav() {
   const pathname = usePathname();
