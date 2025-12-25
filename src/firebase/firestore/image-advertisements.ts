@@ -11,6 +11,7 @@ import {
   getDocs,
   serverTimestamp,
   increment,
+  Timestamp,
   type Firestore,
   type Query,
 } from 'firebase/firestore';
@@ -19,6 +20,22 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import type { ImageAdvertisement } from '@/lib/types';
 
 type NewImageAdvertisement = Omit<ImageAdvertisement, 'id' | 'createdAt' | 'updatedAt'>;
+
+// Helper function to safely convert various date types to Date objects
+function toDate(dateValue: any): Date | null {
+  if (!dateValue) return null;
+  if (dateValue instanceof Date) return dateValue;
+  if (dateValue instanceof Timestamp) return dateValue.toDate();
+  if (typeof dateValue === 'object' && dateValue !== null && typeof dateValue.toDate === 'function') {
+    return dateValue.toDate();
+  }
+  if (typeof dateValue === 'number') return new Date(dateValue);
+  if (typeof dateValue === 'string') {
+    const parsed = new Date(dateValue);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
+}
 
 // Helper function to remove undefined values from an object recursively
 function removeUndefinedValues(obj: Record<string, any>): Record<string, any> {
@@ -252,10 +269,10 @@ export async function getActiveAdsForTournament(
         ads.push({
           id: docSnapshot.id,
           ...data,
-          startDate: data.startDate?.toDate() || new Date(),
-          endDate: data.endDate?.toDate() || new Date(),
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
+          startDate: toDate(data.startDate) || new Date(),
+          endDate: toDate(data.endDate) || new Date(),
+          createdAt: toDate(data.createdAt) || new Date(),
+          updatedAt: toDate(data.updatedAt) || new Date(),
         } as ImageAdvertisement);
       }
     }
@@ -302,10 +319,10 @@ export async function getActiveAdsForCampaign(
         ads.push({
           id: docSnapshot.id,
           ...data,
-          startDate: data.startDate?.toDate() || new Date(),
-          endDate: data.endDate?.toDate() || new Date(),
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
+          startDate: toDate(data.startDate) || new Date(),
+          endDate: toDate(data.endDate) || new Date(),
+          createdAt: toDate(data.createdAt) || new Date(),
+          updatedAt: toDate(data.updatedAt) || new Date(),
         } as ImageAdvertisement);
       }
     }
