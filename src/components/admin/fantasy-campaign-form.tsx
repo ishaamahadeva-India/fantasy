@@ -860,7 +860,17 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                       Select a predefined event template to add to this campaign.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid grid-cols-1 gap-2 mt-4">
+                  <div className="flex gap-2 mt-4 mb-4">
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={addAllEventsFromTemplates}
+                      className="w-full"
+                    >
+                      Select All Events ({EVENT_TEMPLATES.length})
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
                     {EVENT_TEMPLATES.map((template, index) => (
                       <Button
                         key={index}
