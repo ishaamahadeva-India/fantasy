@@ -279,13 +279,13 @@ export default function TournamentPage() {
 
   return (
     <>
-      {/* Image Ad Gate - shows when user clicks join for ad_watch tournaments */}
+      {/* Image Ad Gate - shows when user clicks join (for all tournaments) */}
       {showAdGate && (
         <ImageAdGate
           tournamentId={tournamentId}
           onComplete={handleAdGateComplete}
           onCancel={handleAdGateCancel}
-          required={true}
+          required={tournament.entryMethod === 'ad_watch' || tournament.entryFee?.type === 'ad_watch'}
         />
       )}
       
