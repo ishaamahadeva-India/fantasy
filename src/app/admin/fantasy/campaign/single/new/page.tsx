@@ -38,9 +38,44 @@ export default function NewSingleMovieCampaignPage() {
 
       // Add events if any
       if (events && events.length > 0) {
+        console.log(`🚀 Adding ${events.length} events to campaign ${campaignId}`);
+        let successCount = 0;
+        let failCount = 0;
+        
         for (const event of events) {
-          await addCampaignEvent(firestore, campaignId, event);
+          try {
+            const eventToSave = {
+              title: event.title,
+              description: event.description || '',
+              eventType: event.eventType,
+              status: event.status || 'upcoming',
+              startDate: event.startDate || new Date(),
+              endDate: event.endDate || new Date(),
+              points: event.points || 0,
+              movieId: event.movieId,
+              difficultyLevel: event.difficultyLevel,
+              options: event.options,
+              rules: event.rules,
+              draftConfig: event.draftConfig,
+              lockTime: event.lockTime,
+            };
+            
+            const docRef = await addCampaignEvent(firestore, campaignId, eventToSave);
+            console.log('✅ Event added:', event.title, '→', docRef.id);
+            successCount++;
+          } catch (error: any) {
+            console.error('❌ Error adding event:', error);
+            failCount++;
+            toast({
+              variant: 'destructive',
+              title: 'Warning',
+              description: `Failed to add event: ${event.title}.`,
+            });
+          }
         }
+        console.log(`✅ Events: ${successCount} succeeded, ${failCount} failed`);
+      } else {
+        console.warn('⚠️ No events to add to campaign');
       }
 
       toast({

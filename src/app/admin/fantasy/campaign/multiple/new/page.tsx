@@ -38,8 +38,11 @@ export default function NewMultipleMoviesCampaignPage() {
 
       // Add events if any
       if (events && events.length > 0) {
-        console.log(`Adding ${events.length} events to campaign ${campaignId}`);
-        console.log('Events data:', events);
+        console.log(`🚀 Adding ${events.length} events to campaign ${campaignId}`);
+        console.log('📋 Events data from form:', events);
+        let successCount = 0;
+        let failCount = 0;
+        
         for (const event of events) {
           try {
             // Ensure all required fields are present
@@ -59,12 +62,30 @@ export default function NewMultipleMoviesCampaignPage() {
               lockTime: event.lockTime,
             };
             
-            console.log('Saving event:', eventToSave);
-            await addCampaignEvent(firestore, campaignId, eventToSave);
-            console.log('Event added successfully:', event.title);
-          } catch (error) {
-            console.error('Error adding event:', error);
-            console.error('Event data that failed:', event);
+            console.log('💾 Saving event:', {
+              title: eventToSave.title,
+              status: eventToSave.status,
+              points: eventToSave.points,
+              startDate: eventToSave.startDate,
+              endDate: eventToSave.endDate
+            });
+            
+            const docRef = await addCampaignEvent(firestore, campaignId, eventToSave);
+            console.log('✅ Event added successfully!', {
+              title: event.title,
+              documentId: docRef.id,
+              path: `fantasy-campaigns/${campaignId}/events/${docRef.id}`
+            });
+            successCount++;
+          } catch (error: any) {
+            console.error('❌ Error adding event:', error);
+            console.error('❌ Event data that failed:', event);
+            console.error('❌ Error details:', {
+              message: error.message,
+              code: error.code,
+              stack: error.stack
+            });
+            failCount++;
             toast({
               variant: 'destructive',
               title: 'Warning',
@@ -72,9 +93,17 @@ export default function NewMultipleMoviesCampaignPage() {
             });
           }
         }
-        console.log('Finished adding all events');
+        console.log(`✅ Finished adding events: ${successCount} succeeded, ${failCount} failed`);
+        
+        if (successCount > 0) {
+          toast({
+            title: 'Events Created',
+            description: `Successfully created ${successCount} event${successCount > 1 ? 's' : ''}${failCount > 0 ? ` (${failCount} failed)` : ''}.`,
+          });
+        }
       } else {
-        console.log('No events to add to campaign');
+        console.warn('⚠️ No events to add to campaign - events array is empty or undefined');
+        console.warn('⚠️ Make sure you added events using "Add Event" or "Select All Events" button');
       }
 
       toast({
