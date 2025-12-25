@@ -225,6 +225,19 @@ export default function CampaignEventPage() {
             </Badge>
           </div>
           <CardDescription>{eventWithId.description}</CardDescription>
+          {/* Sponsor/Brand Display */}
+          {campaign?.sponsorName && (
+            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+              {campaign.sponsorLogo && (
+                <img 
+                  src={campaign.sponsorLogo} 
+                  alt={campaign.sponsorName}
+                  className="w-5 h-5 object-contain"
+                />
+              )}
+              <span className="font-medium text-primary">Sponsored by {campaign.sponsorName}</span>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Event Status Badges */}

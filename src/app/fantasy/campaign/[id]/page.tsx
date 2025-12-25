@@ -29,7 +29,7 @@ function toDate(dateValue: any): Date {
     return new Date();
 }
 
-function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignId: string }) {
+function EventCard({ event, campaignId, campaign }: { event: FantasyEventWithId; campaignId: string; campaign?: FantasyCampaignWithId }) {
     const { user } = useUser();
     const firestore = useFirestore();
     
@@ -105,6 +105,19 @@ function EventCard({ event, campaignId }: { event: FantasyEventWithId; campaignI
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
+                {/* Sponsor/Brand Display */}
+                {campaign?.sponsorName && (
+                    <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+                        {campaign.sponsorLogo && (
+                            <img 
+                                src={campaign.sponsorLogo} 
+                                alt={campaign.sponsorName}
+                                className="w-4 h-4 object-contain"
+                            />
+                        )}
+                        <span className="font-medium text-primary">Sponsored by {campaign.sponsorName}</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-2 text-amber-400">
                     <Trophy className="w-4 h-4" />
                     <span className="font-semibold">{points} Points</span>
@@ -419,7 +432,7 @@ export default function FantasyMovieCampaignPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categorizedEvents.live.length > 0 ? (
                                 categorizedEvents.live.map(event => (
-                                    <EventCard key={event.id} event={event} campaignId={campaignId} />
+                                    <EventCard key={event.id} event={event} campaignId={campaignId} campaign={campaign as FantasyCampaignWithId} />
                                 ))
                             ) : (
                                 <Card className='col-span-full p-6 text-muted-foreground'>
@@ -436,7 +449,7 @@ export default function FantasyMovieCampaignPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categorizedEvents.upcoming.length > 0 ? (
                                 categorizedEvents.upcoming.map(event => (
-                                    <EventCard key={event.id} event={event} campaignId={campaignId} />
+                                    <EventCard key={event.id} event={event} campaignId={campaignId} campaign={campaign as FantasyCampaignWithId} />
                                 ))
                             ) : (
                                 <Card className='col-span-full p-6 text-muted-foreground'>
@@ -453,7 +466,7 @@ export default function FantasyMovieCampaignPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categorizedEvents.completed.length > 0 ? (
                                 categorizedEvents.completed.map(event => (
-                                    <EventCard key={event.id} event={event} campaignId={campaignId} />
+                                    <EventCard key={event.id} event={event} campaignId={campaignId} campaign={campaign as FantasyCampaignWithId} />
                                 ))
                             ) : (
                                 <Card className='col-span-full p-6 text-muted-foreground'>
@@ -478,7 +491,7 @@ export default function FantasyMovieCampaignPage() {
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {events.map(event => (
-                                        <EventCard key={event.id} event={event} campaignId={campaignId} />
+                                        <EventCard key={event.id} event={event} campaignId={campaignId} campaign={campaign as FantasyCampaignWithId} />
                                     ))}
                                 </div>
                             </CardContent>
