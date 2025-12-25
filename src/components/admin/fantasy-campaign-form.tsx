@@ -3,6 +3,7 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -105,7 +106,7 @@ const campaignSchema = z.object({
 }).refine((data) => {
   // Require movieId for single_movie campaigns
   if (data.campaignType === 'single_movie') {
-    return data.movieId && data.movieId.trim() !== '';
+    return !!data.movieId && typeof data.movieId === 'string' && data.movieId.trim().length > 0;
   }
   return true;
 }, {
@@ -114,7 +115,7 @@ const campaignSchema = z.object({
 }).refine((data) => {
   // Require movies array for multiple_movies campaigns
   if (data.campaignType === 'multiple_movies') {
-    return data.movies && data.movies.length > 0;
+    return data.movies && Array.isArray(data.movies) && data.movies.length > 0;
   }
   return true;
 }, {
@@ -242,15 +243,29 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   name="movieId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Movie <span className="text-destructive">*</span></FormLabel>
+                      <div className="flex items-center justify-between mb-2">
+                        <FormLabel>Movie <span className="text-destructive">*</span></FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Link href="/admin/fanzone/movies/new" target="_blank">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create New Movie
+                          </Link>
+                        </Button>
+                      </div>
                       <Select 
                         onValueChange={(value) => {
-                          // Only set value if it's a valid movie ID (not loading or no-movies)
-                          if (value && value !== 'loading' && value !== 'no-movies') {
-                            field.onChange(value);
-                          }
+                          field.onChange(value);
                         }} 
-                        value={field.value || ''}
+                        value={field.value || undefined}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -259,14 +274,14 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         </FormControl>
                         <SelectContent>
                           {moviesLoading && (
-                            <SelectItem value="loading" disabled>
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
                               Loading movies...
-                            </SelectItem>
+                            </div>
                           )}
                           {!moviesLoading && (!movies || movies.length === 0) && (
-                            <SelectItem value="no-movies" disabled>
-                              No movies available. Add movies first.
-                            </SelectItem>
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              No movies available. Click "Create New Movie" to add one.
+                            </div>
                           )}
                           {movies?.map((movie) => (
                             <SelectItem key={movie.id} value={movie.id}>
@@ -276,7 +291,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        {selectedMovie ? `Selected: ${selectedMovie.title}` : 'Choose a movie from the list'}
+                        {selectedMovie ? `Selected: ${selectedMovie.title}` : 'Choose a movie from the list or create a new one'}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
