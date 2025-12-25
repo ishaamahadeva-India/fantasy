@@ -84,7 +84,7 @@ export function SplashScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed top-0 left-0 z-[99999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12"
+          className="fixed inset-0 z-[99999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center"
           style={{ 
             width: '100vw', 
             height: '100vh',
@@ -94,7 +94,7 @@ export function SplashScreen() {
             right: 0,
             bottom: 0,
             margin: 0,
-            padding: '1.5rem',
+            padding: 0,
             overflow: 'hidden'
           }}
         >
@@ -133,7 +133,7 @@ export function SplashScreen() {
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
-            className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-sm md:max-w-lg w-full"
+            className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-sm md:max-w-lg w-full px-6 md:px-12"
           >
             {/* Logo/Icon */}
             <motion.div
