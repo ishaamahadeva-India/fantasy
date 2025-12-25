@@ -3,7 +3,9 @@
 
 import { 
     type Auth,
-    signInWithPopup, 
+    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     GoogleAuthProvider,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -49,10 +51,40 @@ const saveUserToFirestore = (firestore: Firestore, user: { uid: string, displayN
 export const handleGoogleSignIn = async (auth: Auth, firestore: Firestore) => {
     const provider = new GoogleAuthProvider();
     try {
-        const result = await signInWithPopup(auth, provider);
-        saveUserToFirestore(firestore, result.user);
+        // Try popup first, fallback to redirect if COOP blocks it
+        try {
+            const result = await signInWithPopup(auth, provider);
+            saveUserToFirestore(firestore, result.user);
+        } catch (popupError: any) {
+            // If popup is blocked (COOP error), use redirect instead
+            if (popupError?.code === 'auth/popup-blocked' || 
+                popupError?.message?.includes('Cross-Origin-Opener-Policy') ||
+                popupError?.message?.includes('window.closed')) {
+                console.log('Popup blocked, using redirect instead');
+                await signInWithRedirect(auth, provider);
+                // Note: User will be redirected, so we'll handle the result on return
+            } else {
+                throw popupError;
+            }
+        }
     } catch (error) {
         console.error("Google Sign-In Error:", error);
+        throw error;
+    }
+};
+
+// Handle redirect result after user returns from Google sign-in
+export const handleGoogleSignInRedirect = async (auth: Auth, firestore: Firestore) => {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+            saveUserToFirestore(firestore, result.user);
+            return result.user;
+        }
+        return null;
+    } catch (error) {
+        console.error("Google Sign-In Redirect Error:", error);
+        return null;
     }
 };
 

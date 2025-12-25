@@ -25,11 +25,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import {
   handleEmailSignIn,
   handleGoogleSignIn,
+  handleGoogleSignInRedirect,
 } from '@/firebase/auth/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
@@ -44,6 +46,21 @@ export default function LoginPage() {
   const { toast } = useToast();
   const auth = useAuth();
   const firestore = useFirestore();
+
+  // Handle redirect result from Google sign-in
+  useEffect(() => {
+    if (auth && firestore) {
+      handleGoogleSignInRedirect(auth, firestore).then((user) => {
+        if (user) {
+          toast({
+            title: 'Signed In',
+            description: "You've been successfully signed in.",
+          });
+          router.push('/profile');
+        }
+      });
+    }
+  }, [auth, firestore, router, toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,8 +90,24 @@ export default function LoginPage() {
 
   const onGoogleSignIn = async () => {
     if (!auth || !firestore) return;
-    await handleGoogleSignIn(auth, firestore);
-    router.push('/profile');
+    try {
+      await handleGoogleSignIn(auth, firestore);
+      // If popup succeeds, user will be signed in immediately
+      // If redirect is used, the useEffect above will handle it
+      // Only navigate if popup succeeded (no redirect happened)
+      if (auth.currentUser) {
+        router.push('/profile');
+      }
+    } catch (error: any) {
+      // If redirect was triggered, don't show error (user will be redirected)
+      if (!error?.message?.includes('redirect')) {
+        toast({
+          variant: 'destructive',
+          title: 'Sign In Failed',
+          description: error?.message || 'Failed to sign in with Google.',
+        });
+      }
+    }
   };
 
   return (
