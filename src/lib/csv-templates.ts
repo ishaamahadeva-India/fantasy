@@ -240,27 +240,45 @@ export function downloadTeamsTemplate() {
 }
 
 export function downloadMoviesTemplate() {
-  const headers = ['title', 'releaseYear', 'genre', 'description', 'posterUrl'];
+  const headers = ['title', 'releaseYear', 'genre', 'industry', 'description', 'posterUrl', 'director', 'cast', 'runtime', 'imdbRating', 'language'];
   const examples = [
     [
       'Action Hero 2',
       '2024',
       'Action',
+      'Bollywood',
       'The sequel to the blockbuster Action Hero...',
-      'https://example.com/poster1.jpg'
+      'https://example.com/poster1.jpg',
+      'Director Name',
+      'Actor1, Actor2',
+      '150 mins',
+      '8.5',
+      'Hindi'
     ],
     [
       'Romantic Drama',
       '2024',
       'Romance,Drama',
+      'Tollywood',
       'A heartwarming love story...',
-      'https://example.com/poster2.jpg'
+      'https://example.com/poster2.jpg',
+      '',
+      '',
+      '',
+      '',
+      'Telugu'
     ],
     [
       'Thriller Night',
       '2024',
       'Thriller',
+      'Hollywood',
       'A suspenseful thriller that keeps you on the edge...',
+      '',
+      '',
+      '',
+      '120 mins',
+      '7.8',
       ''
     ]
   ];

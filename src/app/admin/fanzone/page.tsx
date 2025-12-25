@@ -231,8 +231,14 @@ export default function AdminFanZonePage() {
                 title: row.title.trim(),
                 releaseYear: row.releaseYear ? parseInt(row.releaseYear) : new Date().getFullYear(),
                 genre: row.genre?.trim() || '',
+                industry: row.industry?.trim() || 'Bollywood', // Default to Bollywood if not specified
                 description: row.description?.trim() || '',
                 posterUrl: row.posterUrl?.trim() || undefined,
+                director: row.director?.trim() || undefined,
+                cast: row.cast?.trim() || undefined,
+                runtime: row.runtime?.trim() || undefined,
+                imdbRating: row.imdbRating ? parseFloat(row.imdbRating) : undefined,
+                language: row.language?.trim() || undefined,
             });
             
             if (currentIndex && total) {
