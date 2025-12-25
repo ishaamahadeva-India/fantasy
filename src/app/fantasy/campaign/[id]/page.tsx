@@ -138,24 +138,50 @@ export default function FantasyMovieCampaignPage() {
 
   // Categorize events by status
   const categorizedEvents = useMemo(() => {
-    if (!events) return { live: [], upcoming: [], completed: [] };
+    console.log('📊 Categorizing events. Total events:', events?.length || 0);
+    
+    if (!events || events.length === 0) {
+      console.log('📊 No events to categorize');
+      return { live: [], upcoming: [], completed: [] };
+    }
     
     const now = new Date();
     const live: FantasyEventWithId[] = [];
     const upcoming: FantasyEventWithId[] = [];
     const completed: FantasyEventWithId[] = [];
 
-    events.forEach(event => {
+    events.forEach((event, idx) => {
       const startDate = toDate(event.startDate);
       const endDate = event.endDate ? toDate(event.endDate) : null;
       
+      console.log(`📊 Event ${idx + 1} (${event.title}):`, {
+        status: event.status,
+        startDate: startDate,
+        endDate: endDate,
+        now: now,
+        startDateValid: !!startDate,
+        endDateValid: !!endDate
+      });
+      
       if (event.status === 'completed' || (endDate && now > endDate)) {
         completed.push(event);
-      } else if (event.status === 'live' || (startDate <= now && (!endDate || now <= endDate))) {
+        console.log(`  → Categorized as COMPLETED`);
+      } else if (event.status === 'live' || (startDate && startDate <= now && (!endDate || now <= endDate))) {
         live.push(event);
+        console.log(`  → Categorized as LIVE`);
+      } else if (event.status === 'locked') {
+        console.log(`  → SKIPPED (locked status)`);
+        // Locked events are not displayed
       } else {
         upcoming.push(event);
+        console.log(`  → Categorized as UPCOMING`);
       }
+    });
+
+    console.log('📊 Final categorization:', {
+      live: live.length,
+      upcoming: upcoming.length,
+      completed: completed.length
     });
 
     return { live, upcoming, completed };

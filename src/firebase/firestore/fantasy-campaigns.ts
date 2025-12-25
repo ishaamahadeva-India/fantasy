@@ -289,16 +289,24 @@ export function addCampaignEvent(
   // Clean undefined values
   const cleanData = removeUndefinedValues(docToSave);
   
-  console.log('Saving event to Firestore:', {
+  console.log('💾 Saving event to Firestore:', {
     campaignId,
     eventTitle: eventData.title,
     eventType: eventData.eventType,
     status: eventData.status,
     points: eventData.points,
+    startDate: eventData.startDate,
+    endDate: eventData.endDate,
+    collectionPath: eventsCollection.path,
     cleanData
   });
 
   return addDoc(eventsCollection, cleanData)
+    .then((docRef) => {
+      console.log('✅ Event saved successfully! Document ID:', docRef.id);
+      console.log('✅ Full path:', `fantasy-campaigns/${campaignId}/events/${docRef.id}`);
+      return docRef;
+    })
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: eventsCollection.path,
