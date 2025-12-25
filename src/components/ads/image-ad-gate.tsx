@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { selectAdForEntry, selectAdForCampaign, incrementAdViews } from '@/firebase/firestore/image-advertisements';
 import { createImageAdView, completeImageAdView, hasUserViewedAd, hasUserViewedAdForCampaign, getUserAdViews } from '@/firebase/firestore/image-ad-views';
@@ -29,6 +29,16 @@ export function ImageAdGate({
   const [isLoading, setIsLoading] = useState(true);
   const [hasViewed, setHasViewed] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
+  
+  // Use refs to store callbacks to avoid infinite loops from function recreation
+  const onCompleteRef = useRef(onComplete);
+  const onCancelRef = useRef(onCancel);
+  
+  // Update refs when callbacks change
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    onCancelRef.current = onCancel;
+  }, [onComplete, onCancel]);
 
   useEffect(() => {
     const checkAndLoadAd = async () => {
@@ -51,7 +61,7 @@ export function ImageAdGate({
           setIsLoading(false);
           // User already viewed, allow entry
           setTimeout(() => {
-            onComplete();
+            onCompleteRef.current();
           }, 500);
           return;
         }
@@ -66,9 +76,9 @@ export function ImageAdGate({
           setIsLoading(false);
           if (required) {
             // If required but no ads, still allow (fallback)
-            onComplete();
-          } else if (onCancel) {
-            onCancel();
+            onCompleteRef.current();
+          } else if (onCancelRef.current) {
+            onCancelRef.current();
           }
           return;
         }
@@ -82,7 +92,7 @@ export function ImageAdGate({
             // User reached limit, allow entry
             setHasViewed(true);
             setIsLoading(false);
-            onComplete();
+            onCompleteRef.current();
             return;
           }
         }
@@ -92,10 +102,10 @@ export function ImageAdGate({
         console.error('Error loading ad:', error);
         // On error, allow entry (don't block user)
         setIsLoading(false);
-        if (!required && onCancel) {
-          onCancel();
+        if (!required && onCancelRef.current) {
+          onCancelRef.current();
         } else {
-          onComplete();
+          onCompleteRef.current();
         }
       } finally {
         setIsLoading(false);
@@ -103,7 +113,7 @@ export function ImageAdGate({
     };
 
     checkAndLoadAd();
-  }, [firestore, user, tournamentId, campaignId, required, onComplete, onCancel]);
+  }, [firestore, user, tournamentId, campaignId, required]);
 
   const handleAdComplete = async (advertisementId: string) => {
     if (!firestore || !user || !ad) {
