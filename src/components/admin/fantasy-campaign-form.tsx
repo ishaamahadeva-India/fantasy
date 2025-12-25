@@ -214,27 +214,35 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="campaignType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Campaign Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || 'single_movie'}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select campaign type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="single_movie">Single Movie</SelectItem>
-                      <SelectItem value="multiple_movies">Multiple Movies</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!defaultValues?.campaignType ? (
+              <FormField
+                control={form.control}
+                name="campaignType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Campaign Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || 'single_movie'}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select campaign type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="single_movie">Single Movie</SelectItem>
+                        <SelectItem value="multiple_movies">Multiple Movies</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm font-medium">
+                  Campaign Type: <span className="text-primary capitalize">{defaultValues.campaignType.replace('_', ' ')}</span>
+                </p>
+              </div>
+            )}
 
             {campaignType === 'single_movie' ? (
               <>
