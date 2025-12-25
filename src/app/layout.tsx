@@ -67,7 +67,9 @@ export default function RootLayout({
         <ErrorBoundary>
           <FirebaseClientProvider>
             <SplashScreen />
-            <AppShell>{children}</AppShell>
+            <div id="app-content" style={{ display: 'none' }}>
+              <AppShell>{children}</AppShell>
+            </div>
           </FirebaseClientProvider>
           <Toaster />
           <CookieConsent />

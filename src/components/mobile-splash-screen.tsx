@@ -16,13 +16,25 @@ export function SplashScreen() {
     // Mark splash as seen
     localStorage.setItem(SPLASH_STORAGE_KEY, 'true');
     setShowSplash(false);
+    // Show the app content
+    const appContent = document.getElementById('app-content');
+    if (appContent) {
+      appContent.style.display = 'block';
+    }
   };
 
   useEffect(() => {
     // Check if user has seen splash screen before
     const hasSeenSplash = localStorage.getItem(SPLASH_STORAGE_KEY);
     
+    // Hide app content initially if splash should show
+    const appContent = document.getElementById('app-content');
+    
     if (!hasSeenSplash) {
+      // Hide app content while splash is showing
+      if (appContent) {
+        appContent.style.display = 'none';
+      }
       setShowSplash(true);
       // Hide loading after a brief delay for smooth transition
       setTimeout(() => setIsLoading(false), 100);
@@ -37,6 +49,10 @@ export function SplashScreen() {
         clearTimeout(autoDismissTimer);
       };
     } else {
+      // User has seen splash, show app content immediately
+      if (appContent) {
+        appContent.style.display = 'block';
+      }
       setIsLoading(false);
     }
   }, []);
@@ -54,7 +70,8 @@ export function SplashScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[9999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12 w-screen h-screen"
+          className="fixed top-0 left-0 right-0 bottom-0 z-[99999] bg-gradient-to-br from-background via-primary/5 to-background flex flex-col items-center justify-center p-6 md:p-12 w-full h-full min-h-screen"
+          style={{ width: '100vw', height: '100vh' }}
         >
           {/* Animated Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
