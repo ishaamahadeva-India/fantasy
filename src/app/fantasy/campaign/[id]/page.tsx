@@ -214,55 +214,10 @@ export default function FantasyMovieCampaignPage() {
     return { live, upcoming, completed };
   }, [events]);
 
-  // Get movie title(s)
-  const getMovieTitle = (campaign: FantasyCampaignWithId): string => {
-    if (campaign.campaignType === 'single_movie' && campaign.movieTitle) {
-      return campaign.movieTitle;
-    }
-    if (campaign.campaignType === 'multiple_movies' && campaign.movies && campaign.movies.length > 0) {
-      return `${campaign.movies.length} Movie${campaign.movies.length > 1 ? 's' : ''}`;
-    }
-    return 'Movie Campaign';
-  };
-
-  if (campaignLoading || eventsLoading) {
-    return (
-      <div className="space-y-8">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-96 w-full" />
-      </div>
-    );
-  }
-
-  if (!campaign) {
-    return (
-      <div className="space-y-8">
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Campaign Not Found
-        </h1>
-        <p className="text-muted-foreground">The campaign you're looking for doesn't exist.</p>
-        <Button asChild>
-          <Link href="/fantasy/movie">Back to All Campaigns</Link>
-        </Button>
-      </div>
-    );
-  }
-
-  const campaignWithId = campaign as FantasyCampaignWithId;
-  const movieTitle = getMovieTitle(campaignWithId);
-  // TODO: Calculate total points from user's actual predictions/participations
-  const totalPoints = 0;
-  
-  // TODO: Fetch actual leaderboard data from Firestore
-  const leaderboardData: { name: string; score: number; rank: number }[] = [
-    { name: 'You', score: totalPoints, rank: 1 }
-  ];
-
-  const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank || 1;
-
+  // ✅ ALL HOOKS MUST BE DECLARED BEFORE ANY CONDITIONAL RETURNS
   const [showAdGate, setShowAdGate] = useState(false);
   const hasCheckedAdRef = useRef<string | null>(null);
+  const [shareUrl, setShareUrl] = useState('');
 
   const handleAdGateComplete = useCallback((adViewId?: string, advertisementId?: string) => {
     if (adViewId && user?.uid) {
@@ -301,6 +256,61 @@ export default function FantasyMovieCampaignPage() {
     }
   }, [user?.uid, campaignId]); // Only depend on stable primitive values
 
+  // Set share URL on client side to avoid hydration mismatch
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(window.location.href);
+    }
+  }, []);
+
+  // Get movie title(s)
+  const getMovieTitle = (campaign: FantasyCampaignWithId): string => {
+    if (campaign.campaignType === 'single_movie' && campaign.movieTitle) {
+      return campaign.movieTitle;
+    }
+    if (campaign.campaignType === 'multiple_movies' && campaign.movies && campaign.movies.length > 0) {
+      return `${campaign.movies.length} Movie${campaign.movies.length > 1 ? 's' : ''}`;
+    }
+    return 'Movie Campaign';
+  };
+
+  // ✅ NOW CONDITIONAL RETURNS ARE SAFE (all hooks declared above)
+  if (campaignLoading || eventsLoading) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold md:text-4xl font-headline">
+          Campaign Not Found
+        </h1>
+        <p className="text-muted-foreground">The campaign you're looking for doesn't exist.</p>
+        <Button asChild>
+          <Link href="/fantasy/movie">Back to All Campaigns</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const campaignWithId = campaign as FantasyCampaignWithId;
+  const movieTitle = getMovieTitle(campaignWithId);
+  // TODO: Calculate total points from user's actual predictions/participations
+  const totalPoints = 0;
+  
+  // TODO: Fetch actual leaderboard data from Firestore
+  const leaderboardData: { name: string; score: number; rank: number }[] = [
+    { name: 'You', score: totalPoints, rank: 1 }
+  ];
+
+  const currentUserRank = leaderboardData.find(p => p.name === 'You')?.rank || 1;
+
   return (
     <>
       {/* Image Ad Gate - shows when user first views campaign */}
@@ -324,7 +334,7 @@ export default function FantasyMovieCampaignPage() {
                 </Link>
             </Button>
             <SocialShare
-              url={typeof window !== 'undefined' ? window.location.href : ''}
+              url={shareUrl}
               title={campaignWithId.title}
               description={`Join the ${movieTitle} fantasy campaign!${campaignWithId.prizePool ? ` Prize Pool: ${campaignWithId.prizePool}` : ''}`}
               imageUrl={campaignWithId.sponsorLogo}
