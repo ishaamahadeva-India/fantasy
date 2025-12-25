@@ -196,7 +196,10 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
     // For comparison events, options should be movie names (or industries for industry battles)
     let options: string[] = [];
     
-    if (template.isIndustryBattle) {
+    // If template has defaultOptions (like Collection Gap Prediction), use those
+    if (template.defaultOptions && template.defaultOptions.length > 0) {
+      options = template.defaultOptions;
+    } else if (template.isIndustryBattle) {
       // For industry battles, get unique industries from movies
       const industries = [...new Set(movies.map(m => m.industry))];
       options = industries;
@@ -205,7 +208,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
       options = movies.map(m => m.movieTitle || `Movie ${m.movieId}`);
     }
     
-    // If no movies added yet, use placeholder
+    // If no movies added yet and no defaultOptions, use placeholder
     if (options.length === 0) {
       options = ['Movie A', 'Movie B', 'Movie C', 'Movie D'];
     }
@@ -219,12 +222,13 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
       endDate: new Date(),
       points: template.defaultPoints,
       difficultyLevel: template.difficultyLevel,
-      options: template.eventType === 'ranking_selection' ? options : options, // For ranking, all movies are options
+      options: options,
       rules: template.defaultRules || [],
       movieId: '', // Campaign-wide event
     };
     
     console.log('➕ Adding comparison event from template:', newEvent.title);
+    console.log('   Options:', options);
     appendEvent(newEvent);
     console.log('✅ Comparison event added. Current events count:', form.getValues('events')?.length || 0);
   };
