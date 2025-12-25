@@ -201,7 +201,7 @@ export function SplashScreen() {
                 quizzbuzz
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-md">
-                The premier subscription platform for discerning learners
+                The pulse of India - Cricket & Movies
               </p>
             </motion.div>
 

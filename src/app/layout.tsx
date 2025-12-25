@@ -10,7 +10,7 @@ import { SplashScreen } from '@/components/mobile-splash-screen';
 
 export const metadata: Metadata = {
   title: 'quizzbuzz',
-  description: 'The premier subscription platform for discerning learners.',
+  description: 'The pulse of India - Cricket & Movies',
   manifest: '/manifest.json',
   icons: {
     icon: [
