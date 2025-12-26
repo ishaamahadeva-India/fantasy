@@ -156,14 +156,51 @@ export async function hasUserViewedAd(
     return false;
   }
 
-  // Get most recent view
-  const views = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    viewedAt: doc.data().viewedAt?.toDate() || new Date(),
-  })).sort((a, b) => b.viewedAt.getTime() - a.viewedAt.getTime());
+  // Get most recent view with safe date conversion
+  const views = snapshot.docs.map(doc => {
+    const data = doc.data();
+    let viewedAt: Date | null = null;
+    
+    try {
+      if (data.viewedAt) {
+        if (data.viewedAt.toDate && typeof data.viewedAt.toDate === 'function') {
+          viewedAt = data.viewedAt.toDate();
+        } else if (data.viewedAt instanceof Date) {
+          viewedAt = data.viewedAt;
+        } else if (typeof data.viewedAt === 'string' || typeof data.viewedAt === 'number') {
+          viewedAt = new Date(data.viewedAt);
+        }
+        
+        // Validate date
+        if (viewedAt && isNaN(viewedAt.getTime())) {
+          viewedAt = null;
+        }
+      }
+    } catch (error) {
+      console.error('Error converting viewedAt date:', error);
+      viewedAt = null;
+    }
+    
+    return {
+      id: doc.id,
+      ...data,
+      viewedAt,
+    };
+  }).filter(v => v.viewedAt && !isNaN(v.viewedAt.getTime()))
+    .sort((a, b) => {
+      if (!a.viewedAt || !b.viewedAt) return 0;
+      return b.viewedAt.getTime() - a.viewedAt.getTime();
+    });
+
+  if (views.length === 0) {
+    return false; // No valid views found
+  }
 
   const mostRecentView = views[0];
+  if (!mostRecentView.viewedAt || isNaN(mostRecentView.viewedAt.getTime())) {
+    return false; // Invalid date, allow ad to show
+  }
+  
   const now = new Date();
   const timeSinceLastView = (now.getTime() - mostRecentView.viewedAt.getTime()) / 1000; // seconds
 
@@ -244,14 +281,51 @@ export async function hasUserViewedAdForCampaign(
     return false;
   }
 
-  // Get most recent view
-  const views = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    viewedAt: doc.data().viewedAt?.toDate() || new Date(),
-  })).sort((a, b) => b.viewedAt.getTime() - a.viewedAt.getTime());
+  // Get most recent view with safe date conversion
+  const views = snapshot.docs.map(doc => {
+    const data = doc.data();
+    let viewedAt: Date | null = null;
+    
+    try {
+      if (data.viewedAt) {
+        if (data.viewedAt.toDate && typeof data.viewedAt.toDate === 'function') {
+          viewedAt = data.viewedAt.toDate();
+        } else if (data.viewedAt instanceof Date) {
+          viewedAt = data.viewedAt;
+        } else if (typeof data.viewedAt === 'string' || typeof data.viewedAt === 'number') {
+          viewedAt = new Date(data.viewedAt);
+        }
+        
+        // Validate date
+        if (viewedAt && isNaN(viewedAt.getTime())) {
+          viewedAt = null;
+        }
+      }
+    } catch (error) {
+      console.error('Error converting viewedAt date:', error);
+      viewedAt = null;
+    }
+    
+    return {
+      id: doc.id,
+      ...data,
+      viewedAt,
+    };
+  }).filter(v => v.viewedAt && !isNaN(v.viewedAt.getTime()))
+    .sort((a, b) => {
+      if (!a.viewedAt || !b.viewedAt) return 0;
+      return b.viewedAt.getTime() - a.viewedAt.getTime();
+    });
+
+  if (views.length === 0) {
+    return false; // No valid views found
+  }
 
   const mostRecentView = views[0];
+  if (!mostRecentView.viewedAt || isNaN(mostRecentView.viewedAt.getTime())) {
+    return false; // Invalid date, allow ad to show
+  }
+  
   const now = new Date();
   const timeSinceLastView = (now.getTime() - mostRecentView.viewedAt.getTime()) / 1000; // seconds
 
@@ -301,11 +375,54 @@ export async function getUserAdViews(
 
   snapshot.forEach((docSnapshot) => {
     const data = docSnapshot.data();
+    
+    // Safe date conversion for viewedAt
+    let viewedAt: Date;
+    try {
+      if (data.viewedAt) {
+        if (data.viewedAt.toDate && typeof data.viewedAt.toDate === 'function') {
+          viewedAt = data.viewedAt.toDate();
+        } else if (data.viewedAt instanceof Date) {
+          viewedAt = data.viewedAt;
+        } else {
+          viewedAt = new Date(data.viewedAt);
+        }
+        if (isNaN(viewedAt.getTime())) {
+          viewedAt = new Date();
+        }
+      } else {
+        viewedAt = new Date();
+      }
+    } catch (error) {
+      console.error('Error converting viewedAt date:', error);
+      viewedAt = new Date();
+    }
+    
+    // Safe date conversion for clickedAt
+    let clickedAt: Date | undefined;
+    try {
+      if (data.clickedAt) {
+        if (data.clickedAt.toDate && typeof data.clickedAt.toDate === 'function') {
+          clickedAt = data.clickedAt.toDate();
+        } else if (data.clickedAt instanceof Date) {
+          clickedAt = data.clickedAt;
+        } else {
+          clickedAt = new Date(data.clickedAt);
+        }
+        if (isNaN(clickedAt.getTime())) {
+          clickedAt = undefined;
+        }
+      }
+    } catch (error) {
+      console.error('Error converting clickedAt date:', error);
+      clickedAt = undefined;
+    }
+    
     views.push({
       id: docSnapshot.id,
       ...data,
-      viewedAt: data.viewedAt?.toDate() || new Date(),
-      clickedAt: data.clickedAt?.toDate(),
+      viewedAt,
+      clickedAt,
     } as ImageAdView);
   });
 

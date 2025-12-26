@@ -32,10 +32,42 @@ export default function ImageAdsAnalyticsPage() {
 
     const totalAds = ads.length;
     const activeAds = ads.filter((ad: any) => {
-      const now = new Date();
-      const startDate = ad.startDate?.toDate ? ad.startDate.toDate() : new Date(ad.startDate);
-      const endDate = ad.endDate?.toDate ? ad.endDate.toDate() : new Date(ad.endDate);
-      return ad.status === 'active' && startDate <= now && endDate >= now;
+      try {
+        const now = new Date();
+        let startDate: Date;
+        let endDate: Date;
+        
+        if (ad.startDate) {
+          if (ad.startDate.toDate && typeof ad.startDate.toDate === 'function') {
+            startDate = ad.startDate.toDate();
+          } else if (ad.startDate instanceof Date) {
+            startDate = ad.startDate;
+          } else {
+            startDate = new Date(ad.startDate);
+          }
+          if (isNaN(startDate.getTime())) return false;
+        } else {
+          return false;
+        }
+        
+        if (ad.endDate) {
+          if (ad.endDate.toDate && typeof ad.endDate.toDate === 'function') {
+            endDate = ad.endDate.toDate();
+          } else if (ad.endDate instanceof Date) {
+            endDate = ad.endDate;
+          } else {
+            endDate = new Date(ad.endDate);
+          }
+          if (isNaN(endDate.getTime())) return false;
+        } else {
+          return false;
+        }
+        
+        return ad.status === 'active' && startDate <= now && endDate >= now;
+      } catch (error) {
+        console.error('Error processing ad dates:', error);
+        return false;
+      }
     }).length;
 
     const totalViews = views.length;
@@ -51,8 +83,27 @@ export default function ImageAdsAnalyticsPage() {
       const dayStart = startOfDay(date);
       const dayEnd = endOfDay(date);
       const dayViews = views.filter((v: any) => {
-        const viewedAt = v.viewedAt?.toDate ? v.viewedAt.toDate() : new Date(v.viewedAt);
-        return viewedAt >= dayStart && viewedAt <= dayEnd;
+        try {
+          let viewedAt: Date;
+          if (v.viewedAt) {
+            if (v.viewedAt.toDate && typeof v.viewedAt.toDate === 'function') {
+              viewedAt = v.viewedAt.toDate();
+            } else if (v.viewedAt instanceof Date) {
+              viewedAt = v.viewedAt;
+            } else {
+              viewedAt = new Date(v.viewedAt);
+            }
+            // Validate date
+            if (isNaN(viewedAt.getTime())) {
+              return false;
+            }
+            return viewedAt >= dayStart && viewedAt <= dayEnd;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error processing view date:', error);
+          return false;
+        }
       }).length;
       return { date, views: dayViews };
     }).reverse();
@@ -199,8 +250,8 @@ export default function ImageAdsAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {stats.viewsByDate.map(({ date, views }) => (
-                  <div key={date.toISOString()} className="flex items-center justify-between">
+                {stats.viewsByDate.map(({ date, views }, index) => (
+                  <div key={date && !isNaN(date.getTime()) ? date.toISOString() : `date-${index}`} className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
                       {format(date, 'MMM dd, yyyy')}
                     </span>
