@@ -161,6 +161,24 @@ export type EntryFeeConfig = {
     tiers?: Array<{ amount: number; label: string }>; // e.g., ₹49, ₹99, ₹199
 }
 
+// Prize Tier Configuration
+export type PrizeTier = {
+    rankStart: number; // Starting rank (inclusive)
+    rankEnd: number; // Ending rank (inclusive), -1 means "and above"
+    prizeAmount: number; // Prize amount (voucher value)
+    prizeType: 'voucher' | 'cash' | 'coupons' | 'tickets' | 'ott_subscription' | 'merchandise';
+    description?: string; // Optional description
+    minParticipants?: number; // Minimum participants required for this tier to be active
+}
+
+// Prize Distribution Configuration
+export type PrizeDistribution = {
+    tiers: PrizeTier[]; // Prize tiers
+    totalPrizePool?: number; // Total prize pool value (optional, for display)
+    currency?: string; // Currency code (default: 'INR')
+    notes?: string; // Additional notes about prize distribution
+}
+
 // Reward Configuration
 export type RewardConfig = {
     type: 'cash' | 'coupons' | 'tickets' | 'ott_subscription' | 'merchandise' | 'badges' | 'xp';
@@ -304,6 +322,9 @@ export type FantasyCampaign = {
     // Entry and rewards
     entryFee: EntryFeeConfig;
     rewards?: RewardConfig[];
+    
+    // Prize distribution
+    prizeDistribution?: PrizeDistribution; // Structured prize tiers
     
     // Events
     events?: FantasyEvent[]; // Events within this campaign

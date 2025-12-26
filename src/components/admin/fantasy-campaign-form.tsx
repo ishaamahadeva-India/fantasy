@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -88,6 +89,19 @@ const campaignSchema = z.object({
   // Campaign settings
   description: z.string().optional(),
   prizePool: z.string().optional(),
+  prizeDistribution: z.object({
+    tiers: z.array(z.object({
+      rankStart: z.number().min(1),
+      rankEnd: z.number().min(-1), // -1 means "and above"
+      prizeAmount: z.number().min(0),
+      prizeType: z.enum(['voucher', 'cash', 'coupons', 'tickets', 'ott_subscription', 'merchandise']),
+      description: z.string().optional(),
+      minParticipants: z.number().optional(),
+    })),
+    totalPrizePool: z.number().optional(),
+    currency: z.string().optional().default('INR'),
+    notes: z.string().optional(),
+  }).optional(),
   sponsorName: z.string().optional(),
   sponsorLogo: z.string().optional(),
   startDate: z.date(),
@@ -158,6 +172,11 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
   const { fields: movieFields, append: appendMovie, remove: removeMovie } = useFieldArray({
     control: form.control,
     name: 'movies',
+  });
+
+  const { fields: prizeTierFields, append: appendPrizeTier, remove: removePrizeTier } = useFieldArray({
+    control: form.control,
+    name: 'prizeDistribution.tiers',
   });
 
   const campaignType = form.watch('campaignType') || 'single_movie';
@@ -915,6 +934,254 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                 </div>
               </>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Prize Distribution (Optional)</CardTitle>
+            <CardDescription>
+              Configure prize tiers based on rankings. Prizes will be distributed based on final leaderboard positions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="prizeDistribution.totalPrizePool"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Total Prize Pool (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 1000000"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Total value of all prizes combined (for display purposes)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="prizeDistribution.currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || 'INR'}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="INR">INR (₹)</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Prize Tiers</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    appendPrizeTier({
+                      rankStart: 1,
+                      rankEnd: 1,
+                      prizeAmount: 0,
+                      prizeType: 'voucher',
+                      minParticipants: undefined,
+                    });
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Tier
+                </Button>
+              </div>
+
+              {prizeTierFields.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No prize tiers configured. Click "Add Tier" to add prize distribution tiers.
+                </p>
+              )}
+
+              {prizeTierFields.map((field, index) => (
+                <Card key={field.id} className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Tier {index + 1}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removePrizeTier(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`prizeDistribution.tiers.${index}.rankStart`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Rank Start</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={1}
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`prizeDistribution.tiers.${index}.rankEnd`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Rank End (-1 for "and above")</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={-1}
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Use -1 for "and above" (e.g., rank 100+)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`prizeDistribution.tiers.${index}.prizeAmount`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Prize Amount</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={0}
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`prizeDistribution.tiers.${index}.prizeType`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Prize Type</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="voucher">Voucher</SelectItem>
+                                <SelectItem value="cash">Cash</SelectItem>
+                                <SelectItem value="coupons">Coupons</SelectItem>
+                                <SelectItem value="tickets">Tickets</SelectItem>
+                                <SelectItem value="ott_subscription">OTT Subscription</SelectItem>
+                                <SelectItem value="merchandise">Merchandise</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name={`prizeDistribution.tiers.${index}.minParticipants`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Min Participants (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={0}
+                              placeholder="Leave empty if always active"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Minimum participants required for this tier to be active
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`prizeDistribution.tiers.${index}.description`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Amazon voucher" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <FormField
+              control={form.control}
+              name="prizeDistribution.notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Additional Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="e.g., Prizes will be distributed within 30 days of campaign completion"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 

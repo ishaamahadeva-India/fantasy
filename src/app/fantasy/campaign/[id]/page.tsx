@@ -362,10 +362,19 @@ export default function FantasyMovieCampaignPage() {
                 <p className="mt-2 text-muted-foreground">
                     Predict events for <span className="font-semibold text-primary">{movieTitle}</span> and win big.
                 </p>
-                {campaignWithId.prizePool && (
-                    <div className="mt-4 flex items-center gap-2 text-primary">
-                        <Trophy className="w-5 h-5"/>
-                        <span className="font-semibold">{campaignWithId.prizePool}</span>
+                {(campaignWithId.prizePool || campaignWithId.prizeDistribution) && (
+                    <div className="mt-4 flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-primary"/>
+                        {campaignWithId.prizeDistribution ? (
+                            <Link 
+                                href={`/fantasy/campaign/${campaignId}/prizes`}
+                                className="font-semibold text-primary hover:underline cursor-pointer"
+                            >
+                                View Prize Distribution
+                            </Link>
+                        ) : (
+                            <span className="font-semibold text-primary">{campaignWithId.prizePool}</span>
+                        )}
                     </div>
                 )}
                 {campaignWithId.description && (

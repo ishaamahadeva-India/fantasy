@@ -154,10 +154,19 @@ function MovieFantasyContent({
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
-                                    {campaign.prizePool && (
-                                        <div className="flex items-center gap-2 text-primary">
-                                            <Ticket className="w-5 h-5"/>
-                                            <span className="font-semibold">{campaign.prizePool}</span>
+                                    {(campaign.prizePool || campaign.prizeDistribution) && (
+                                        <div className="flex items-center gap-2">
+                                            <Ticket className="w-5 h-5 text-primary"/>
+                                            {campaign.prizeDistribution ? (
+                                                <Link 
+                                                    href={`/fantasy/campaign/${campaign.id}/prizes`}
+                                                    className="font-semibold text-primary hover:underline cursor-pointer"
+                                                >
+                                                    View Prize Distribution
+                                                </Link>
+                                            ) : (
+                                                <span className="font-semibold text-primary">{campaign.prizePool}</span>
+                                            )}
                                         </div>
                                     )}
                                     {campaign.description && (
