@@ -12,6 +12,7 @@ import {
   Ticket,
   Image as ImageIcon,
   BarChart3,
+  Calculator,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -27,6 +28,7 @@ import { cn } from '@/lib/utils';
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: Home },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/campaign-estimator', label: 'Campaign Estimator', icon: Calculator },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/ads', label: 'Advertisements', icon: BadgePercent },
