@@ -409,7 +409,8 @@ export async function getUserAdViews(
         } else {
           clickedAt = new Date(data.clickedAt);
         }
-        if (isNaN(clickedAt.getTime())) {
+        // Validate date only if clickedAt was set
+        if (clickedAt && isNaN(clickedAt.getTime())) {
           clickedAt = undefined;
         }
       }
