@@ -26,6 +26,34 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
   const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Helper function to safely convert date to ISO string
+  const safeDateToISOString = (dateValue: any, fallback: Date): string => {
+    if (!dateValue) return fallback.toISOString().split('T')[0];
+    
+    try {
+      let date: Date | null = null;
+      
+      // Handle Firestore Timestamp
+      if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+        date = dateValue.toDate();
+      } else if (dateValue instanceof Date) {
+        date = dateValue;
+      } else {
+        date = new Date(dateValue);
+      }
+      
+      // Validate date
+      if (!date || isNaN(date.getTime())) {
+        return fallback.toISOString().split('T')[0];
+      }
+      
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Error converting date:', error);
+      return fallback.toISOString().split('T')[0];
+    }
+  };
+
   const [formData, setFormData] = useState({
     sponsorId: ad?.sponsorId || '',
     sponsorName: ad?.sponsorName || '',
@@ -36,12 +64,8 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
     displayDuration: ad?.displayDuration || 5,
     clickThroughUrl: ad?.clickThroughUrl || '',
     status: ad?.status || 'active',
-    startDate: ad?.startDate 
-      ? (ad.startDate instanceof Date ? ad.startDate.toISOString().split('T')[0] : new Date(ad.startDate).toISOString().split('T')[0])
-      : new Date().toISOString().split('T')[0],
-    endDate: ad?.endDate
-      ? (ad.endDate instanceof Date ? ad.endDate.toISOString().split('T')[0] : new Date(ad.endDate).toISOString().split('T')[0])
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+    startDate: safeDateToISOString(ad?.startDate, new Date()),
+    endDate: safeDateToISOString(ad?.endDate, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)), // 30 days from now
     priority: ad?.priority || 1,
     maxViews: ad?.maxViews?.toString() || '',
     maxViewsPerUser: ad?.maxViewsPerUser?.toString() || '',

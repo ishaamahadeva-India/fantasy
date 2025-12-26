@@ -73,9 +73,38 @@ export default function ImageAdsPage() {
     if (!ads) return [];
     const now = new Date();
     return ads.filter((ad: any) => {
-      const startDate = ad.startDate?.toDate ? ad.startDate.toDate() : new Date(ad.startDate);
-      const endDate = ad.endDate?.toDate ? ad.endDate.toDate() : new Date(ad.endDate);
-      return ad.status === 'active' && startDate <= now && endDate >= now;
+      if (!ad.startDate || !ad.endDate) return false;
+      
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
+      
+      try {
+        if (ad.startDate?.toDate && typeof ad.startDate.toDate === 'function') {
+          startDate = ad.startDate.toDate();
+        } else if (ad.startDate instanceof Date) {
+          startDate = ad.startDate;
+        } else if (ad.startDate) {
+          startDate = new Date(ad.startDate);
+        }
+        
+        if (ad.endDate?.toDate && typeof ad.endDate.toDate === 'function') {
+          endDate = ad.endDate.toDate();
+        } else if (ad.endDate instanceof Date) {
+          endDate = ad.endDate;
+        } else if (ad.endDate) {
+          endDate = new Date(ad.endDate);
+        }
+        
+        // Validate dates
+        if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          return false;
+        }
+        
+        return ad.status === 'active' && startDate <= now && endDate >= now;
+      } catch (error) {
+        console.error('Error parsing dates for ad:', ad.id, error);
+        return false;
+      }
     });
   }, [ads]);
 
@@ -248,9 +277,41 @@ function AdsTable({
         </TableHeader>
         <TableBody>
           {ads.map((ad: any) => {
-            const startDate = ad.startDate?.toDate ? ad.startDate.toDate() : new Date(ad.startDate);
-            const endDate = ad.endDate?.toDate ? ad.endDate.toDate() : new Date(ad.endDate);
-            const isActive = ad.status === 'active' && startDate <= new Date() && endDate >= new Date();
+            // Safe date conversion
+            let startDate: Date | null = null;
+            let endDate: Date | null = null;
+            
+            try {
+              if (ad.startDate?.toDate && typeof ad.startDate.toDate === 'function') {
+                startDate = ad.startDate.toDate();
+              } else if (ad.startDate instanceof Date) {
+                startDate = ad.startDate;
+              } else if (ad.startDate) {
+                startDate = new Date(ad.startDate);
+              }
+              
+              if (ad.endDate?.toDate && typeof ad.endDate.toDate === 'function') {
+                endDate = ad.endDate.toDate();
+              } else if (ad.endDate instanceof Date) {
+                endDate = ad.endDate;
+              } else if (ad.endDate) {
+                endDate = new Date(ad.endDate);
+              }
+              
+              // Validate dates
+              if (startDate && isNaN(startDate.getTime())) startDate = null;
+              if (endDate && isNaN(endDate.getTime())) endDate = null;
+            } catch (error) {
+              console.error('Error parsing dates for ad:', ad.id, error);
+            }
+            
+            const now = new Date();
+            const isActive = ad.status === 'active' && 
+              startDate && endDate && 
+              !isNaN(startDate.getTime()) && 
+              !isNaN(endDate.getTime()) &&
+              startDate <= now && 
+              endDate >= now;
             
             return (
               <TableRow key={ad.id}>
