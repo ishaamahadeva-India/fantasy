@@ -113,3 +113,4 @@ firebase deploy --only firestore:indexes
 
 **Action Required:** ✅ **CREATE THE INDEX** for `image-advertisements` collection with fields: `status`, `startDate`, `endDate`
 
+

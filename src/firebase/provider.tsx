@@ -16,6 +16,7 @@ import { firebaseConfig } from './sdk-config'; // UPDATED_IMPORT
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
 import type { FirestorePermissionError } from './errors';
+import { initializeAnalytics, setCurrentUserId } from '@/lib/analytics';
 
 type FirebaseContextType = {
   app: FirebaseApp | null;
@@ -77,6 +78,14 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
             const firestore = getFirestore(app);
             const storage = getStorage(app);
             setInstances({ app, auth, firestore, storage });
+            
+            // Initialize analytics
+            initializeAnalytics(app, firestore);
+            
+            // Set user ID when auth state changes
+            auth.onAuthStateChanged((user) => {
+              setCurrentUserId(user?.uid || null);
+            });
         } catch (error) {
             console.error('Firebase initialization error:', error);
             // Set instances to null on error to prevent further errors
