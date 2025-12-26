@@ -27,20 +27,94 @@ function toDate(dateValue: any): Date | null {
 
 
 function AdBanner() {
+    const firestore = useFirestore();
+    
+    // Query for active advertisements in the between-articles position
+    const adsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'advertisements'),
+            where('position', '==', 'home-article-between'),
+            where('active', '==', true)
+        );
+    }, [firestore]);
+    
+    const { data: ads } = useCollection(adsQuery);
+    
+    // Get the first active ad
+    const advertisement = useMemo(() => {
+        if (!ads || ads.length === 0) return null;
+        const sortedAds = [...ads].sort((a, b) => {
+            const dateA = toDate(a.createdAt);
+            const dateB = toDate(b.createdAt);
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateB.getTime() - dateA.getTime();
+        });
+        return sortedAds[0] as Advertisement & { id: string };
+    }, [ads]);
+    
+    // Check if ad is within date range
+    if (advertisement) {
+        const now = new Date();
+        const startDate = toDate(advertisement.startDate);
+        const endDate = toDate(advertisement.endDate);
+        
+        if (startDate && now < startDate) return null;
+        if (endDate && now > endDate) return null;
+    }
+    
+    if (!advertisement) {
+        return (
+            <Card className="bg-gradient-to-r from-primary/10 via-background to-background border-primary/20 my-6">
+                <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-2 text-center">
+                        <p className="font-semibold text-sm text-foreground">
+                            Sponsored Content by <span className="text-primary font-bold">Our Partners</span>
+                        </p>
+                        <Button asChild size="sm" variant='outline' className="sm:ml-auto shrink-0">
+                            <Link href="#" target="_blank">Learn More</Link>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+    
     return (
         <Card className="bg-gradient-to-r from-primary/10 via-background to-background border-primary/20 my-6">
             <CardContent className="p-4">
-                 <div className="flex items-center justify-center gap-x-4 gap-y-2 text-center">
-                    <p className="font-semibold text-sm text-foreground">
-                        Sponsored Content by <span className="text-primary font-bold">Our Partners</span>
-                    </p>
-                    <Button asChild size="sm" variant='outline' className="ml-auto shrink-0">
-                        <Link href="#" target="_blank">Learn More</Link>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex-1 text-center sm:text-left">
+                        <p className="font-semibold text-sm text-foreground mb-1">
+                            {advertisement.title}
+                        </p>
+                        {advertisement.description && (
+                            <p className="text-xs text-muted-foreground">
+                                {advertisement.description}
+                            </p>
+                        )}
+                    </div>
+                    {advertisement.imageUrl && (
+                        <div className="relative w-full sm:w-32 h-20 sm:h-20 rounded-md overflow-hidden shrink-0">
+                            <Image
+                                src={advertisement.imageUrl}
+                                alt={advertisement.title}
+                                fill
+                                className="object-cover"
+                            />
+                        </div>
+                    )}
+                    <Button asChild size="sm" variant='outline' className="shrink-0">
+                        <Link href={advertisement.linkUrl} target="_blank" rel="noopener noreferrer">
+                            Learn More
+                        </Link>
                     </Button>
                 </div>
             </CardContent>
         </Card>
-    )
+    );
 }
 
 function GossipList() {
@@ -442,44 +516,58 @@ export default function HomePage() {
   const categories = ['Cricket', 'Movies', 'Reviews', 'Gallery', 'Opinion'];
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold md:text-4xl font-headline">
-            quizzbuzz
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Your source for the latest news and analysis.
-          </p>
-        </div>
-
-        <Tabs defaultValue="latest" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-6">
-            <TabsTrigger value="latest">Latest</TabsTrigger>
-            {categories.map((category) => (
-              <TabsTrigger key={category} value={category}>
-                {category}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <TabsContent value="latest">
-            <ArticleList category="latest" />
-          </TabsContent>
-
-          {categories.map((category) => (
-            <TabsContent key={category} value={category}>
-              <ArticleList category={category} />
-            </TabsContent>
-          ))}
-        </Tabs>
-      </div>
-
-      <aside className="lg:col-span-1 space-y-8">
-        <WatchlistSidebar />
+    <div className="space-y-8">
+      {/* Mobile: Show sponsored content and gossips at top */}
+      <div className="lg:hidden space-y-6">
         <GossipList />
         <SponsoredAd />
-      </aside>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold md:text-4xl font-headline">
+              quizzbuzz
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Your source for the latest news and analysis.
+            </p>
+          </div>
+
+          <Tabs defaultValue="latest" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6 sm:grid-cols-6">
+              <TabsTrigger value="latest">Latest</TabsTrigger>
+              {categories.map((category) => (
+                <TabsTrigger key={category} value={category}>
+                  {category}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value="latest">
+              <ArticleList category="latest" />
+            </TabsContent>
+
+            {categories.map((category) => (
+              <TabsContent key={category} value={category}>
+                <ArticleList category={category} />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+
+        {/* Desktop: Show sidebar content */}
+        <aside className="hidden lg:block lg:col-span-1 space-y-8">
+          <WatchlistSidebar />
+          <GossipList />
+          <SponsoredAd />
+        </aside>
+      </div>
+
+      {/* Mobile: Show watchlist at bottom if user is logged in */}
+      <div className="lg:hidden">
+        <WatchlistSidebar />
+      </div>
     </div>
   );
 }
