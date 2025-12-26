@@ -1,6 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Updated: Added analytics collections rules for admin access
     // Helper function to check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
