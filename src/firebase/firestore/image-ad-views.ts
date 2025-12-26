@@ -399,19 +399,22 @@ export async function getUserAdViews(
     }
     
     // Safe date conversion for clickedAt
-    let clickedAt: Date | undefined;
+    let clickedAt: Date | undefined = undefined;
     try {
       if (data.clickedAt) {
+        let tempClickedAt: Date | null = null;
+        
         if (data.clickedAt.toDate && typeof data.clickedAt.toDate === 'function') {
-          clickedAt = data.clickedAt.toDate();
+          tempClickedAt = data.clickedAt.toDate();
         } else if (data.clickedAt instanceof Date) {
-          clickedAt = data.clickedAt;
+          tempClickedAt = data.clickedAt;
         } else {
-          clickedAt = new Date(data.clickedAt);
+          tempClickedAt = new Date(data.clickedAt);
         }
-        // Validate date only if clickedAt was set
-        if (clickedAt && isNaN(clickedAt.getTime())) {
-          clickedAt = undefined;
+        
+        // Validate date only if tempClickedAt was set
+        if (tempClickedAt && !isNaN(tempClickedAt.getTime())) {
+          clickedAt = tempClickedAt;
         }
       }
     } catch (error) {
