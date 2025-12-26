@@ -18,6 +18,7 @@ import {
   Trophy,
   Users,
   Zap,
+  Award,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/play', label: 'Play', icon: Play },
   { href: '/fantasy', label: 'Fantasy', icon: Trophy },
+  { href: '/fantasy/prizes', label: 'Prize Pools', icon: Award },
   { href: '/fan-zone', label: 'Fan Zone', icon: Users },
   { href: '/insights', label: 'Insights', icon: BarChart2 },
   { href: '/redeem', label: 'Redemption Center', icon: Gift },
@@ -56,7 +58,9 @@ export function MainNav() {
            if (item.href === '/fan-zone') {
                 isActive = pathname.startsWith('/fan-zone');
            } else if (item.href === '/fantasy') {
-                isActive = pathname.startsWith('/fantasy') || pathname.startsWith('/live-fantasy');
+                isActive = (pathname.startsWith('/fantasy') || pathname.startsWith('/live-fantasy')) && !pathname.startsWith('/fantasy/prizes');
+           } else if (item.href === '/fantasy/prizes') {
+                isActive = pathname.startsWith('/fantasy/prizes');
            }
             else if (item.href !== '/') {
                 isActive = pathname.startsWith(item.href);
