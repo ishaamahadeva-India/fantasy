@@ -162,13 +162,13 @@ export function SplashScreen() {
               transition={{ delay: 0.3, type: "spring", stiffness: 200, damping: 15 }}
               className="relative"
             >
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 p-4 shadow-2xl shadow-primary/50 flex items-center justify-center">
+              <div className="w-32 h-32 md:w-52 md:h-52 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 p-4 shadow-2xl shadow-primary/50 flex items-center justify-center">
                 <Image
                   src="/icons/icon-512x512.png"
                   alt="quizzbuzz"
                   width={120}
                   height={120}
-                  className="rounded-2xl md:w-[140px] md:h-[140px]"
+                  className="rounded-2xl md:w-[180px] md:h-[180px]"
                   priority
                 />
               </div>
