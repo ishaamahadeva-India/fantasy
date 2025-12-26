@@ -11,6 +11,7 @@ import {
   TriangleAlert,
   Ticket,
   Image as ImageIcon,
+  BarChart3,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -25,6 +26,7 @@ import { cn } from '@/lib/utils';
 
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: Home },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/ads', label: 'Advertisements', icon: BadgePercent },
