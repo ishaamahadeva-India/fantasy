@@ -224,6 +224,65 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // Analytics Collections - Admin can read all, users can create/read their own
+    
+    // Quiz Attempts - users can create/read their own, admin can read all
+    match /quiz_attempts/{attemptId} {
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+    
+    // Brand Events - allow anonymous tracking, admin can read all
+    match /brand_events/{eventId} {
+      allow create: if true; // Allow anonymous tracking
+      allow read: if isAdmin() || 
+                    (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+    
+    // Coupon Redemptions - users can create their own, admin can read all
+    match /coupon_redemptions/{redemptionId} {
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || 
+                    (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+    
+    // Sessions - allow anonymous tracking, admin can read all
+    match /sessions/{sessionId} {
+      allow create: if true; // Allow anonymous tracking
+      allow read: if isAdmin() || 
+                    (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+    
+    // Analytics Events - allow anonymous tracking, admin can read all
+    match /analytics_events/{eventId} {
+      allow create: if true; // Allow anonymous tracking
+      allow read: if isAdmin() || 
+                    (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+    
+    // Users collection - allow admin to read all for analytics (isEngaged field)
+    match /users/{userId} {
+      allow read: if isAuthenticated() && 
+                    (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
+      // Allow admin to update user engagement fields
+      allow update: if isAdmin() || 
+                      (isAuthenticated() && request.auth.uid == userId);
+    }
+    
     // Default: deny all other access
     match /{document=**} {
       allow read, write: if false;
