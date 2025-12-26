@@ -1,7 +1,7 @@
 'use client';
 
 import { useFirestore, useCollection, useDoc } from '@/firebase';
-import { collection, onSnapshot, doc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDocs } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Trophy, RefreshCw, Download, Radio } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { UserParticipation, CricketTournament, TournamentEvent } from '@/lib/types';
+import type { UserParticipation, CricketTournament, TournamentEvent, UserProfile } from '@/lib/types';
 import { useState, useEffect, useMemo } from 'react';
 
 export default function TournamentLeaderboardPage() {
@@ -122,6 +122,49 @@ export default function TournamentLeaderboardPage() {
       description: `File "${fileName}" downloaded to your Downloads folder.`,
       duration: 5000,
     });
+  };
+
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+
+  // Fetch user profiles for username display
+  useEffect(() => {
+    if (!firestore || !displayParticipations || displayParticipations.length === 0) return;
+
+    const fetchUserProfiles = async () => {
+      setLoadingProfiles(true);
+      try {
+        const userIds = [...new Set(displayParticipations.map((p: any) => p.userId))];
+        const profiles: Record<string, UserProfile> = {};
+        
+        // Fetch user profiles in batches
+        const usersRef = collection(firestore, 'users');
+        const usersSnapshot = await getDocs(usersRef);
+        usersSnapshot.docs.forEach(doc => {
+          const profile = { id: doc.id, ...doc.data() } as UserProfile;
+          if (userIds.includes(profile.id)) {
+            profiles[profile.id] = profile;
+          }
+        });
+        
+        setUserProfiles(profiles);
+      } catch (error) {
+        console.error('Error fetching user profiles:', error);
+      } finally {
+        setLoadingProfiles(false);
+      }
+    };
+
+    fetchUserProfiles();
+  }, [firestore, displayParticipations]);
+
+  // Helper function to get display name (username or userId fallback)
+  const getUserDisplayName = (userId: string): string => {
+    const profile = userProfiles[userId];
+    if (profile?.username) {
+      return profile.username;
+    }
+    return `User ${userId.slice(0, 8)}`;
   };
 
   if (isLoading) {
@@ -273,7 +316,7 @@ export default function TournamentLeaderboardPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                          <p className="font-semibold">{getUserDisplayName(participation.userId)}</p>
                           <p className="text-sm text-muted-foreground">
                             {participation.correctPredictions} / {participation.predictionsCount} correct
                           </p>
@@ -348,7 +391,7 @@ export default function TournamentLeaderboardPage() {
                                     )}
                                   </div>
                                   <div>
-                                    <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                                    <p className="font-semibold">{getUserDisplayName(participation.userId)}</p>
                                     <p className="text-sm text-muted-foreground">
                                       {participation.correctPredictions} / {participation.predictionsCount} correct
                                     </p>
@@ -385,7 +428,7 @@ export default function TournamentLeaderboardPage() {
                                 )}
                               </div>
                               <div>
-                                <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                                <p className="font-semibold">{getUserDisplayName(participation.userId)}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {participation.correctPredictions} / {participation.predictionsCount} correct
                                 </p>
@@ -449,7 +492,7 @@ export default function TournamentLeaderboardPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                          <p className="font-semibold">{getUserDisplayName(participation.userId)}</p>
                           <p className="text-sm text-muted-foreground">
                             {participation.playerCorrect} / {participation.playerTotal} player predictions correct
                           </p>

@@ -27,6 +27,9 @@ import {
   MapPin,
   Edit,
   Save,
+  Phone,
+  UserCircle,
+  AtSign,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +39,7 @@ import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { updateUserProfile, isUsernameAvailable } from '@/firebase/firestore/user-profile';
 
 const tiers = [
   {
@@ -83,32 +87,99 @@ function ProfileHeader({ user, isLoading, userProfile }: { user: any, isLoading:
     const router = useRouter();
     const firestore = useFirestore();
     const [isEditing, setIsEditing] = useState(false);
+    const [username, setUsername] = useState(userProfile?.username || '');
+    const [realName, setRealName] = useState(userProfile?.realName || '');
+    const [phoneNumber, setPhoneNumber] = useState(userProfile?.phoneNumber || '');
     const [city, setCity] = useState(userProfile?.city || '');
     const [state, setState] = useState(userProfile?.state || '');
     const [isSaving, setIsSaving] = useState(false);
+    const [checkingUsername, setCheckingUsername] = useState(false);
+    const [usernameError, setUsernameError] = useState('');
+
+    // Check username availability as user types
+    const handleUsernameChange = async (value: string) => {
+      setUsername(value);
+      setUsernameError('');
+      
+      if (!firestore || !value || value.length < 3) {
+        if (value && value.length < 3) {
+          setUsernameError('Username must be at least 3 characters');
+        }
+        return;
+      }
+
+      // Validate format
+      if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+        setUsernameError('Username can only contain letters, numbers, underscores, and hyphens');
+        return;
+      }
+
+      setCheckingUsername(true);
+      try {
+        const available = await isUsernameAvailable(firestore, value, user?.uid);
+        if (!available) {
+          setUsernameError('Username is already taken');
+        }
+      } catch (error) {
+        console.error('Error checking username:', error);
+      } finally {
+        setCheckingUsername(false);
+      }
+    };
 
     const handleSave = async () => {
       if (!firestore || !user) return;
       
+      // Validate username if provided
+      if (username && username.length < 3) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid Username',
+          description: 'Username must be at least 3 characters long.',
+        });
+        return;
+      }
+
+      if (username && !/^[a-zA-Z0-9_-]+$/.test(username)) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid Username',
+          description: 'Username can only contain letters, numbers, underscores, and hyphens.',
+        });
+        return;
+      }
+
+      if (usernameError) {
+        toast({
+          variant: 'destructive',
+          title: 'Username Error',
+          description: usernameError,
+        });
+        return;
+      }
+      
       setIsSaving(true);
       try {
-        const userDocRef = doc(firestore, 'users', user.uid);
-        await updateDoc(userDocRef, {
-          city: city.trim() || null,
-          state: state.trim() || null,
+        await updateUserProfile(firestore, user.uid, {
+          username: username.trim() || undefined,
+          realName: realName.trim() || undefined,
+          phoneNumber: phoneNumber.trim() || undefined,
+          city: city.trim() || undefined,
+          state: state.trim() || undefined,
         });
         
         toast({
           title: 'Profile Updated',
-          description: 'Your location information has been saved.',
+          description: 'Your profile information has been saved.',
         });
         setIsEditing(false);
-      } catch (error) {
+        setUsernameError('');
+      } catch (error: any) {
         console.error('Error updating profile:', error);
         toast({
           variant: 'destructive',
           title: 'Update Failed',
-          description: 'There was an error updating your profile. Please try again.',
+          description: error.message || 'There was an error updating your profile. Please try again.',
         });
       } finally {
         setIsSaving(false);
@@ -152,7 +223,8 @@ function ProfileHeader({ user, isLoading, userProfile }: { user: any, isLoading:
     }
 
     return (
-        <div className="flex items-center gap-6">
+        <div className="space-y-6">
+          <div className="flex items-center gap-6">
             <Avatar className="w-24 h-24">
               {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
               <AvatarFallback>
@@ -161,78 +233,194 @@ function ProfileHeader({ user, isLoading, userProfile }: { user: any, isLoading:
             </Avatar>
             <div className="flex-1">
               <h1 className="text-3xl font-bold md:text-4xl font-headline">
-                {user?.displayName || 'User'}
+                {userProfile?.username || user?.displayName || 'User'}
               </h1>
               <p className="mt-1 text-muted-foreground">{user?.email || 'user@example.com'}</p>
               <div className="mt-2 flex items-center gap-2 flex-wrap">
                 <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/20 text-primary">
                   Pro Pass
                 </span>
-                {userProfile && (
-                  <div className="flex items-center gap-2">
-                    {isEditing ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="City"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className="h-7 w-32"
-                        />
-                        <Input
-                          placeholder="State"
-                          value={state}
-                          onChange={(e) => setState(e.target.value)}
-                          className="h-7 w-32"
-                        />
-                        <Button
-                          size="sm"
-                          onClick={handleSave}
-                          disabled={isSaving}
-                          className="h-7"
-                        >
-                          <Save className="w-3 h-3 mr-1" />
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setIsEditing(false);
-                            setCity(userProfile?.city || '');
-                            setState(userProfile?.state || '');
-                          }}
-                          className="h-7"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        {(userProfile.city || userProfile.state) ? (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <MapPin className="w-3 h-3" />
-                            {userProfile.city && userProfile.state 
-                              ? `${userProfile.city}, ${userProfile.state}`
-                              : userProfile.city || userProfile.state}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">No location set</span>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditing(true)}
-                          className="h-6 px-2"
-                        >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Add Location
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                {userProfile && (userProfile.city || userProfile.state) && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="w-3 h-3" />
+                    {userProfile.city && userProfile.state 
+                      ? `${userProfile.city}, ${userProfile.state}`
+                      : userProfile.city || userProfile.state}
+                  </span>
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Profile Edit Form */}
+          {userProfile && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Profile Information</CardTitle>
+                  {!isEditing && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setUsername(userProfile?.username || '');
+                        setRealName(userProfile?.realName || '');
+                        setPhoneNumber(userProfile?.phoneNumber || '');
+                        setCity(userProfile?.city || '');
+                        setState(userProfile?.state || '');
+                        setUsernameError('');
+                      }}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  )}
+                </div>
+                <CardDescription>
+                  {isEditing 
+                    ? 'Update your profile information. Username will be displayed publicly.'
+                    : 'Your profile information. Username is displayed publicly, other details are private.'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {isEditing ? (
+                  <>
+                    {/* Username */}
+                    <div className="space-y-2">
+                      <Label htmlFor="username" className="flex items-center gap-2">
+                        <AtSign className="w-4 h-4" />
+                        Username (Public)
+                      </Label>
+                      <Input
+                        id="username"
+                        placeholder="Choose a unique username"
+                        value={username}
+                        onChange={(e) => handleUsernameChange(e.target.value)}
+                        className={usernameError ? 'border-destructive' : ''}
+                      />
+                      {checkingUsername && (
+                        <p className="text-xs text-muted-foreground">Checking availability...</p>
+                      )}
+                      {usernameError && (
+                        <p className="text-xs text-destructive">{usernameError}</p>
+                      )}
+                      {!usernameError && username && username.length >= 3 && (
+                        <p className="text-xs text-green-500">✓ Username available</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        This will be displayed in leaderboards and greetings. 3-20 characters, letters, numbers, underscores, and hyphens only.
+                      </p>
+                    </div>
+
+                    {/* Real Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="realName" className="flex items-center gap-2">
+                        <UserCircle className="w-4 h-4" />
+                        Real Name (Private)
+                      </Label>
+                      <Input
+                        id="realName"
+                        placeholder="Your full name"
+                        value={realName}
+                        onChange={(e) => setRealName(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Your real name (kept private, not displayed publicly)
+                      </p>
+                    </div>
+
+                    {/* Phone Number */}
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Phone Number (Private)
+                      </Label>
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        placeholder="+91 1234567890"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Your phone number (kept private, not displayed publicly)
+                      </p>
+                    </div>
+
+                    {/* Location */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          placeholder="City"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          placeholder="State"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 pt-4">
+                      <Button
+                        onClick={handleSave}
+                        disabled={isSaving || !!usernameError || !!(username && username.length < 3)}
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setUsername(userProfile?.username || '');
+                          setRealName(userProfile?.realName || '');
+                          setPhoneNumber(userProfile?.phoneNumber || '');
+                          setCity(userProfile?.city || '');
+                          setState(userProfile?.state || '');
+                          setUsernameError('');
+                        }}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-muted-foreground">Username</Label>
+                        <p className="font-semibold">{userProfile.username || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-muted-foreground">Real Name</Label>
+                        <p className="font-semibold">{userProfile.realName || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-muted-foreground">Phone Number</Label>
+                        <p className="font-semibold">{userProfile.phoneNumber || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-muted-foreground">Email</Label>
+                        <p className="font-semibold">{user?.email || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
     )
 }

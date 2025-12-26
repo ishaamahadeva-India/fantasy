@@ -22,6 +22,9 @@ import { handleLogout } from '@/firebase/auth/auth-service';
 
 function Greeting() {
   const { user, isLoading } = useUser();
+  const firestore = useFirestore();
+  const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileRef);
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -35,14 +38,17 @@ function Greeting() {
     }
   }, []);
   
-  if (isLoading) {
+  if (isLoading || isProfileLoading) {
     return <Skeleton className="h-8 w-48" />;
   }
+
+  // Get display name: username > displayName > email first part
+  const displayName = userProfile?.username || user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || '';
 
   return (
     <div>
         <h1 className="text-xl font-bold md:text-2xl font-headline">
-            {greeting}{user ? `, ${user.displayName?.split(' ')[0]}`: ''}
+            {greeting}{user ? `, ${displayName}`: ''}
         </h1>
     </div>
   );
@@ -77,7 +83,7 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative w-8 h-8 rounded-full">
               <Avatar className="w-8 h-8">
-                 {user?.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'}/>}
+                 {user?.photoURL && <AvatarImage src={user.photoURL} alt={userProfile?.username || user.displayName || 'User'}/>}
                 <AvatarFallback>
                   <User className="w-5 h-5" />
                 </AvatarFallback>
@@ -89,7 +95,7 @@ export function Header() {
                 <>
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                            <p className="text-sm font-medium leading-none">{userProfile?.username || user.displayName || 'User'}</p>
                             <p className="text-xs leading-none text-muted-foreground">
                             {user.email}
                             </p>

@@ -162,6 +162,15 @@ export default function CampaignLeaderboardPage() {
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
   const [loadingProfiles, setLoadingProfiles] = useState(false);
 
+  // Helper function to get display name (username or userId fallback)
+  const getUserDisplayName = (userId: string): string => {
+    const profile = userProfiles[userId];
+    if (profile?.username) {
+      return profile.username;
+    }
+    return `User ${userId.slice(0, 8)}`;
+  };
+
   // Fetch user profiles for city/state data
   useEffect(() => {
     if (!firestore || !displayParticipations || displayParticipations.length === 0) return;
@@ -371,7 +380,7 @@ export default function CampaignLeaderboardPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold">User {participation.userId.slice(0, 8)}</p>
+                                        <p className="font-semibold">{getUserDisplayName(participation.userId)}</p>
                           <p className="text-sm text-muted-foreground">
                             {participation.correctPredictions} / {participation.predictionsCount} correct
                           </p>
@@ -414,7 +423,7 @@ export default function CampaignLeaderboardPage() {
                         >
                           <div className="flex items-center gap-3">
                             <span className="font-bold w-8">#{participation.rank}</span>
-                            <span>User {participation.userId.slice(0, 8)}</span>
+                            <span>{getUserDisplayName(participation.userId)}</span>
                           </div>
                           <Badge variant="outline">
                             {participation.movieWisePoints?.[movieId] || 0} points

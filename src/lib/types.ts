@@ -46,6 +46,9 @@ export type UserProfile = {
     id: string;
     displayName: string;
     email: string;
+    username?: string; // Unique username for public display
+    realName?: string; // Real name (private, for profile only)
+    phoneNumber?: string; // Phone number (private, for profile only)
     avatarUrl?: string;
     points: number;
     watchlist?: string[]; // Movie IDs
