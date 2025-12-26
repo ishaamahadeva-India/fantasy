@@ -191,11 +191,10 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
           value={formData.imageUrl}
           onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
           folder="advertisements"
-          label="Advertisement Image"
+          label="Image Ad (Full-screen Gate)"
+          position="image-ad-gate"
+          showSizeGuidance={true}
         />
-        <p className="text-xs text-muted-foreground">
-          Recommended: 800x600px or 16:9 aspect ratio
-        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

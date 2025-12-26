@@ -120,6 +120,8 @@ export function SponsorForm({ sponsor, onSuccess, onCancel }: SponsorFormProps) 
           onChange={(url) => setFormData(prev => ({ ...prev, logoUrl: url }))}
           folder="advertisements"
           label="Sponsor Logo"
+          position="sponsor-logo"
+          showSizeGuidance={true}
         />
       </div>
 

@@ -97,12 +97,14 @@ function AdBanner() {
                         )}
                     </div>
                     {advertisement.imageUrl && (
-                        <div className="relative w-full sm:w-32 h-20 sm:h-20 rounded-md overflow-hidden shrink-0">
+                        <div className="relative w-full sm:w-32 aspect-[4/1] sm:aspect-[4/1] rounded-md overflow-hidden shrink-0 bg-muted">
                             <Image
                                 src={advertisement.imageUrl}
                                 alt={advertisement.title}
                                 fill
-                                className="object-cover"
+                                className="object-contain"
+                                sizes="(max-width: 640px) 100vw, 128px"
+                                unoptimized
                             />
                         </div>
                     )}
@@ -327,12 +329,14 @@ function SponsoredAd() {
             </CardHeader>
             <CardContent className="text-center">
                 {advertisement.imageUrl && (
-                    <div className="relative w-full h-32 mb-4 rounded-md overflow-hidden">
+                    <div className="relative w-full aspect-[3/2] mb-4 rounded-md overflow-hidden bg-muted">
                         <Image
                             src={advertisement.imageUrl}
                             alt={advertisement.title}
                             fill
-                            className="object-cover"
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, 300px"
+                            unoptimized
                         />
                     </div>
                 )}

@@ -144,10 +144,12 @@ export function AdvertisementForm({ onSubmit, defaultValues }: AdvertisementForm
                       onChange={field.onChange}
                       folder="advertisements"
                       label="Advertisement Image"
+                      position={form.watch('position')}
+                      showSizeGuidance={true}
                     />
                   </FormControl>
                   <FormDescription>
-                    Upload an image for this advertisement (optional)
+                    Upload an image for this advertisement (optional). Size recommendations are shown above.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
