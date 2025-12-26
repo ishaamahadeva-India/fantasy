@@ -4,6 +4,7 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Users, Trophy, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import type { FantasyCampaign } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +12,8 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { useEffect, useState } from 'react';
 import { getOverallEntryStats } from '@/firebase/firestore/campaign-entries-aggregation';
 import type { CampaignEntryAggregation } from '@/firebase/firestore/campaign-entries-aggregation';
+import { getParticipationsStats } from '@/firebase/firestore/participations-aggregation';
+import type { ParticipationsAggregation } from '@/firebase/firestore/participations-aggregation';
 
 export default function FantasyAnalyticsPage() {
   const firestore = useFirestore();
@@ -19,6 +22,7 @@ export default function FantasyAnalyticsPage() {
   const [engagementRate, setEngagementRate] = useState(0);
   const [revenueData, setRevenueData] = useState<Array<{ month: string; revenue: number; participants: number }>>([]);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const [participationsStats, setParticipationsStats] = useState<ParticipationsAggregation | null>(null);
   
   const campaignsRef = firestore ? collection(firestore, 'fantasy-campaigns') : null;
   const { data: campaigns, isLoading: campaignsLoading } = useCollection(campaignsRef);
@@ -30,17 +34,30 @@ export default function FantasyAnalyticsPage() {
     const fetchMetrics = async () => {
       setLoadingMetrics(true);
       try {
-        // Use aggregation query for better performance
-        const entryStats = await getOverallEntryStats(firestore);
+        // Fetch both campaign entries and participations
+        const [entryStats, participationsData] = await Promise.all([
+          getOverallEntryStats(firestore),
+          getParticipationsStats(firestore),
+        ]);
         
-        setTotalParticipants(entryStats.uniqueParticipants);
+        setParticipationsStats(participationsData);
+        
+        // Use participations count (more accurate for fantasy campaigns)
+        // Fallback to entry stats if participations is 0
+        const participantCount = participationsData.uniqueParticipants > 0 
+          ? participationsData.uniqueParticipants 
+          : entryStats.uniqueParticipants;
+        
+        setTotalParticipants(participantCount);
         setTotalRevenue(entryStats.totalRevenue);
         
-        // Calculate engagement rate
-        const avgEntriesPerUser = entryStats.uniqueParticipants > 0 
-          ? entryStats.totalEntries / entryStats.uniqueParticipants 
+        // Calculate engagement rate based on participations
+        const totalParticipations = participationsData.totalParticipations;
+        const avgParticipationsPerUser = participantCount > 0 
+          ? totalParticipations / participantCount 
           : 0;
-        setEngagementRate(Math.min(100, Math.round(avgEntriesPerUser * 20))); // Normalize to 0-100
+        // Normalize to 0-100 (assuming 5+ participations per user = 100% engagement)
+        setEngagementRate(Math.min(100, Math.round((avgParticipationsPerUser / 5) * 100)));
 
         // Use monthly revenue from aggregation
         const revenueChartData = entryStats.monthlyRevenue.length > 0 
