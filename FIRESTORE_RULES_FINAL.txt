@@ -13,11 +13,15 @@ service cloud.firestore {
              request.auth.token.email == 'admin@fantasy.com';
     }
     
-    // Users collection - users can read/write their own data
+    // Users collection - users can read/write their own data, admin can read all
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && 
+                    (request.auth.uid == userId || isAdmin());
       allow write: if isAuthenticated() && request.auth.uid == userId;
       allow create: if isAuthenticated();
+      // Allow admin to update user engagement fields
+      allow update: if isAdmin() || 
+                      (isAuthenticated() && request.auth.uid == userId);
     }
     
     // Articles - public read, admin write
@@ -270,17 +274,6 @@ service cloud.firestore {
       allow read: if isAdmin() || 
                     (isAuthenticated() && resource.data.userId == request.auth.uid);
       allow update, delete: if isAdmin();
-    }
-    
-    // Users collection - allow admin to read all for analytics (isEngaged field)
-    match /users/{userId} {
-      allow read: if isAuthenticated() && 
-                    (request.auth.uid == userId || isAdmin());
-      allow write: if isAuthenticated() && request.auth.uid == userId;
-      allow create: if isAuthenticated();
-      // Allow admin to update user engagement fields
-      allow update: if isAdmin() || 
-                      (isAuthenticated() && request.auth.uid == userId);
     }
     
     // Default: deny all other access
