@@ -219,24 +219,39 @@ export default function FantasyAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {campaigns?.map((campaign) => (
-                    <div key={campaign.id} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold">{campaign.title}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {campaign.campaignType === 'multiple_movies' 
-                              ? `Multiple Movies (${campaign.movies?.length || 0} movies)`
-                              : 'Single Movie'}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Status</p>
-                          <p className="font-semibold capitalize">{campaign.status}</p>
+                  {campaigns?.map((campaign) => {
+                    const campaignId = (campaign as any).id;
+                    const participationCount = participationsStats?.participationsByCampaign[campaignId] || 0;
+                    
+                    return (
+                      <div key={campaignId} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">{campaign.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {campaign.campaignType === 'multiple_movies' 
+                                ? `Multiple Movies (${campaign.movies?.length || 0} movies)`
+                                : 'Single Movie'}
+                            </p>
+                            <div className="flex items-center gap-4 mt-2">
+                              <Badge variant="outline">
+                                {participationCount} participants
+                              </Badge>
+                              {campaign.prizeDistribution && (
+                                <Badge variant="secondary">
+                                  Prize Pool: ₹{campaign.prizeDistribution.totalPrizePool?.toLocaleString('en-IN') || 'N/A'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Status</p>
+                            <p className="font-semibold capitalize">{campaign.status}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {(!campaigns || campaigns.length === 0) && (
                     <div className="text-center py-8 text-muted-foreground">
                       No campaigns found.
