@@ -659,6 +659,11 @@ export type ImageAdvertisement = {
   displayDuration: number; // Seconds to show (default: 5)
   clickThroughUrl?: string; // URL when image is clicked
   
+  // Repeat Behavior
+  allowMultipleViews?: boolean; // Allow showing ad multiple times for same campaign/tournament
+  repeatInterval?: 'never' | 'always' | 'daily' | 'weekly' | 'session'; // When to repeat ad
+  minTimeBetweenViews?: number; // Minimum seconds between views (alternative to repeatInterval)
+  
   // Targeting
   targetTournaments?: string[];
   targetCampaigns?: string[]; // For movie fantasy campaigns

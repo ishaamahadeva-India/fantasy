@@ -107,12 +107,15 @@ export function trackImageAdClick(
 
 /**
  * Checks if user has viewed an ad for a tournament
+ * Returns true if user should NOT see ad (already viewed based on repeat rules)
  */
 export async function hasUserViewedAd(
   firestore: Firestore,
   userId: string,
   tournamentId: string,
-  advertisementId?: string
+  advertisementId?: string,
+  repeatInterval?: 'never' | 'always' | 'daily' | 'weekly' | 'session',
+  minTimeBetweenViews?: number
 ): Promise<boolean> {
   const viewsCollection = collection(firestore, 'image-ad-views');
   let q;
@@ -135,17 +138,72 @@ export async function hasUserViewedAd(
   }
 
   const snapshot = await getDocs(q);
-  return !snapshot.empty;
+  
+  // If no views found, user can see ad
+  if (snapshot.empty) {
+    return false;
+  }
+
+  // Handle repeat intervals
+  if (repeatInterval === 'always') {
+    // Always show ad (never block)
+    return false;
+  }
+
+  if (repeatInterval === 'session') {
+    // Check localStorage for session-based tracking
+    // This is handled in the component, so return false here
+    return false;
+  }
+
+  // Get most recent view
+  const views = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    viewedAt: doc.data().viewedAt?.toDate() || new Date(),
+  })).sort((a, b) => b.viewedAt.getTime() - a.viewedAt.getTime());
+
+  const mostRecentView = views[0];
+  const now = new Date();
+  const timeSinceLastView = (now.getTime() - mostRecentView.viewedAt.getTime()) / 1000; // seconds
+
+  // Check time-based intervals
+  if (minTimeBetweenViews && timeSinceLastView >= minTimeBetweenViews) {
+    // Enough time has passed
+    return false;
+  }
+
+  if (repeatInterval === 'daily') {
+    const hoursSinceLastView = timeSinceLastView / 3600;
+    if (hoursSinceLastView >= 24) {
+      return false; // Can show again (24+ hours passed)
+    }
+    return true; // Already viewed today
+  }
+
+  if (repeatInterval === 'weekly') {
+    const daysSinceLastView = timeSinceLastView / (3600 * 24);
+    if (daysSinceLastView >= 7) {
+      return false; // Can show again (7+ days passed)
+    }
+    return true; // Already viewed this week
+  }
+
+  // Default: 'never' - block if any view exists
+  return true;
 }
 
 /**
  * Checks if user has viewed an ad for a campaign (movie fantasy)
+ * Returns true if user should NOT see ad (already viewed based on repeat rules)
  */
 export async function hasUserViewedAdForCampaign(
   firestore: Firestore,
   userId: string,
   campaignId: string,
-  advertisementId?: string
+  advertisementId?: string,
+  repeatInterval?: 'never' | 'always' | 'daily' | 'weekly' | 'session',
+  minTimeBetweenViews?: number
 ): Promise<boolean> {
   const viewsCollection = collection(firestore, 'image-ad-views');
   let q;
@@ -168,7 +226,59 @@ export async function hasUserViewedAdForCampaign(
   }
 
   const snapshot = await getDocs(q);
-  return !snapshot.empty;
+  
+  // If no views found, user can see ad
+  if (snapshot.empty) {
+    return false;
+  }
+
+  // Handle repeat intervals
+  if (repeatInterval === 'always') {
+    // Always show ad (never block)
+    return false;
+  }
+
+  if (repeatInterval === 'session') {
+    // Check localStorage for session-based tracking
+    // This is handled in the component, so return false here
+    return false;
+  }
+
+  // Get most recent view
+  const views = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    viewedAt: doc.data().viewedAt?.toDate() || new Date(),
+  })).sort((a, b) => b.viewedAt.getTime() - a.viewedAt.getTime());
+
+  const mostRecentView = views[0];
+  const now = new Date();
+  const timeSinceLastView = (now.getTime() - mostRecentView.viewedAt.getTime()) / 1000; // seconds
+
+  // Check time-based intervals
+  if (minTimeBetweenViews && timeSinceLastView >= minTimeBetweenViews) {
+    // Enough time has passed
+    return false;
+  }
+
+  if (repeatInterval === 'daily') {
+    const hoursSinceLastView = timeSinceLastView / 3600;
+    if (hoursSinceLastView >= 24) {
+      return false; // Can show again (24+ hours passed)
+    }
+    return true; // Already viewed today
+  }
+
+  if (repeatInterval === 'weekly') {
+    const daysSinceLastView = timeSinceLastView / (3600 * 24);
+    if (daysSinceLastView >= 7) {
+      return false; // Can show again (7+ days passed)
+    }
+    return true; // Already viewed this week
+  }
+
+  // Default: 'never' - block if any view exists
+  return true;
 }
 
 /**

@@ -45,6 +45,9 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
     priority: ad?.priority || 1,
     maxViews: ad?.maxViews?.toString() || '',
     maxViewsPerUser: ad?.maxViewsPerUser?.toString() || '',
+    allowMultipleViews: ad?.allowMultipleViews || false,
+    repeatInterval: ad?.repeatInterval || 'never',
+    minTimeBetweenViews: ad?.minTimeBetweenViews?.toString() || '',
     targetTournaments: ad?.targetTournaments?.join(', ') || '',
     targetCampaigns: ad?.targetCampaigns?.join(', ') || '',
     trackingPixel: ad?.trackingPixel || '',
@@ -298,6 +301,70 @@ export function ImageAdForm({ ad, sponsors, onSuccess, onCancel }: ImageAdFormPr
             onChange={(e) => setFormData(prev => ({ ...prev, maxViewsPerUser: e.target.value }))}
             placeholder="Leave empty for unlimited"
           />
+        </div>
+      </div>
+
+      <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+        <div className="space-y-2">
+          <Label className="text-base font-semibold">Repeat Behavior</Label>
+          <p className="text-xs text-muted-foreground">
+            Control how often the ad shows to the same user for the same campaign/tournament
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between rounded-lg border p-4 bg-background">
+            <div className="space-y-0.5">
+              <Label htmlFor="allowMultipleViews">Allow Multiple Views</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow showing this ad multiple times for the same campaign/tournament
+              </p>
+            </div>
+            <Switch
+              id="allowMultipleViews"
+              checked={formData.allowMultipleViews}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allowMultipleViews: checked }))}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="repeatInterval">Repeat Interval</Label>
+            <Select 
+              value={formData.repeatInterval} 
+              onValueChange={(value: any) => setFormData(prev => ({ ...prev, repeatInterval: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="never">Never (Show Once)</SelectItem>
+                <SelectItem value="always">Always (Every Visit)</SelectItem>
+                <SelectItem value="daily">Daily (Once Per Day)</SelectItem>
+                <SelectItem value="weekly">Weekly (Once Per Week)</SelectItem>
+                <SelectItem value="session">Session (Once Per Session)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              When to show the ad again after user has viewed it
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="minTimeBetweenViews">Min Time Between Views (seconds, optional)</Label>
+            <Input
+              id="minTimeBetweenViews"
+              type="number"
+              min="0"
+              value={formData.minTimeBetweenViews}
+              onChange={(e) => setFormData(prev => ({ ...prev, minTimeBetweenViews: e.target.value }))}
+              placeholder="e.g., 3600 (1 hour)"
+            />
+            <p className="text-xs text-muted-foreground">
+              Minimum seconds between views (overrides repeat interval if set)
+            </p>
+          </div>
         </div>
       </div>
 

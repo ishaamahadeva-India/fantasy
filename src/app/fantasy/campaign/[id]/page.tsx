@@ -260,13 +260,15 @@ export default function FantasyMovieCampaignPage() {
     hasCheckedAdRef.current = checkKey;
     
     // Check if user has already viewed an ad for this campaign
+    // Note: ImageAdGate component now handles repeat logic internally
+    // We only check localStorage for 'never' repeat interval (backward compatibility)
     const hasViewedBefore = localStorage.getItem(`ad-viewed-${campaignId}-${user.uid}`);
-    if (!hasViewedBefore) {
-      // Use setTimeout to defer state update and prevent immediate re-render
-      setTimeout(() => {
-        setShowAdGate(true);
-      }, 0);
-    }
+    
+    // Always show ad gate - let ImageAdGate component decide based on ad's repeat settings
+    // This allows ads with 'always', 'daily', 'weekly' repeat to show multiple times
+    setTimeout(() => {
+      setShowAdGate(true);
+    }, 0);
   }, [user?.uid, campaignId]); // Only depend on stable primitive values
 
   // Set share URL on client side to avoid hydration mismatch

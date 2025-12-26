@@ -68,26 +68,7 @@ export function ImageAdGate({
       try {
         const isCampaign = !!campaignId;
         
-        // Check if user already viewed an ad
-        const alreadyViewed = isCampaign
-          ? await hasUserViewedAdForCampaign(firestore, user.uid, targetId)
-          : await hasUserViewedAd(firestore, user.uid, targetId);
-        
-        if (cancelled) return;
-        
-        if (alreadyViewed) {
-          setHasViewed(true);
-          setIsLoading(false);
-          // User already viewed, allow entry
-          setTimeout(() => {
-            if (!cancelled) {
-              onCompleteRef.current();
-            }
-          }, 500);
-          return;
-        }
-
-        // Select an ad
+        // Select an ad first (needed to check repeat settings)
         const selectedAd = isCampaign
           ? await selectAdForCampaign(firestore, targetId, user.uid)
           : await selectAdForEntry(firestore, targetId, user.uid);
@@ -122,9 +103,72 @@ export function ImageAdGate({
           }
         }
 
+        // Check repeat behavior settings
+        const repeatInterval = selectedAd.repeatInterval || 'never';
+        const minTimeBetweenViews = selectedAd.minTimeBetweenViews;
+        const allowMultipleViews = selectedAd.allowMultipleViews || false;
+
+        // Handle session-based repeat (check localStorage)
+        if (repeatInterval === 'session') {
+          const sessionKey = `ad-viewed-session-${targetId}-${user.uid}`;
+          const hasViewedThisSession = localStorage.getItem(sessionKey);
+          if (hasViewedThisSession) {
+            // Already viewed this session, skip
+            setHasViewed(true);
+            setIsLoading(false);
+            setTimeout(() => {
+              if (!cancelled) {
+                onCompleteRef.current();
+              }
+            }, 500);
+            return;
+          }
+        }
+
+        // Check if user already viewed an ad (respecting repeat settings)
+        if (repeatInterval !== 'always' && !allowMultipleViews) {
+          const alreadyViewed = isCampaign
+            ? await hasUserViewedAdForCampaign(
+                firestore, 
+                user.uid, 
+                targetId, 
+                selectedAd.id,
+                repeatInterval,
+                minTimeBetweenViews
+              )
+            : await hasUserViewedAd(
+                firestore, 
+                user.uid, 
+                targetId, 
+                selectedAd.id,
+                repeatInterval,
+                minTimeBetweenViews
+              );
+          
+          if (cancelled) return;
+          
+          if (alreadyViewed) {
+            setHasViewed(true);
+            setIsLoading(false);
+            // User already viewed (based on repeat rules), allow entry
+            setTimeout(() => {
+              if (!cancelled) {
+                onCompleteRef.current();
+              }
+            }, 500);
+            return;
+          }
+        }
+
         if (!cancelled) {
           setAd(selectedAd);
           setIsLoading(false);
+          
+          // Mark session view if using session-based repeat
+          if (selectedAd.repeatInterval === 'session') {
+            const sessionKey = `ad-viewed-session-${targetId}-${user.uid}`;
+            localStorage.setItem(sessionKey, 'true');
+          }
         }
       } catch (error) {
         console.error('Error loading ad:', error);

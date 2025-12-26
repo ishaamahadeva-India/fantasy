@@ -106,6 +106,15 @@ export function createImageAdvertisement(
   if (adData.maxViewsPerUser !== undefined && adData.maxViewsPerUser !== null) {
     docToSave.maxViewsPerUser = adData.maxViewsPerUser;
   }
+  if (adData.allowMultipleViews !== undefined) {
+    docToSave.allowMultipleViews = adData.allowMultipleViews;
+  }
+  if (adData.repeatInterval !== undefined) {
+    docToSave.repeatInterval = adData.repeatInterval;
+  }
+  if (adData.minTimeBetweenViews !== undefined && adData.minTimeBetweenViews !== null) {
+    docToSave.minTimeBetweenViews = adData.minTimeBetweenViews;
+  }
   if (adData.targetTournaments && adData.targetTournaments.length > 0) {
     docToSave.targetTournaments = adData.targetTournaments;
   }
@@ -188,6 +197,15 @@ export function updateImageAdvertisement(
   }
   if (adData.maxViewsPerUser !== undefined && adData.maxViewsPerUser !== null) {
     docToUpdate.maxViewsPerUser = adData.maxViewsPerUser;
+  }
+  if (adData.allowMultipleViews !== undefined) {
+    docToUpdate.allowMultipleViews = adData.allowMultipleViews;
+  }
+  if (adData.repeatInterval !== undefined) {
+    docToUpdate.repeatInterval = adData.repeatInterval;
+  }
+  if (adData.minTimeBetweenViews !== undefined && adData.minTimeBetweenViews !== null) {
+    docToUpdate.minTimeBetweenViews = adData.minTimeBetweenViews;
   }
   if (adData.targetTournaments !== undefined && adData.targetTournaments.length > 0) {
     docToUpdate.targetTournaments = adData.targetTournaments;
@@ -358,7 +376,19 @@ export async function selectAdForEntry(
     return true;
   });
 
-  // Return highest priority ad
+  // Return highest priority ad that allows multiple views or hasn't been viewed
+  // Priority: ads with allowMultipleViews=true or repeatInterval!='never' first
+  eligibleAds.sort((a, b) => {
+    const aAllowsRepeat = a.allowMultipleViews || (a.repeatInterval && a.repeatInterval !== 'never');
+    const bAllowsRepeat = b.allowMultipleViews || (b.repeatInterval && b.repeatInterval !== 'never');
+    
+    if (aAllowsRepeat && !bAllowsRepeat) return -1;
+    if (!aAllowsRepeat && bAllowsRepeat) return 1;
+    
+    // Then by priority
+    return b.priority - a.priority;
+  });
+
   return eligibleAds[0] || null;
 }
 
@@ -386,7 +416,19 @@ export async function selectAdForCampaign(
     return true;
   });
 
-  // Return highest priority ad
+  // Return highest priority ad that allows multiple views or hasn't been viewed
+  // Priority: ads with allowMultipleViews=true or repeatInterval!='never' first
+  eligibleAds.sort((a, b) => {
+    const aAllowsRepeat = a.allowMultipleViews || (a.repeatInterval && a.repeatInterval !== 'never');
+    const bAllowsRepeat = b.allowMultipleViews || (b.repeatInterval && b.repeatInterval !== 'never');
+    
+    if (aAllowsRepeat && !bAllowsRepeat) return -1;
+    if (!aAllowsRepeat && bAllowsRepeat) return 1;
+    
+    // Then by priority
+    return b.priority - a.priority;
+  });
+
   return eligibleAds[0] || null;
 }
 
