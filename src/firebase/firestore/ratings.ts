@@ -35,30 +35,27 @@ export function useRatings() {
       createdAt: serverTimestamp(),
     };
 
-    addDoc(ratingsCollection, docToSave)
-      .then(() => {
-        // Award points for submitting a rating
-        if (firestore) {
-            await updateUserPoints(
-              firestore,
-              userId,
-              25,
-              'Points earned for submitting rating',
-              {
-                type: 'rating_submitted',
-                ratingType: 'attribute_rating',
-              }
-            );
+    try {
+      await addDoc(ratingsCollection, docToSave);
+      // Award points for submitting a rating
+      await updateUserPoints(
+        firestore,
+        userId,
+        25,
+        'Points earned for submitting rating',
+        {
+          type: 'rating_submitted',
+          ratingType: 'attribute_rating',
         }
-      })
-      .catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: ratingsCollection.path,
-            operation: 'create',
-            requestResourceData: docToSave,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+      );
+    } catch (serverError) {
+      const permissionError = new FirestorePermissionError({
+        path: ratingsCollection.path,
+        operation: 'create',
+        requestResourceData: docToSave,
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    }
   };
 
   return { saveFanRating };
