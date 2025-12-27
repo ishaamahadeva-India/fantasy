@@ -51,10 +51,9 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
         firestore,
         user.uid,
         pointsEarned,
-        `Quiz completed: ${quizTitle || 'Quiz'}`,
+        `Quiz completed: Daily News Quiz`,
         {
           type: 'quiz_completed',
-          quizId: quizId,
           score,
           totalQuestions,
         }
@@ -62,7 +61,7 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
         console.error('Failed to update points:', error);
       });
     }
-  }, [user, firestore, pointsEarned, quizTitle, quizId, score, totalQuestions]);
+  }, [user, firestore, pointsEarned, score, totalQuestions]);
 
 
   const comparisonData = [
