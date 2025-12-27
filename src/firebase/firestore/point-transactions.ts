@@ -100,10 +100,18 @@ export async function getUserPointTransactions(
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => {
       const data = doc.data();
+      let createdAt: Date;
+      if (data.createdAt instanceof Timestamp) {
+        createdAt = data.createdAt.toDate();
+      } else if (data.createdAt instanceof Date) {
+        createdAt = data.createdAt;
+      } else {
+        createdAt = new Date();
+      }
       return {
         id: doc.id,
         ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
+        createdAt,
       } as PointTransaction;
     });
   } catch (error) {
@@ -130,10 +138,18 @@ export async function getCampaignPointTransactions(
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => {
       const data = doc.data();
+      let createdAt: Date;
+      if (data.createdAt instanceof Timestamp) {
+        createdAt = data.createdAt.toDate();
+      } else if (data.createdAt instanceof Date) {
+        createdAt = data.createdAt;
+      } else {
+        createdAt = new Date();
+      }
       return {
         id: doc.id,
         ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
+        createdAt,
       } as PointTransaction;
     });
   } catch (error) {
