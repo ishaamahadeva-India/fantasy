@@ -1383,7 +1383,7 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="all-movies">All Movies (Campaign-wide)</SelectItem>
-                            {form.watch('movies')?.map((movie) => (
+                            {form.watch('movies')?.filter((movie) => movie.movieId && movie.movieId.trim() !== '').map((movie) => (
                               <SelectItem key={movie.movieId} value={movie.movieId}>
                                 {movie.movieTitle || `Movie ${movie.movieId}`}
                               </SelectItem>
