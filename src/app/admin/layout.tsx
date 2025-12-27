@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   BarChart3,
   Calculator,
+  Coins,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -30,6 +31,7 @@ const adminNavItems = [
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/campaign-estimator', label: 'Campaign Estimator', icon: Calculator },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/points', label: 'Points Management', icon: Coins },
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/ads', label: 'Advertisements', icon: BadgePercent },
   { href: '/admin/image-ads', label: 'Image Ads', icon: ImageIcon },
