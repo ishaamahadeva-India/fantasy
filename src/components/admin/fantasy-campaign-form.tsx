@@ -185,24 +185,25 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
   const campaignStartDate = form.watch('startDate');
   const campaignEndDate = form.watch('endDate');
 
-  // Auto-update all events' dates when campaign dates change
+  // Auto-update event dates only when campaign dates are first set (not on every change)
   useEffect(() => {
     const events = form.getValues('events') || [];
-    if (events.length > 0) {
+    if (events.length > 0 && campaignStartDate) {
       events.forEach((event, index) => {
-        // Always sync with campaign dates
-        if (campaignStartDate) {
+        const currentStartDate = form.getValues(`events.${index}.startDate`);
+        const currentEndDate = form.getValues(`events.${index}.endDate`);
+        
+        // Only set if not already set (initial population)
+        if (!currentStartDate) {
           form.setValue(`events.${index}.startDate`, campaignStartDate, { shouldDirty: false });
         }
-        if (campaignEndDate) {
-          form.setValue(`events.${index}.endDate`, campaignEndDate, { shouldDirty: false });
-        } else if (campaignStartDate) {
-          // If no end date, use start date as fallback
-          form.setValue(`events.${index}.endDate`, campaignStartDate, { shouldDirty: false });
+        if (!currentEndDate) {
+          const endDateToUse = campaignEndDate || campaignStartDate;
+          form.setValue(`events.${index}.endDate`, endDateToUse, { shouldDirty: false });
         }
       });
     }
-  }, [campaignStartDate, campaignEndDate, form, eventFields.length]);
+  }, [campaignStartDate, campaignEndDate]); // Only depend on campaign dates, not form or eventFields
 
   const addEventFromTemplate = (template: typeof EVENT_TEMPLATES[0]) => {
     // Use campaign dates if available, otherwise use current date
@@ -1526,60 +1527,9 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   <FormField
                     control={form.control}
                     name={`events.${index}.startDate`}
-                    render={({ field }) => {
-                      // Auto-populate from campaign start date if not set
-                      if (!field.value && campaignStartDate) {
-                        field.onChange(campaignStartDate);
-                      }
-                      return (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Start Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    'w-full pl-3 text-left font-normal text-sm',
-                                    !field.value && 'text-muted-foreground'
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, 'PPP')
-                                  ) : (
-                                    <span>Pick date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name={`events.${index}.endDate`}
-                  render={({ field }) => {
-                    // Auto-populate from campaign end date if not set
-                    if (!field.value && (campaignEndDate || campaignStartDate)) {
-                      field.onChange(campaignEndDate || campaignStartDate);
-                    }
-                    return (
+                    render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>End Date</FormLabel>
+                        <FormLabel>Start Date</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -1610,8 +1560,47 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                         </Popover>
                         <FormMessage />
                       </FormItem>
-                    );
-                  }}
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name={`events.${index}.endDate`}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>End Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'w-full pl-3 text-left font-normal text-sm',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'PPP')
+                              ) : (
+                                <span>Pick date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 {(form.watch(`events.${index}.eventType`) === 'choice_selection' || 
