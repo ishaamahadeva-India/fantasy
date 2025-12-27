@@ -44,13 +44,14 @@ export default function NewSingleMovieCampaignPage() {
         
         for (const event of events) {
           try {
+            // Use campaign dates as fallback for event dates
             const eventToSave = {
               title: event.title,
               description: event.description || '',
               eventType: event.eventType,
               status: event.status || 'upcoming',
-              startDate: event.startDate || new Date(),
-              endDate: event.endDate || new Date(),
+              startDate: event.startDate || campaignData.startDate || new Date(),
+              endDate: event.endDate || campaignData.endDate || campaignData.startDate || new Date(),
               points: event.points || 0,
               movieId: event.movieId,
               difficultyLevel: event.difficultyLevel,

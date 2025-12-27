@@ -28,6 +28,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Plus, Trash2, Clock } from 'lucide-react';
+import { useEffect } from 'react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EVENT_TEMPLATES, COMPARISON_EVENT_TEMPLATES } from '@/firebase/firestore/fantasy-campaigns';
@@ -181,15 +182,40 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
 
   const campaignType = form.watch('campaignType') || 'single_movie';
   const entryFeeType = form.watch('entryFee.type') || 'free';
+  const campaignStartDate = form.watch('startDate');
+  const campaignEndDate = form.watch('endDate');
+
+  // Auto-update all events' dates when campaign dates change
+  useEffect(() => {
+    const events = form.getValues('events') || [];
+    if (events.length > 0) {
+      events.forEach((event, index) => {
+        // Always sync with campaign dates
+        if (campaignStartDate) {
+          form.setValue(`events.${index}.startDate`, campaignStartDate, { shouldDirty: false });
+        }
+        if (campaignEndDate) {
+          form.setValue(`events.${index}.endDate`, campaignEndDate, { shouldDirty: false });
+        } else if (campaignStartDate) {
+          // If no end date, use start date as fallback
+          form.setValue(`events.${index}.endDate`, campaignStartDate, { shouldDirty: false });
+        }
+      });
+    }
+  }, [campaignStartDate, campaignEndDate, form, eventFields.length]);
 
   const addEventFromTemplate = (template: typeof EVENT_TEMPLATES[0]) => {
+    // Use campaign dates if available, otherwise use current date
+    const eventStartDate = campaignStartDate || new Date();
+    const eventEndDate = campaignEndDate || new Date();
+    
     const newEvent = {
       title: template.title,
       description: template.description,
       eventType: template.eventType,
       status: 'upcoming' as const,
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: eventStartDate,
+      endDate: eventEndDate,
       points: template.defaultPoints,
       difficultyLevel: template.difficultyLevel,
       options: template.defaultOptions || [],
@@ -240,13 +266,17 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
       options = ['Movie A', 'Movie B', 'Movie C', 'Movie D'];
     }
     
+    // Use campaign dates if available, otherwise use current date
+    const eventStartDate = campaignStartDate || new Date();
+    const eventEndDate = campaignEndDate || new Date();
+    
     const newEvent = {
       title: template.title,
       description: template.description,
       eventType: template.eventType,
       status: 'upcoming' as const,
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: eventStartDate,
+      endDate: eventEndDate,
       points: template.defaultPoints,
       difficultyLevel: template.difficultyLevel,
       options: options,
@@ -278,6 +308,14 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((data) => {
+        // Ensure all events have campaign dates
+        if (data.events && data.events.length > 0) {
+          data.events = data.events.map(event => ({
+            ...event,
+            startDate: event.startDate || data.startDate,
+            endDate: event.endDate || data.endDate || data.startDate,
+          }));
+        }
         // CRITICAL DEBUG: Log form data before submission
         console.log('🔥 FORM SUBMIT - Data being sent to onSubmit:', data);
         console.log('🔥 FORM SUBMIT - Events in data:', data.events);
@@ -1488,80 +1526,88 @@ export function FantasyCampaignForm({ onSubmit, defaultValues }: FantasyCampaign
                   <FormField
                     control={form.control}
                     name={`events.${index}.startDate`}
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Start Date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  'w-full pl-3 text-left font-normal text-sm',
-                                  !field.value && 'text-muted-foreground'
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, 'PPP')
-                                ) : (
-                                  <span>Pick date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      // Auto-populate from campaign start date if not set
+                      const displayDate = field.value || campaignStartDate;
+                      // Ensure field value is set
+                      if (!field.value && campaignStartDate) {
+                        field.onChange(campaignStartDate);
+                      }
+                      return (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Start Date <span className="text-xs text-muted-foreground">(from campaign)</span></FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  disabled
+                                  className={cn(
+                                    'w-full pl-3 text-left font-normal text-sm bg-muted',
+                                    !displayDate && 'text-muted-foreground'
+                                  )}
+                                >
+                                  {displayDate ? (
+                                    format(displayDate, 'PPP')
+                                  ) : (
+                                    <span>Will use campaign start date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                          </Popover>
+                          <FormDescription className="text-xs">
+                            Event dates are automatically inherited from campaign dates. Only status can be changed.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 
                 <FormField
                   control={form.control}
                   name={`events.${index}.endDate`}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>End Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                'w-full pl-3 text-left font-normal text-sm',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Auto-populate from campaign end date if not set
+                    const displayDate = field.value || campaignEndDate || campaignStartDate;
+                    // Ensure field value is set
+                    if (!field.value && (campaignEndDate || campaignStartDate)) {
+                      field.onChange(campaignEndDate || campaignStartDate);
+                    }
+                    return (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>End Date <span className="text-xs text-muted-foreground">(from campaign)</span></FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                disabled
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal text-sm bg-muted',
+                                  !displayDate && 'text-muted-foreground'
+                                )}
+                              >
+                                {displayDate ? (
+                                  format(displayDate, 'PPP')
+                                ) : (
+                                  <span>Will use campaign end date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                        </Popover>
+                        <FormDescription className="text-xs">
+                          Event dates are automatically inherited from campaign dates. Only status can be changed.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 {(form.watch(`events.${index}.eventType`) === 'choice_selection' || 
