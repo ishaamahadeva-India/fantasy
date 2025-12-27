@@ -11,6 +11,7 @@ import {
   type Firestore,
   serverTimestamp,
   Timestamp,
+  type FieldValue,
 } from 'firebase/firestore';
 
 /**
@@ -44,7 +45,7 @@ export type PointTransaction = {
     reason?: string;
     [key: string]: any;
   };
-  createdAt: Date | Timestamp;
+  createdAt: Date | Timestamp | FieldValue;
 };
 
 /**
