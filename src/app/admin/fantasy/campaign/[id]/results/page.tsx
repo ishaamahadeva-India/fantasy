@@ -1,7 +1,7 @@
 'use client';
 
-import { useFirestore, useCollection, useDoc } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useUser } from '@/firebase';
+import { collection, doc, getDoc } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, AlertCircle, Coins, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { updateCampaignEvent } from '@/firebase/firestore/fantasy-campaigns';
+import { distributeCampaignPoints, canDistributePoints } from '@/firebase/firestore/points-distribution';
 import type { FantasyEvent, EventResult } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -22,9 +23,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function CampaignResultsPage() {
   const firestore = useFirestore();
+  const { user } = useUser();
   const params = useParams();
   const campaignId = params.id as string;
   
@@ -33,8 +46,14 @@ export default function CampaignResultsPage() {
     : null;
   const { data: events, isLoading } = useCollection(eventsRef);
   
+  const campaignRef = firestore ? doc(firestore, 'fantasy-campaigns', campaignId) : null;
+  const { data: campaignData } = useDoc(campaignRef);
+  
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [resultData, setResultData] = useState<{ outcome: string; notes: string }>({ outcome: '', notes: '' });
+  const [distributingPoints, setDistributingPoints] = useState(false);
+  const [canDistribute, setCanDistribute] = useState<{ canDistribute: boolean; reason?: string } | null>(null);
+  const [pointsDistributed, setPointsDistributed] = useState(false);
 
   const handleVerifyResult = async (eventId: string, result: EventResult) => {
     if (!firestore) return;
@@ -74,12 +93,67 @@ export default function CampaignResultsPage() {
         title: 'Result Approved',
         description: 'The event result has been approved.',
       });
+      // Check if points can be distributed after approval
+      checkDistributionStatus();
     } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Error',
         description: 'Could not approve the result.',
       });
+    }
+  };
+
+  const checkDistributionStatus = async () => {
+    if (!firestore) return;
+    try {
+      const status = await canDistributePoints(firestore, campaignId);
+      setCanDistribute(status);
+      
+      // Also check if already distributed
+      if (campaignData) {
+        setPointsDistributed(campaignData.pointsDistributed === true);
+      }
+    } catch (error) {
+      console.error('Error checking distribution status:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (firestore && campaignId) {
+      checkDistributionStatus();
+    }
+  }, [firestore, campaignId, events, campaignData]);
+
+  const handleDistributePoints = async () => {
+    if (!firestore || !user) return;
+    
+    setDistributingPoints(true);
+    try {
+      const result = await distributeCampaignPoints(firestore, campaignId, user.uid);
+      
+      if (result.success) {
+        toast({
+          title: 'Points Distributed Successfully',
+          description: `Distributed ${result.totalPointsDistributed} points to ${result.usersUpdated} users.`,
+        });
+        setPointsDistributed(true);
+        setCanDistribute({ canDistribute: false, reason: 'Points have already been distributed' });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Distribution Failed',
+          description: result.errors.join(', ') || 'Could not distribute points.',
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: `Failed to distribute points: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      });
+    } finally {
+      setDistributingPoints(false);
     }
   };
 
@@ -95,16 +169,107 @@ export default function CampaignResultsPage() {
   const completedEvents = events?.filter((e) => e.status === 'completed' || e.status === 'locked') || [];
   const pendingEvents = events?.filter((e) => e.status === 'live') || [];
 
+  const allEventsApproved = events?.every(event => 
+    event.result?.verified === true && event.result?.approved === true
+  ) || false;
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Result Verification
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Verify and approve event results for this campaign.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold md:text-4xl font-headline">
+            Result Verification
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Verify and approve event results for this campaign.
+          </p>
+        </div>
+        {allEventsApproved && !pointsDistributed && canDistribute?.canDistribute && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Coins className="w-4 h-4" />
+                Distribute Points
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Distribute Campaign Points</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will calculate and distribute points to all users who participated in this campaign based on their predictions and the verified results. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDistributePoints}
+                  disabled={distributingPoints}
+                >
+                  {distributingPoints ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Distributing...
+                    </>
+                  ) : (
+                    'Confirm Distribution'
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+        {pointsDistributed && (
+          <Badge variant="default" className="flex items-center gap-2 px-4 py-2">
+            <CheckCircle2 className="w-4 h-4" />
+            Points Distributed
+          </Badge>
+        )}
       </div>
+
+      {canDistribute && !canDistribute.canDistribute && !pointsDistributed && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-amber-800">
+              <AlertCircle className="w-5 h-5" />
+              <p className="text-sm">
+                Cannot distribute points: {canDistribute.reason}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {pointsDistributed && campaignData?.pointsDistributionStats && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <CheckCircle2 className="w-5 h-5" />
+              Points Distribution Complete
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-green-700">Users Updated</p>
+                <p className="text-2xl font-bold text-green-800">
+                  {campaignData.pointsDistributionStats.totalUsers || 0}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-green-700">Total Points Distributed</p>
+                <p className="text-2xl font-bold text-green-800">
+                  {campaignData.pointsDistributionStats.totalPointsDistributed?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+            {campaignData.pointsDistributedAt && (
+              <p className="text-xs text-green-600 mt-4">
+                Distributed on: {new Date(campaignData.pointsDistributedAt.seconds * 1000).toLocaleString()}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {pendingEvents.length > 0 && (
         <Card>

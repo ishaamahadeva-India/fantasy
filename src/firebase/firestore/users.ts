@@ -1,32 +1,83 @@
 
 'use client';
 
-import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp, type Firestore } from "firebase/firestore";
+import { doc, updateDoc, getDoc, increment, arrayUnion, arrayRemove, serverTimestamp, type Firestore } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { createPointTransaction } from './point-transactions';
 
 /**
  * Updates a user's points in their profile document.
  * @param firestore - The Firestore instance.
  * @param userId - The ID of the user to update.
  * @param points - The number of points to add (can be negative).
+ * @param description - Description for the transaction (optional).
+ * @param metadata - Additional metadata for the transaction (optional).
+ * @param allowNegative - Allow negative balance (default: false, except for negative marking in campaigns).
  */
-export function updateUserPoints(firestore: Firestore, userId: string, points: number) {
+export async function updateUserPoints(
+  firestore: Firestore, 
+  userId: string, 
+  points: number,
+  description?: string,
+  metadata?: { type?: string; [key: string]: any },
+  allowNegative: boolean = false
+): Promise<void> {
   const userDocRef = doc(firestore, 'users', userId);
+
+  // Get current balance to calculate balance after
+  let currentBalance = 0;
+  let balanceAfter = points;
+  try {
+    const userDoc = await getDoc(userDocRef);
+    currentBalance = userDoc.data()?.points || 0;
+    balanceAfter = currentBalance + points;
+  } catch (error) {
+    console.error('Error fetching current balance:', error);
+    // Continue without balance tracking if fetch fails
+  }
+
+  // Validate: Prevent negative balance unless explicitly allowed
+  // Negative marking in campaigns is allowed (metadata.type === 'campaign_earned' with negative points)
+  const isNegativeMarking = metadata?.type === 'campaign_earned' && points < 0;
+  const shouldAllowNegative = allowNegative || isNegativeMarking;
+
+  if (!shouldAllowNegative && balanceAfter < 0) {
+    throw new Error(`Insufficient points. Current balance: ${currentBalance}, Required: ${Math.abs(points)}`);
+  }
 
   const updateData = {
     points: increment(points)
   };
 
-  updateDoc(userDocRef, updateData)
-    .catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'update',
-            requestResourceData: updateData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
+  try {
+    await updateDoc(userDocRef, updateData);
+
+    // Create transaction record if description provided
+    if (description) {
+      const transactionType = metadata?.type as any || (points > 0 ? 'campaign_earned' : 'redemption');
+      await createPointTransaction(
+        firestore,
+        userId,
+        transactionType,
+        points,
+        balanceAfter,
+        description,
+        metadata
+      ).catch(error => {
+        // Don't fail the update if transaction logging fails
+        console.error('Failed to log point transaction:', error);
+      });
+    }
+  } catch (serverError) {
+    const permissionError = new FirestorePermissionError({
+      path: userDocRef.path,
+      operation: 'update',
+      requestResourceData: updateData,
     });
+    errorEmitter.emit('permission-error', permissionError);
+    throw serverError;
+  }
 }
 
 

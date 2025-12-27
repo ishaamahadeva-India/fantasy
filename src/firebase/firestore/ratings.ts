@@ -39,7 +39,16 @@ export function useRatings() {
       .then(() => {
         // Award points for submitting a rating
         if (firestore) {
-            updateUserPoints(firestore, userId, 25);
+            await updateUserPoints(
+              firestore,
+              userId,
+              25,
+              'Points earned for submitting rating',
+              {
+                type: 'rating_submitted',
+                ratingType: 'attribute_rating',
+              }
+            );
         }
       })
       .catch(async (serverError) => {

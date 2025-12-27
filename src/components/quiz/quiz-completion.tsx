@@ -47,9 +47,22 @@ export function QuizCompletion({ quiz, userAnswers }: QuizCompletionProps) {
 
   useEffect(() => {
     if (user && firestore && pointsEarned > 0) {
-      updateUserPoints(firestore, user.uid, pointsEarned);
+      updateUserPoints(
+        firestore,
+        user.uid,
+        pointsEarned,
+        `Quiz completed: ${quizTitle || 'Quiz'}`,
+        {
+          type: 'quiz_completed',
+          quizId: quizId,
+          score,
+          totalQuestions,
+        }
+      ).catch(error => {
+        console.error('Failed to update points:', error);
+      });
     }
-  }, [user, firestore, pointsEarned]);
+  }, [user, firestore, pointsEarned, quizTitle, quizId, score, totalQuestions]);
 
 
   const comparisonData = [

@@ -20,11 +20,13 @@ import { useFirestore, useCollection, useUser } from '@/firebase';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award } from 'lucide-react';
+import { Award, Coins } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { updateUserAdminStatus } from '@/firebase/firestore/users';
+import Link from 'next/link';
 
 function UserRowSkeleton() {
     return (
@@ -103,6 +105,7 @@ export default function AdminUsersPage() {
                 <TableHead>User</TableHead>
                 <TableHead>quizzbuzz Points</TableHead>
                 <TableHead>Admin</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -149,6 +152,14 @@ export default function AdminUsersPage() {
                             {user.isAdmin ? 'Yes' : 'No'}
                         </Label>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Link href={`/admin/users/${user.id}/points`}>
+                      <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <Coins className="w-4 h-4" />
+                        Manage Points
+                      </Button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

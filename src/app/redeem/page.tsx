@@ -18,6 +18,7 @@ import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { updateUserPoints } from '@/firebase/firestore/users';
 import { toast } from '@/hooks/use-toast';
+import { PointHistory } from '@/components/points/point-history';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,13 +68,31 @@ export default function RedemptionPage() {
 
   const userPoints = userProfile?.points || 0;
 
-  const handleRedeem = (cost: number) => {
+  const handleRedeem = async (cost: number, rewardTitle: string) => {
     if (!user || !firestore) return;
-    updateUserPoints(firestore, user.uid, -cost);
-    toast({
+    try {
+      await updateUserPoints(
+        firestore,
+        user.uid,
+        -cost,
+        `Redeemed reward: ${rewardTitle}`,
+        {
+          type: 'redemption',
+          rewardTitle,
+          cost,
+        }
+      );
+      toast({
         title: "Reward Redeemed!",
         description: `You have successfully redeemed a reward. ${cost} points have been deducted.`
-    });
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: "Redemption Failed",
+        description: `Could not redeem reward: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
   }
 
   return (
@@ -147,7 +166,7 @@ export default function RedemptionPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleRedeem(reward.cost)}>
+                      <AlertDialogAction onClick={() => handleRedeem(reward.cost, reward.title)}>
                         Confirm
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -158,6 +177,8 @@ export default function RedemptionPage() {
           ))}
         </div>
       </div>
+
+      <PointHistory limit={20} />
     </div>
   );
 }
