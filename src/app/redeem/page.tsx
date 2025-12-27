@@ -99,7 +99,7 @@ export default function RedemptionPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold md:text-4xl font-headline">
-          Redemption Center
+          Rewards
         </h1>
         <p className="mt-2 text-muted-foreground">
           Use your quizzbuzz Points to claim exclusive rewards.
