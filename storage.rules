@@ -62,6 +62,11 @@ service firebase.storage {
     match /campaigns/{fileName} {
       allow write: if isAuthenticated();
     }
+
+    // Subscription screenshots - users can upload only under their own folder
+    match /subscriptions/{userId}/{fileName} {
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
     
     // Default: only admins can write to other paths
     match /{allPaths=**} {

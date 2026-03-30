@@ -80,9 +80,10 @@ export type UserProfile = {
     isSubscribed?: boolean;
     subscriptionStartDate?: Date;
     subscriptionEndDate?: Date;
-    subscriptionPlan?: 'annual';
+    subscriptionPlan?: 'annual' | 'manual_upi_30d';
     paymentId?: string; // Cashfree payment order ID
-    subscriptionStatus?: 'active' | 'expired' | 'cancelled';
+    subscriptionStatus?: 'active' | 'expired' | 'cancelled' | 'pending' | 'rejected';
+    subscriptionAccessState?: 'NOT_SUBSCRIBED' | 'PENDING' | 'ACTIVE' | 'REJECTED';
     // Daily rewards tracking
     lastDailyLoginDate?: string; // YYYY-MM-DD format
     lastDailyGameDate?: string; // YYYY-MM-DD format

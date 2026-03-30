@@ -15,6 +15,7 @@ import {
   Calculator,
   Coins,
   Trophy,
+  CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -41,6 +42,7 @@ const adminNavItems = [
   { href: '/admin/image-ads', label: 'Image Ads', icon: ImageIcon },
   { href: '/admin/fantasy', label: 'Fantasy Games', icon: Gamepad2 },
   { href: '/admin/fantasy/ipl', label: 'IPL Fantasy', icon: Trophy },
+  { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/admin/fanzone', label: 'Fan Zone', icon: Shield },
   { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
 ];

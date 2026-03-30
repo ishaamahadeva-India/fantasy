@@ -286,6 +286,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Manual UPI subscriptions
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() &&
+                    (resource.data.user_id == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() &&
+                     request.resource.data.user_id == request.auth.uid &&
+                     request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
