@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "studio-4972782117-39fa2"
-  }
+    "default": "studio-4972782117-39fa2",
+    "staging": "studio-4972782117-39fa2"
+  },
+  "targets": {},
+  "etags": {}
 }
