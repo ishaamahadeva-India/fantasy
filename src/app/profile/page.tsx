@@ -31,6 +31,7 @@ import {
   UserCircle,
   AtSign,
   Calendar,
+  CreditCard,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -405,10 +406,68 @@ export default function ProfilePage() {
     const firestore = useFirestore();
     const userProfileRef = user ? doc(firestore!, 'users', user.uid) : null;
     const { data: userProfile } = useDoc(userProfileRef);
+    const typedProfile = (userProfile as any) as UserProfile | null | undefined;
+
+    const endRaw = typedProfile?.subscriptionEndDate as Date | { seconds?: number } | undefined;
+    const subscriptionEndDate =
+      endRaw instanceof Date
+        ? endRaw
+        : endRaw && typeof endRaw.seconds === 'number'
+          ? new Date(endRaw.seconds * 1000)
+          : null;
+    const isSubscriptionActive =
+      typedProfile?.subscriptionStatus === 'active' &&
+      !!subscriptionEndDate &&
+      subscriptionEndDate.getTime() > Date.now();
+
+    const profileSubscriptionState = typedProfile?.subscriptionAccessState;
+    const subscriptionLabel = isSubscriptionActive
+      ? 'Subscription Active'
+      : profileSubscriptionState === 'PENDING' || typedProfile?.subscriptionStatus === 'pending'
+        ? 'Waiting for approval'
+        : profileSubscriptionState === 'REJECTED' || typedProfile?.subscriptionStatus === 'rejected'
+          ? 'Payment rejected, try again'
+          : 'Not subscribed';
 
   return (
     <div className="space-y-8">
       <ProfileHeader user={user} isLoading={isLoading} userProfile={(userProfile as any) as UserProfile | null | undefined} />
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
+                Subscription
+              </CardTitle>
+              <CardDescription>
+                Subscribe to unlock fantasy gameplay access.
+              </CardDescription>
+            </div>
+            <Button asChild>
+              <Link href="/subscription">Manage Subscription</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p>
+            <span className="text-muted-foreground">Status: </span>
+            <span className="font-medium">{subscriptionLabel}</span>
+          </p>
+          {isSubscriptionActive && subscriptionEndDate && (
+            <p>
+              <span className="text-muted-foreground">Valid till: </span>
+              <span className="font-medium">{format(subscriptionEndDate, 'PPP')}</span>
+            </p>
+          )}
+          {!isSubscriptionActive && (
+            <p className="text-muted-foreground">
+              Active subscription is required to play fantasy games.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="badges">
         <TabsList className="grid w-full grid-cols-3">
