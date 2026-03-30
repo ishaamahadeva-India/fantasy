@@ -80,7 +80,7 @@ export type UserProfile = {
     isSubscribed?: boolean;
     subscriptionStartDate?: Date;
     subscriptionEndDate?: Date;
-    subscriptionPlan?: 'annual' | 'manual_upi_30d';
+    subscriptionPlan?: 'annual' | 'manual_upi_30d' | 'manual_upi_365d';
     paymentId?: string; // Cashfree payment order ID
     subscriptionStatus?: 'active' | 'expired' | 'cancelled' | 'pending' | 'rejected';
     subscriptionAccessState?: 'NOT_SUBSCRIBED' | 'PENDING' | 'ACTIVE' | 'REJECTED';

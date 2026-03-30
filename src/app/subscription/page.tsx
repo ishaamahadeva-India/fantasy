@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import QRCode from 'qrcode';
 import { doc } from 'firebase/firestore';
 import { useDoc, useFirestore, useUser } from '@/firebase';
 import { uploadImage, generateImagePath } from '@/firebase/storage';
@@ -40,18 +39,13 @@ export default function SubscriptionPage() {
   const profile = profileData as UserProfile | undefined;
 
   const [latestRequest, setLatestRequest] = useState<LatestRequest | null>(null);
-  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [utrNumber, setUtrNumber] = useState('');
   const [contact, setContact] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
-  const upiLink = useMemo(() => buildUpiDeepLink({ note: 'QuizzBuzz Subscription 30 days' }), []);
-
-  useEffect(() => {
-    QRCode.toDataURL(upiLink, { width: 256, margin: 1 }).then(setQrDataUrl).catch(() => {});
-  }, [upiLink]);
+  const upiLink = useMemo(() => buildUpiDeepLink({ note: 'QuizzBuzz Subscription 365 days' }), []);
 
   useEffect(() => {
     if (!user) return;
@@ -197,7 +191,11 @@ export default function SubscriptionPage() {
             <CardDescription>Pay via any UPI app using this QR.</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            {qrDataUrl ? <img src={qrDataUrl} alt="UPI QR code" className="h-56 w-56 rounded border p-2" /> : <Skeleton className="h-56 w-56" />}
+            <img
+              src={`/api/subscription/qr?upiId=${encodeURIComponent(SUBSCRIPTION_UPI_ID)}&amount=${SUBSCRIPTION_TOTAL_AMOUNT}&note=${encodeURIComponent('QuizzBuzz Subscription 365 days')}`}
+              alt="UPI QR code"
+              className="h-56 w-56 rounded border p-2 bg-white"
+            />
           </CardContent>
         </Card>
       )}

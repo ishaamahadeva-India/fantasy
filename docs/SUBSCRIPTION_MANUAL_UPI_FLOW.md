@@ -62,10 +62,10 @@ User profile (`users/{uid}`) fields used:
    - Body:
      - `action`: `approve` | `reject`
      - `notes` (optional)
-   - Approve:
-     - request status => approved
-     - user access => ACTIVE
-     - expiry => now + 30 days
+  - Approve:
+    - request status => approved
+    - user access => ACTIVE
+    - expiry => now + 365 days
    - Reject:
      - request status => rejected
      - user access => REJECTED

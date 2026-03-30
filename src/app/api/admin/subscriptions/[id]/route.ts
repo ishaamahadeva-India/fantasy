@@ -44,7 +44,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
           isSubscribed: true,
           subscriptionStartDate: now,
           subscriptionEndDate: end,
-          subscriptionPlan: 'manual_upi_30d',
+          subscriptionPlan: 'manual_upi_365d',
           paymentId: String(data.utr_number || ''),
           subscriptionStatus: 'active',
           subscriptionAccessState: 'ACTIVE',
